@@ -34,6 +34,8 @@ async def start_bot(bot: Bot, dp: Dispatcher) -> None:
     logger.info("Starting bot polling…")
     try:
         await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    except Exception as e:
+        logger.error(f"Bot polling failed (check BOT_TOKEN): {e}")
     finally:
         await bot.session.close()
 
@@ -44,11 +46,11 @@ async def start_web() -> None:
     config = uvicorn.Config(
         app,
         host="0.0.0.0",
-        port=8001,
+        port=8000,
         log_level="info",
     )
     server = uvicorn.Server(config)
-    logger.info("Starting FastAPI server on :8001…")
+    logger.info("Starting FastAPI server on :8000…")
     await server.serve()
 
 
