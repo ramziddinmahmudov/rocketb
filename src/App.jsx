@@ -26,10 +26,12 @@ export default function App() {
   const [cooldown, setCooldown] = useState(0);
   const [toast, setToast] = useState(null);
 
+  const [isAuthError, setIsAuthError] = useState(false);
+
   // ── WebSocket ──────────────────────────────────────────
   const { scores, isConnected } = useBattleSocket(DEMO_BATTLE_ID);
 
-  // ── Init Telegram WebApp ───────────────────────────────
+  // ── Init Telegram WebApp & Fetch Profile ────────────────
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
     if (tg) {
@@ -43,7 +45,37 @@ export default function App() {
         setUsername(user.first_name);
       }
     }
+
+    // Fetch profile (balance, vip)
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.getProfile();
+        setBalance(data.balance);
+        setIsVip(data.is_vip);
+        if (data.username) setUsername(data.username);
+      } catch (err) {
+        console.error('Profile fetch failed:', err);
+        if (err.response?.status === 401) {
+            setIsAuthError(true);
+            showToast('Authentication failed. Please open in Telegram.', 'error');
+        }
+      }
+    };
+
+    fetchProfile();
   }, []);
+
+  if (isAuthError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 text-center">
+            <div>
+                <h1 className="text-2xl font-bold text-red-500 mb-2">Authentication Failed</h1>
+                <p className="text-gray-400">Could not verify Telegram credentials.</p>
+                <p className="text-sm mt-4">Please restart the bot via /start</p>
+            </div>
+        </div>
+      );
+  }
 
   // ── Cooldown timer ─────────────────────────────────────
   useEffect(() => {
