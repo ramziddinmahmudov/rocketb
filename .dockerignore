@@ -1,0 +1,6 @@
+# ── Docker Ignore (Frontend) ───────────────────────────
+node_modules
+dist
+.env
+.git
+*.md
