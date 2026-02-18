@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.config.settings import settings
@@ -22,7 +22,7 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     builder.row(
         InlineKeyboardButton(
             text="🎮 Open WebApp",
-            web_app=None,  # Set the URL in production
+            web_app=WebAppInfo(url=settings.WEBAPP_URL),
         ),
     )
     return builder.as_markup()
