@@ -74,7 +74,7 @@ async def main() -> None:
     dp = Dispatcher()
 
     # Register middlewares
-    dp.update.outer_middleware(DbSessionMiddleware())
+    dp.update.outer_middleware(DbSessionMiddleware(session_factory))
     dp.update.outer_middleware(ThrottleMiddleware(rate_seconds=1))
 
     # Register handlers

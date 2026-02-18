@@ -179,7 +179,7 @@ async def cb_referral_link(callback: types.CallbackQuery) -> None:
 async def main() -> None:
     """Start the bot (polling mode)."""
     logger.info("Initialising database…")
-    setup_database(settings.DATABASE_URL)
+    session_factory = setup_database(settings.DATABASE_URL)
 
     from app.database.base import engine
     async with engine.begin() as conn:
@@ -195,7 +195,7 @@ async def main() -> None:
     dp = Dispatcher()
 
     # Middlewares
-    dp.update.outer_middleware(DbSessionMiddleware())
+    dp.update.outer_middleware(DbSessionMiddleware(session_factory))
     dp.update.outer_middleware(ThrottleMiddleware(rate_seconds=1))
 
     # Include this file's router + all existing handlers

@@ -7,7 +7,8 @@ from typing import Any, Awaitable, Callable
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
-from app.database.base import async_session_factory
+
+
 
 
 class DbSessionMiddleware(BaseMiddleware):
@@ -16,10 +17,14 @@ class DbSessionMiddleware(BaseMiddleware):
     The session is available as ``data["session"]`` inside the handler
     and is automatically closed after the handler returns.
 
-    **Usage** (in the router/dispatcher setup)::
+    **Usage**::
 
-        dp.update.outer_middleware(DbSessionMiddleware())
+        dp.update.outer_middleware(DbSessionMiddleware(session_factory))
     """
+
+    def __init__(self, session_factory):
+        super().__init__()
+        self.session_factory = session_factory
 
     async def __call__(
         self,
@@ -27,12 +32,7 @@ class DbSessionMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        if async_session_factory is None:
-            raise RuntimeError(
-                "Database not initialised — call setup_database() first."
-            )
-
-        async with async_session_factory() as session:
+        async with self.session_factory() as session:
             data["session"] = session
             try:
                 result = await handler(event, data)
@@ -40,3 +40,4 @@ class DbSessionMiddleware(BaseMiddleware):
             except Exception:
                 await session.rollback()
                 raise
+
