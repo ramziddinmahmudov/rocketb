@@ -68,6 +68,7 @@ async def main() -> None:
     setup_redis(settings.REDIS_URL)
 
     # ── Configure the bot ─────────────────────────────────────
+    logger.info("Configuring bot with WEBAPP_URL=%s", settings.WEBAPP_URL)
     bot = Bot(
         token=settings.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),

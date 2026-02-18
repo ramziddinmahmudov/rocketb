@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 
 from aiogram import Bot, Dispatcher, F, Router, types
 from aiogram.enums import ParseMode
@@ -43,7 +42,7 @@ logger = logging.getLogger(__name__)
 router = Router(name="bot_main")
 
 # Read WEBAPP_URL from environment (set in .env or docker-compose)
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://yourdomain.com")
+WEBAPP_URL = settings.WEBAPP_URL
 
 
 def get_start_keyboard(user_id: int) -> InlineKeyboardMarkup:
@@ -206,7 +205,7 @@ async def main() -> None:
     dp.include_router(balance.router)
     dp.include_router(payment.router)
 
-    logger.info("Bot starting… (WEBAPP_URL=%s)", WEBAPP_URL)
+    logger.info("Bot starting… (WEBAPP_URL=%s)", settings.WEBAPP_URL)
 
     try:
         await dp.start_polling(
