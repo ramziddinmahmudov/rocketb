@@ -25,6 +25,6 @@ COPY --from=deps /usr/local/bin /usr/local/bin
 # Copy application code
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8001
 
 CMD ["python", "main.py"]
