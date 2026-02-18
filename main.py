@@ -11,6 +11,7 @@ import logging
 
 import uvicorn
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from app.bot.handlers import router as bot_router
@@ -69,7 +70,7 @@ async def main() -> None:
     # ── Configure the bot ─────────────────────────────────────
     bot = Bot(
         token=settings.BOT_TOKEN,
-        default={"parse_mode": ParseMode.HTML},
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
     dp = Dispatcher()
 

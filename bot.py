@@ -23,6 +23,7 @@ from aiogram import Bot, Dispatcher, F, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandObject, CommandStart
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.client.default import DefaultBotProperties
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.bot.middlewares.db_middleware import DbSessionMiddleware
@@ -190,7 +191,7 @@ async def main() -> None:
 
     bot = Bot(
         token=settings.BOT_TOKEN,
-        default={"parse_mode": ParseMode.HTML},
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
     dp = Dispatcher()
 
