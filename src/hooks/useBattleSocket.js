@@ -6,7 +6,15 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const WS_BASE = import.meta.env.VITE_WS_BASE || `ws://${window.location.host}`;
+const getWsUrl = () => {
+  const apiBase = import.meta.env.VITE_API_BASE || window.location.origin;
+  const wsProtocol = apiBase.startsWith('https') ? 'wss' : 'ws';
+  // Remove protocol and trailing slash, then add ws protocol
+  const host = apiBase.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  return `${wsProtocol}://${host}`;
+};
+
+const WS_BASE = import.meta.env.VITE_WS_BASE || getWsUrl();
 
 export default function useBattleSocket(battleId) {
   const [scores, setScores] = useState({ blue: 0, red: 0 });
