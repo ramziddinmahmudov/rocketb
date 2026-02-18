@@ -1,0 +1,10 @@
+# ── Docker Ignore (Backend) ────────────────────────────
+__pycache__
+*.pyc
+*.pyo
+.venv
+.env
+.git
+.gitignore
+frontend/
+*.md

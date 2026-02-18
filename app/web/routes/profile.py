@@ -1,0 +1,53 @@
+"""Profile API endpoint."""
+
+from __future__ import annotations
+
+from fastapi import APIRouter, Header, HTTPException
+from pydantic import BaseModel
+
+from app.database.base import async_session_factory
+from app.services.user_service import get_or_create_user
+from app.web.auth import AuthError, validate_init_data
+
+router = APIRouter(prefix="/api", tags=["profile"])
+
+
+class UserProfile(BaseModel):
+    id: int
+    username: str | None
+    balance: int
+    is_vip: bool
+
+
+@router.get("/profile", response_model=UserProfile)
+async def get_profile(
+    x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
+) -> UserProfile:
+    """Get or create user profile based on Telegram initData."""
+    try:
+        user_data = validate_init_data(x_telegram_init_data)
+    except AuthError as exc:
+        raise HTTPException(status_code=401, detail=str(exc))
+
+    user_id = user_data["id"]
+    username = user_data.get("username")
+    # referrer_id could be extracted from start_param if needed, 
+    # but that's usually handled by the bot start command.
+
+    if not async_session_factory:
+        raise HTTPException(status_code=500, detail="Database not initialised")
+
+    async with async_session_factory() as session:
+        user, _ = await get_or_create_user(
+            session=session,
+            user_id=user_id,
+            username=username,
+        )
+        await session.commit()
+
+        return UserProfile(
+            id=user.id,
+            username=user.username,
+            balance=user.balance,
+            is_vip=user.is_vip,
+        )

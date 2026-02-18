@@ -1,0 +1,26 @@
+# .gitignore
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.input/
+.venv/
+.env
+
+# Node
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mac
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+docker-compose.override.yml
