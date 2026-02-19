@@ -26,15 +26,24 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from app.bot.middlewares.db_middleware import DbSessionMiddleware
+from app.bot.middlewares.logging_middleware import LoggingMiddleware
 from app.bot.middlewares.throttle_middleware import ThrottleMiddleware
 from app.config.settings import settings
 from app.database.base import Base, close_database, setup_database
 from app.services import user_service
 from app.services.redis_service import close_redis, setup_redis
 
+import logging.handlers
+
+# ... imports ...
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.handlers.RotatingFileHandler("bot.log", maxBytes=5*1024*1024, backupCount=2),
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -196,6 +205,7 @@ async def main() -> None:
 
     # Middlewares
     dp.update.outer_middleware(DbSessionMiddleware(session_factory))
+    dp.update.outer_middleware(LoggingMiddleware())
     dp.update.outer_middleware(ThrottleMiddleware(rate_seconds=1))
 
     # Include this file's router + all existing handlers

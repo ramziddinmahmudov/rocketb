@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 async def cb_store(callback: types.CallbackQuery) -> None:
     """Show the rocket store with available packages."""
     await callback.answer()
+    logger.info("User %s opened store", callback.from_user.id)
     await callback.message.edit_text(
         "🏪 <b>Rocket Store</b>\n\n"
         "Choose a package to buy rockets with Telegram Stars ⭐:",
@@ -39,6 +40,7 @@ async def cb_buy_rockets(callback: types.CallbackQuery) -> None:
     await callback.answer()
 
     stars = int(callback.data.split(":")[1])
+    logger.info("User %s initiated rocket purchase: %d stars", callback.from_user.id, stars)
     rockets = payment_service.rockets_for_stars(stars)
     if rockets is None:
         await callback.message.answer("⚠️ Invalid package.")
@@ -60,6 +62,7 @@ async def cb_buy_rockets(callback: types.CallbackQuery) -> None:
 async def cb_buy_vip(callback: types.CallbackQuery) -> None:
     """Send a Telegram Stars invoice for VIP status."""
     await callback.answer()
+    logger.info("User %s initiated VIP purchase", callback.from_user.id)
 
     await callback.message.answer_invoice(
         title="👑 VIP Status",
@@ -115,6 +118,7 @@ async def on_successful_payment(
     payment = message.successful_payment
     payload = payment.invoice_payload
     user_id = message.from_user.id
+    logger.info("Payment successful for user %s: %s", user_id, payload)
 
     try:
         if payload.startswith("rockets:"):

@@ -22,6 +22,7 @@ async def cb_balance(
 ) -> None:
     """Show the user's current balance and status."""
     await callback.answer()
+    logger.info("User %s checked balance", callback.from_user.id)
 
     user = await user_service.get_user(session, callback.from_user.id)
     if user is None:

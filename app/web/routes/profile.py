@@ -10,6 +10,8 @@ from app.services.user_service import get_or_create_user
 from app.web.auth import AuthError, validate_init_data
 
 router = APIRouter(prefix="/api", tags=["profile"])
+import logging
+logger = logging.getLogger(__name__)
 
 
 class UserProfile(BaseModel):
@@ -26,7 +28,9 @@ async def get_profile(
     """Get or create user profile based on Telegram initData."""
     try:
         user_data = validate_init_data(x_telegram_init_data)
+        logger.info("WebApp profile fetch for user: %s", user_data.get("id"))
     except AuthError as exc:
+        logger.warning("Profile auth failed: %s", exc)
         raise HTTPException(status_code=401, detail=str(exc))
 
     user_id = user_data["id"]

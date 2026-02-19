@@ -30,6 +30,7 @@ async def get_or_create_user(
         if username and user.username != username:
             user.username = username
             await session.flush()
+        logger.debug("Retrieved existing user: %d", user_id)
         return user, False
 
     # ── New user ──────────────────────────────────────────────
@@ -83,6 +84,7 @@ async def get_or_create_user(
                 referrer_id, user_id, bonus,
             )
 
+    logger.info("Created new user: %d (referrer: %s)", user_id, referrer_id)
     await session.flush()
     return user, True
 

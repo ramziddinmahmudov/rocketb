@@ -7,7 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 const getWsUrl = () => {
-  const apiBase = import.meta.env.VITE_API_BASE || window.location.origin;
+  const apiBase = import.meta.env.VITE_API_BASE || 'https://my-rocket-api.duckdns.org';
   const wsProtocol = apiBase.startsWith('https') ? 'wss' : 'ws';
   // Remove protocol and trailing slash, then add ws protocol
   const host = apiBase.replace(/^https?:\/\//, '').replace(/\/$/, '');
