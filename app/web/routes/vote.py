@@ -117,6 +117,9 @@ async def vote(
                 raise HTTPException(status_code=400, detail=str(exc))
             except VotingError as exc:
                 raise HTTPException(status_code=400, detail=str(exc))
+            except ValueError as exc:
+                logger.warning(f"Vote ValueError: {exc}")
+                raise HTTPException(status_code=400, detail=str(exc))
             except Exception:
                 await session.rollback()
                 raise
