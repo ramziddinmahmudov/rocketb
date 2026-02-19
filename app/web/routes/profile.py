@@ -30,7 +30,12 @@ async def get_profile(
     """Get or create user profile based on Telegram initData."""
     try:
         user_data = validate_init_data(x_telegram_init_data)
-        logger.info("WebApp profile fetch for user: %s", user_data.get("id"))
+        logger.info(
+            "WebApp profile fetch for user: %s (username=%s, first_name=%s)",
+            user_data.get("id"),
+            user_data.get("username"),
+            user_data.get("first_name"),
+        )
     except AuthError as exc:
         logger.warning("Profile auth failed: %s", exc)
         raise HTTPException(status_code=401, detail=str(exc))
