@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     VIP_COOLDOWN: int = 1 * 3600        # 1 hour
 
     # ── Battle ────────────────────────────────────────────────
-    BATTLE_QUEUE_SIZE: int = 20
+    BATTLE_QUEUE_SIZE: int = 2
     BATTLE_DURATION: int = 3 * 3600     # 3 hours
 
     # ── Rocket Store (stars → rockets) ────────────────────────
