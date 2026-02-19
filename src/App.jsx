@@ -53,7 +53,14 @@ export default function App() {
         const profileRes = await api.getProfile();
         setBalance(profileRes.data.balance);
         setIsVip(profileRes.data.is_vip);
-        if (profileRes.data.username) setUsername(profileRes.data.username);
+        
+        // Use first_name if username is missing/empty
+        const { username, first_name } = profileRes.data;
+        if (username) {
+          setUsername(username);
+        } else if (first_name) {
+          setUsername(first_name);
+        }
 
         // 2. Join Battle
         const joinRes = await api.joinBattle();
