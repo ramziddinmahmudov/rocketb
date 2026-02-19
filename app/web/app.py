@@ -22,18 +22,11 @@ def create_app() -> FastAPI:
     # In production, set CORS_ORIGINS to your domain(s):
     #   CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
     # Default "*" allows all origins (fine for development).
-    raw_origins = os.getenv("CORS_ORIGINS", "*")
-    if raw_origins == "*":
-        origins = ["*"]
-        allow_credentials = False
-    else:
-        origins = [o.strip() for o in raw_origins.split(",") if o.strip()]
-        allow_credentials = True
-
+    # Dynamic CORS: Allow any HTTP/HTTPS origin with credentials
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
-        allow_credentials=allow_credentials,
+        allow_origin_regex="https?://.*",
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
