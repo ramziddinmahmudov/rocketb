@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import traceback
 import uuid
 
 from fastapi import APIRouter, Header, HTTPException
@@ -19,6 +21,8 @@ from app.services.voting_service import (
     process_vote,
 )
 from app.web.auth import AuthError, validate_init_data
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["voting"])
 
@@ -76,37 +80,54 @@ async def vote(
 
     # 2 ── Execute vote pipeline ──────────────────────────────
     if async_session_factory is None:
+        logger.error("Database not initialised (async_session_factory is None)")
         raise HTTPException(status_code=500, detail="Database not initialised")
 
-    redis = get_redis()
+    try:
+        redis = get_redis()
+    except Exception as exc:
+        logger.error("Redis connection failed: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Redis unavailable")
 
-    async with async_session_factory() as session:
-        try:
-            result: VoteResult = await process_vote(
-                session=session,
-                redis=redis,
-                user_id=user_id,
-                battle_id=body.battle_id,
-                amount=body.amount,
-            )
-            await session.commit()
+    try:
+        async with async_session_factory() as session:
+            try:
+                result: VoteResult = await process_vote(
+                    session=session,
+                    redis=redis,
+                    user_id=user_id,
+                    battle_id=body.battle_id,
+                    amount=body.amount,
+                )
+                await session.commit()
 
-        except CooldownActiveError as exc:
-            raise HTTPException(
-                status_code=429,
-                detail=f"Cooldown active: {exc.ttl}s remaining",
-            )
-        except InsufficientLimitError:
-            raise HTTPException(
-                status_code=400,
-                detail="Vote limit exhausted for this cycle",
-            )
-        except InsufficientBalanceError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-        except NoBattleError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
-        except VotingError as exc:
-            raise HTTPException(status_code=400, detail=str(exc))
+            except CooldownActiveError as exc:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"Cooldown active: {exc.ttl}s remaining",
+                )
+            except InsufficientLimitError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Vote limit exhausted for this cycle",
+                )
+            except InsufficientBalanceError as exc:
+                raise HTTPException(status_code=400, detail=str(exc))
+            except NoBattleError as exc:
+                raise HTTPException(status_code=400, detail=str(exc))
+            except VotingError as exc:
+                raise HTTPException(status_code=400, detail=str(exc))
+            except Exception:
+                await session.rollback()
+                raise
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Vote processing failed: %s", exc, exc_info=True)
+        # trace = traceback.format_exc()
+        # logger.error(trace)
+        raise HTTPException(status_code=500, detail="Internal Server Error (Check logs)")
 
     return VoteResponse(
         success=True,
