@@ -105,7 +105,11 @@ export default function App() {
   // ── Fire handler ───────────────────────────────────────
   const handleFire = useCallback(
     async (amount) => {
-      if (!battleId) return;
+      console.log('Fire clicked. Amount:', amount, 'BattleID:', battleId);
+      if (!battleId) {
+        showToast('Error: No active battle found. Please reload.', 'error');
+        return;
+      }
       setIsLoading(true);
       try {
         const { data } = await api.vote(battleId, amount);
