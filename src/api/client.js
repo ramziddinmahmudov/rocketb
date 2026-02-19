@@ -48,6 +48,11 @@ export const api = {
    * Get user profile / balance.
    */
   getProfile: () => client.get('/api/profile'),
+
+  /**
+   * Join the active battle.
+   */
+  joinBattle: () => client.post('/api/battle/join'),
 };
 
 export default client;
