@@ -21,6 +21,8 @@ client.interceptors.request.use((config) => {
   const tg = window.Telegram?.WebApp;
   if (tg?.initData) {
     config.headers['X-Telegram-Init-Data'] = tg.initData;
+  } else {
+    console.warn('[API] No Telegram initData found. Authenticated requests will fail.');
   }
   return config;
 });
