@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
-from app.database.base import async_session_factory
+from app.database import base
 from app.services.user_service import get_or_create_user
 from app.web.auth import AuthError, validate_init_data
 
@@ -38,10 +38,10 @@ async def get_profile(
     # referrer_id could be extracted from start_param if needed, 
     # but that's usually handled by the bot start command.
 
-    if not async_session_factory:
+    if not base.async_session_factory:
         raise HTTPException(status_code=500, detail="Database not initialised")
 
-    async with async_session_factory() as session:
+    async with base.async_session_factory() as session:
         user, _ = await get_or_create_user(
             session=session,
             user_id=user_id,

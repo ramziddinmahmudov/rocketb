@@ -9,7 +9,7 @@ import uuid
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel, Field
 
-from app.database.base import async_session_factory
+from app.database import base
 from app.services.redis_service import get_redis
 from app.services.voting_service import (
     CooldownActiveError,
@@ -79,8 +79,8 @@ async def vote(
     user_id: int = user_data["id"]
 
     # 2 ── Execute vote pipeline ──────────────────────────────
-    if async_session_factory is None:
-        logger.error("Database not initialised (async_session_factory is None)")
+    if base.async_session_factory is None:
+        logger.error("Database not initialised (base.async_session_factory is None)")
         raise HTTPException(status_code=500, detail="Database not initialised")
 
     try:
@@ -90,7 +90,7 @@ async def vote(
         raise HTTPException(status_code=500, detail="Redis unavailable")
 
     try:
-        async with async_session_factory() as session:
+        async with base.async_session_factory() as session:
             try:
                 result: VoteResult = await process_vote(
                     session=session,
