@@ -14,9 +14,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
 class UserProfile(BaseModel):
     id: int
     username: str | None
+    first_name: str | None
     balance: int
     is_vip: bool
 
@@ -35,6 +37,7 @@ async def get_profile(
 
     user_id = user_data["id"]
     username = user_data.get("username")
+    first_name = user_data.get("first_name")
     # referrer_id could be extracted from start_param if needed, 
     # but that's usually handled by the bot start command.
 
@@ -52,6 +55,7 @@ async def get_profile(
         return UserProfile(
             id=user.id,
             username=user.username,
+            first_name=first_name,
             balance=user.balance,
             is_vip=user.is_vip,
         )
