@@ -14,9 +14,6 @@ import ControlPanel from './components/ControlPanel';
 import useBattleSocket from './hooks/useBattleSocket';
 import { api } from './api/client';
 
-/* ── Demo battle ID (replaced with real one in production) ── */
-const DEMO_BATTLE_ID = '00000000-0000-0000-0000-000000000000';
-
 export default function App() {
   // ── State ──────────────────────────────────────────────
   const [balance, setBalance] = useState(10);
@@ -25,11 +22,14 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [toast, setToast] = useState(null);
+  
+  const [battleId, setBattleId] = useState(null);
 
   const [isAuthError, setIsAuthError] = useState(false);
 
   // ── WebSocket ──────────────────────────────────────────
-  const { scores, isConnected } = useBattleSocket(DEMO_BATTLE_ID);
+  // Only connect when we have a valid battleId
+  const { scores, isConnected } = useBattleSocket(battleId);
 
   // ── Init Telegram WebApp & Fetch Profile ────────────────
   useEffect(() => {
@@ -46,23 +46,32 @@ export default function App() {
       }
     }
 
-    // Fetch profile (balance, vip)
-    const fetchProfile = async () => {
+    // Fetch profile and join battle
+    const initApp = async () => {
       try {
-        const { data } = await api.getProfile();
-        setBalance(data.balance);
-        setIsVip(data.is_vip);
-        if (data.username) setUsername(data.username);
+        // 1. Get Profile
+        const profileRes = await api.getProfile();
+        setBalance(profileRes.data.balance);
+        setIsVip(profileRes.data.is_vip);
+        if (profileRes.data.username) setUsername(profileRes.data.username);
+
+        // 2. Join Battle
+        const joinRes = await api.joinBattle();
+        console.log('Joined battle:', joinRes.data);
+        setBattleId(joinRes.data.battle_id);
+
       } catch (err) {
-        console.error('Profile fetch failed:', err);
+        console.error('Init failed:', err);
         if (err.response?.status === 401) {
             setIsAuthError(true);
             showToast('Authentication failed. Please open in Telegram.', 'error');
+        } else {
+            showToast('Failed to join battle. Please reload.', 'error');
         }
       }
     };
 
-    fetchProfile();
+    initApp();
   }, []);
 
   if (isAuthError) {
@@ -89,9 +98,10 @@ export default function App() {
   // ── Fire handler ───────────────────────────────────────
   const handleFire = useCallback(
     async (amount) => {
+      if (!battleId) return;
       setIsLoading(true);
       try {
-        const { data } = await api.vote(DEMO_BATTLE_ID, amount);
+        const { data } = await api.vote(battleId, amount);
         setBalance(data.new_balance);
 
         if (data.cooldown_started) {
