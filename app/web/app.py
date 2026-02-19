@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.web.routes import battle_ws, profile, vote
+from app.web.routes import battle, battle_ws, profile, vote
 
 
 def create_app() -> FastAPI:
@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
     # ── Routes ────────────────────────────────────────────────
     app.include_router(profile.router)
     app.include_router(vote.router)
+    app.include_router(battle.router)
     app.include_router(battle_ws.router)
 
     @app.get("/health")
