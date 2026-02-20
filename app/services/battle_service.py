@@ -79,8 +79,20 @@ async def join_queue(
         )
         await session.flush()
 
+    # Refresh battle to load participants + users for the API response
+    result = await session.execute(
+        select(Battle)
+        .where(Battle.id == battle.id)
+        .options(
+            selectinload(Battle.participants).selectinload(BattleParticipant.user)
+        )
+    )
+    battle = result.scalar_one()
+
     return battle, started
 
+
+from sqlalchemy.orm import selectinload
 
 async def get_active_battle(
     session: AsyncSession,
@@ -93,7 +105,10 @@ async def get_active_battle(
         .where(
             BattleParticipant.user_id == user_id,
             Battle.status == BattleStatus.ACTIVE,
-        ),
+        )
+        .options(
+            selectinload(Battle.participants).selectinload(BattleParticipant.user)
+        )
     )
     return result.scalar_one_or_none()
 

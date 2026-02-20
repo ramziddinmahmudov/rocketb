@@ -4,11 +4,35 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-export default function BattleArena({ scores, isConnected }) {
+export default function BattleArena({ scores, isConnected, participants, endTime }) {
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  // Identify players (assuming 2 player battle for now)
+  const player1 = participants[0] || { username: 'Waiting...' };
+  const player2 = participants[1] || { username: 'Waiting...' };
+
+  useEffect(() => {
+    if (!endTime) return;
+    const interval = setInterval(() => {
+        const now = new Date();
+        const diff = endTime - now;
+        if (diff <= 0) {
+            setTimeLeft("00:00:00");
+            clearInterval(interval);
+        } else {
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            setTimeLeft(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+        }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [endTime]);
+
   return (
     <div className="relative w-full px-4 py-6">
       {/* Connection indicator */}
-      <div className="flex items-center justify-center gap-2 mb-6">
+      <div className="flex items-center justify-center gap-2 mb-2">
         <span
           className={`w-2 h-2 rounded-full ${
             isConnected ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]'
@@ -18,6 +42,15 @@ export default function BattleArena({ scores, isConnected }) {
           {isConnected ? 'Live Battle' : 'Reconnecting…'}
         </span>
       </div>
+      
+      {/* Battle Timer */}
+      {timeLeft && (
+        <div className="text-center mb-6">
+            <span className="text-2xl font-mono font-bold text-white tracking-widest shadow-lg">
+                ⏱ {timeLeft}
+            </span>
+        </div>
+      )}
 
       {/* VS Banner */}
       <div className="flex items-center justify-center mb-2">
@@ -33,14 +66,14 @@ export default function BattleArena({ scores, isConnected }) {
       {/* Score Panels */}
       <div className="flex items-stretch gap-3 w-full">
         <TeamPanel
-          team="blue"
-          label="Blue Team"
-          score={scores.blue}
+          label={player1.username}
+          score={scores.blue} // Assuming player1 is blue since join order 1 -> blue logic usually
           emoji="🔵"
           color="from-cyan-500/20 to-blue-600/20"
           borderColor="border-cyan-400/20"
           textColor="text-cyan-300"
           glowClass="glow-blue"
+          avatar={player1.avatar_url}
         />
 
         {/* VS divider */}
@@ -56,14 +89,14 @@ export default function BattleArena({ scores, isConnected }) {
         </div>
 
         <TeamPanel
-          team="red"
-          label="Red Team"
+          label={player2.username}
           score={scores.red}
           emoji="🔴"
           color="from-pink-500/20 to-red-600/20"
           borderColor="border-pink-400/20"
           textColor="text-pink-300"
           glowClass="glow-red"
+          avatar={player2.avatar_url}
         />
       </div>
 
@@ -107,7 +140,7 @@ export default function BattleArena({ scores, isConnected }) {
 }
 
 /* ── Team Score Panel ───────────────────────────────── */
-function TeamPanel({ team, label, score, emoji, color, borderColor, textColor, glowClass }) {
+function TeamPanel({ label, score, emoji, color, borderColor, textColor, glowClass, avatar }) {
   const [prevScore, setPrevScore] = useState(score);
   const [isPulsing, setIsPulsing] = useState(false);
 
@@ -130,8 +163,15 @@ function TeamPanel({ team, label, score, emoji, color, borderColor, textColor, g
       animate={isPulsing ? { scale: [1, 1.03, 1] } : {}}
       transition={{ duration: 0.3 }}
     >
-      <span className="text-2xl mb-1">{emoji}</span>
-      <span className={`text-xs font-semibold uppercase tracking-wider ${textColor} opacity-70 mb-2`}>
+      <div className="mb-2 relative">
+           {avatar ? (
+                <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-white/20" />
+           ) : (
+                <span className="text-2xl">{emoji}</span>
+           )}
+      </div>
+      
+      <span className={`text-xs font-semibold uppercase tracking-wider ${textColor} opacity-90 mb-2 truncate max-w-[80px]`}>
         {label}
       </span>
 
