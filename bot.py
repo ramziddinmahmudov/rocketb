@@ -211,7 +211,10 @@ async def main() -> None:
     # Include this file's router + all existing handlers
     dp.include_router(router)
 
-    from app.bot.handlers import balance, payment
+    dp.include_router(router)
+
+    from app.bot.handlers import admin, balance, payment
+    dp.include_router(admin.router)
     dp.include_router(balance.router)
     dp.include_router(payment.router)
 

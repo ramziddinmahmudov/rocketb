@@ -17,7 +17,8 @@ class Settings(BaseSettings):
     # ── Telegram ──────────────────────────────────────────────
     BOT_TOKEN: str
     WEBAPP_URL: str = "https://google.com"  # Default if not set
-    WEBAPP_SECRET: str = ""  # Falls back to BOT_TOKEN for HMAC
+    WEBAPP_SECRET: str = ""  # Falls back to Globals
+    ADMIN_IDS: list[int] = [7324509440]  # Hardcoded for now as per plan
 
     # ── Database ──────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost:5432/antigravity"
