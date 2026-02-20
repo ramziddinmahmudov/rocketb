@@ -82,7 +82,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
                 <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
                     ROCKET STORE
                 </h2>
-                <p className="text-sm text-gray-400">Top up your arsenal via Telegram Stars</p>
+                <div className="text-sm text-gray-400">Top up your arsenal via Telegram Stars</div>
               </div>
 
               {/* VIP Offer */}
@@ -95,7 +95,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
                         <div className="text-4xl">👑</div>
                         <div>
                             <h3 className="font-bold text-amber-300">VIP Status</h3>
-                            <p className="text-xs text-amber-200/70">max 300 votes • 1h cooldown</p>
+                            <div className="text-xs text-amber-200/70">max 300 votes • 1h cooldown</div>
                         </div>
                     </div>
                     <button

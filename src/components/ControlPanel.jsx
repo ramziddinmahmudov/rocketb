@@ -191,10 +191,10 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown, lim
       </div>
 
       {/* Balance reminder */}
-      <p className="text-center text-xs text-gray-500">
+      <div className="text-center text-xs text-gray-500">
         Tap to launch • Costs <span className="text-white/70">{amount}</span> from your balance of{' '}
         <span className="text-cyan-300">{balance} 🚀</span>
-      </p>
+      </div>
     </div>
   );
 }

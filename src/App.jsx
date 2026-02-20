@@ -121,8 +121,8 @@ export default function App() {
         <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 text-center">
             <div>
                 <h1 className="text-2xl font-bold text-red-500 mb-2">Authentication Failed</h1>
-                <p className="text-gray-400">Could not verify Telegram credentials.</p>
-                <p className="text-sm mt-4">Please restart the bot via /start</p>
+                <div className="text-gray-400">Could not verify Telegram credentials.</div>
+                <div className="text-sm mt-4">Please restart the bot via /start</div>
             </div>
         </div>
       );
@@ -208,7 +208,7 @@ export default function App() {
               {username.charAt(0).toUpperCase()}
             </motion.div>
             <div>
-              <p className="text-sm font-semibold text-white/90">{username}</p>
+              <div className="text-sm font-semibold text-white/90">{username}</div>
               <div className="flex items-center gap-1.5">
                 {isVip && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r
