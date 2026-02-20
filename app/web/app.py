@@ -7,7 +7,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.web.routes import battle, battle_ws, profile, vote
+from app.web.routes import battle, battle_ws, profile, vote, payment
 
 
 def create_app() -> FastAPI:
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(vote.router)
     app.include_router(battle.router)
     app.include_router(battle_ws.router)
+    app.include_router(payment.router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
