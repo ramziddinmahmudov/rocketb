@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { useCallback, useState, useRef } from 'react';
 
-export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
+export default function ControlPanel({ onFire, balance, isLoading, cooldown, limit, maxLimit }) {
   const [amount, setAmount] = useState(1);
   const [isShaking, setIsShaking] = useState(false);
   const [particles, setParticles] = useState([]);
@@ -13,7 +13,7 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
   const presets = [1, 5, 10, 25];
 
   const handleFire = useCallback(() => {
-    if (isLoading || amount <= 0 || amount > balance || cooldown > 0) return;
+    if (isLoading || amount <= 0 || amount > balance || cooldown > 0 || limit <= 0) return;
 
     // Haptic feedback
     try {
@@ -39,18 +39,42 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
     );
 
     onFire(amount);
-  }, [amount, balance, isLoading, cooldown, onFire]);
+  }, [amount, balance, isLoading, cooldown, limit, onFire]);
 
   const handleAmountChange = (e) => {
     const val = parseInt(e.target.value, 10);
-    setAmount(isNaN(val) ? 0 : Math.max(0, Math.min(val, balance)));
+    // Limit input to min(balance, limit)
+    const effectiveMax = Math.min(balance, limit);
+    setAmount(isNaN(val) ? 0 : Math.max(0, Math.min(val, effectiveMax)));
   };
 
   const isCooldownActive = cooldown > 0;
-  const isDisabled = isLoading || amount <= 0 || amount > balance || isCooldownActive;
+  const isLimitReached = limit <= 0;
+  const isDisabled = isLoading || amount <= 0 || amount > balance || isCooldownActive || isLimitReached;
+
+  // Calculate progress percentage (inverse, because limit goes down)
+  const progressPercent = Math.max(0, Math.min(100, (limit / maxLimit) * 100));
 
   return (
     <div className="w-full px-4 pb-6 space-y-4">
+      {/* Limit & Cooldown Status */}
+      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">
+        <span>Daily Limit</span>
+        <span className={isLimitReached ? "text-red-400" : "text-white"}>
+            {limit} / {maxLimit}
+        </span>
+      </div>
+      
+      {/* Progress Bar */}
+      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+        <motion.div 
+            className={`h-full ${isLimitReached ? 'bg-red-500' : 'bg-gradient-to-r from-blue-400 to-cyan-400'}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercent}%` }}
+            transition={{ duration: 0.5 }}
+        />
+      </div>
+
       {/* Cooldown warning */}
       {isCooldownActive && (
         <motion.div
@@ -75,8 +99,8 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
           {presets.map((p) => (
             <button
               key={p}
-              onClick={() => setAmount(Math.min(p, balance))}
-              disabled={p > balance}
+              onClick={() => setAmount(Math.min(p, balance, limit))}
+              disabled={p > balance || p > limit}
               className={`
                 flex-1 py-2 rounded-xl text-sm font-bold transition-all
                 ${amount === p
@@ -96,9 +120,10 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
           <input
             type="number"
             min="1"
-            max={balance}
+            max={Math.min(balance, limit)}
             value={amount}
             onChange={handleAmountChange}
+            disabled={isLimitReached || isCooldownActive}
             className="
               w-full bg-white/5 border border-white/10 rounded-xl
               px-4 py-3 text-white/90 text-lg font-mono
@@ -106,14 +131,16 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
               transition-all placeholder:text-gray-600
               [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none
               [&::-webkit-inner-spin-button]:appearance-none
+              disabled:opacity-50
             "
             placeholder="Amount"
           />
           <button
-            onClick={() => setAmount(balance)}
+            onClick={() => setAmount(Math.min(balance, limit))}
+            disabled={isLimitReached || isCooldownActive}
             className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1
                        text-xs text-purple-300 bg-purple-500/20 rounded-lg
-                       hover:bg-purple-500/30 transition-colors font-semibold"
+                       hover:bg-purple-500/30 transition-colors font-semibold disabled:opacity-30"
           >
             MAX
           </button>
@@ -155,6 +182,8 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown }) {
             </span>
           ) : isCooldownActive ? (
             `⏳ ${formatTime(cooldown)}`
+          ) : isLimitReached ? (
+             "Daily Limit Reached"
           ) : (
             `🚀 Fire ${amount} Rocket${amount !== 1 ? 's' : ''}!`
           )}

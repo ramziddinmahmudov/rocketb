@@ -15,12 +15,18 @@ logger = logging.getLogger(__name__)
 
 
 
+from app.config.settings import settings
+from app.services.redis_service import get_redis
+
 class UserProfile(BaseModel):
     id: int
     username: str | None
     first_name: str | None
     balance: int
     is_vip: bool
+    limit_remaining: int
+    limit_max: int
+    cooldown_seconds: int
 
 
 @router.get("/profile", response_model=UserProfile)
@@ -43,9 +49,7 @@ async def get_profile(
     user_id = user_data["id"]
     username = user_data.get("username")
     first_name = user_data.get("first_name")
-    # referrer_id could be extracted from start_param if needed, 
-    # but that's usually handled by the bot start command.
-
+    
     if not base.async_session_factory:
         raise HTTPException(status_code=500, detail="Database not initialised")
 
@@ -56,6 +60,25 @@ async def get_profile(
             username=username,
         )
         await session.commit()
+        
+        # Fetch limits from Redis
+        redis = get_redis()
+        
+        # 1. Cooldown
+        ttl = await redis.get_cooldown_ttl(user.id)
+        cooldown_seconds = ttl if ttl > 0 else 0
+        
+        # 2. Vote Limit
+        # If on cooldown, limit is 0.
+        # If no key in Redis, limit is FULL (max).
+        # Otherwise, use the value in Redis.
+        limit_max = settings.VIP_VOTE_LIMIT if user.is_vip else settings.STANDARD_VOTE_LIMIT
+        
+        if cooldown_seconds > 0:
+            limit_remaining = 0
+        else:
+            current = await redis.get_vote_limit(user.id)
+            limit_remaining = current if current is not None else limit_max
 
         return UserProfile(
             id=user.id,
@@ -63,4 +86,7 @@ async def get_profile(
             first_name=first_name,
             balance=user.balance,
             is_vip=user.is_vip,
+            limit_remaining=limit_remaining,
+            limit_max=limit_max,
+            cooldown_seconds=cooldown_seconds,
         )
