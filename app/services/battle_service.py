@@ -49,35 +49,35 @@ async def join_queue(
             BattleParticipant.user_id == user_id,
         ),
     )
-    if result.scalar_one_or_none() is not None:
-        return battle, False  # Already queued
+    already_queued = result.scalar_one_or_none() is not None
 
-    # Add participant
-    participant = BattleParticipant(
-        battle_id=battle.id,
-        user_id=user_id,
-    )
-    session.add(participant)
-    await session.flush()
-
-    # Count participants
-    count_result = await session.execute(
-        select(func.count())
-        .where(BattleParticipant.battle_id == battle.id),
-    )
-    count = count_result.scalar_one()
-
-    # Auto-start if queue is full
     started = False
-    if count >= settings.BATTLE_QUEUE_SIZE:
-        battle.status = BattleStatus.ACTIVE
-        battle.started_at = datetime.now(timezone.utc)
-        started = True
-        logger.info(
-            "Battle %s started with %d participants",
-            battle.id, count,
+    if not already_queued:
+        # Add participant
+        participant = BattleParticipant(
+            battle_id=battle.id,
+            user_id=user_id,
         )
+        session.add(participant)
         await session.flush()
+
+        # Count participants
+        count_result = await session.execute(
+            select(func.count())
+            .where(BattleParticipant.battle_id == battle.id),
+        )
+        count = count_result.scalar_one()
+
+        # Auto-start if queue is full
+        if count >= settings.BATTLE_QUEUE_SIZE:
+            battle.status = BattleStatus.ACTIVE
+            battle.started_at = datetime.now(timezone.utc)
+            started = True
+            logger.info(
+                "Battle %s started with %d participants",
+                battle.id, count,
+            )
+            await session.flush()
 
     # Refresh battle to load participants + users for the API response
     result = await session.execute(
