@@ -16,7 +16,10 @@ def main_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="🏪 Store", callback_data="store"),
     )
     builder.row(
-        InlineKeyboardButton(text="⚔️ Join Battle", callback_data="join_battle"),
+        InlineKeyboardButton(
+            text="⚔️ Join Battle",
+            web_app=WebAppInfo(url=settings.WEBAPP_URL),
+        ),
         InlineKeyboardButton(text="👑 Buy VIP", callback_data="buy_vip"),
     )
     builder.row(

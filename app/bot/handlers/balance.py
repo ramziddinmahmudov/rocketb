@@ -47,6 +47,7 @@ async def cb_balance(
     else:
         cooldown_text = "✅ Ready to vote"
 
+    bot_user = await callback.bot.get_me()
     text = (
         f"📊 <b>Your Profile</b>\n\n"
         f"🚀 Rockets: <b>{user.balance}</b>\n"
@@ -54,7 +55,7 @@ async def cb_balance(
         f"🎯 Votes remaining: <b>{limit_text}</b>\n"
         f"⏱ Cooldown: {cooldown_text}\n\n"
         f"🔗 Your referral link:\n"
-        f"<code>https://t.me/your_bot?start={user.id}</code>"
+        f"<code>https://t.me/{bot_user.username}?start={user.id}</code>"
     )
 
     await callback.message.edit_text(
