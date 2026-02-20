@@ -57,8 +57,10 @@ export default function App() {
     // Fetch profile and join battle
     const initApp = async () => {
       try {
+        console.log("Init started");
         // 1. Get Profile
         const profileRes = await api.getProfile();
+        console.log("Profile loaded", profileRes.data);
         setBalance(profileRes.data.balance);
         setIsVip(profileRes.data.is_vip);
         
@@ -91,6 +93,9 @@ export default function App() {
 
       } catch (err) {
         console.error('Init failed:', err);
+        // Show visible error to user
+        alert(`Init Error: ${err.message || JSON.stringify(err)}`);
+        
         if (err.response?.status === 401) {
             setIsAuthError(true);
             showToast('Authentication failed. Please open in Telegram.', 'error');
@@ -99,6 +104,7 @@ export default function App() {
         }
       } finally {
         // App is ready (even if error, we show UI or error screen)
+        console.log("Setting app ready");
         setIsAppReady(true);
       }
     };
