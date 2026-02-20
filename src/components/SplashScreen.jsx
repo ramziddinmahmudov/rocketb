@@ -23,7 +23,7 @@ export default function SplashScreen() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, ease: "easeOut" }}
                 />
-                
+                {/* a */}
                 {/* Loader */}
                 <div className="mt-8 flex flex-col items-center gap-2">
                     <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin" />
