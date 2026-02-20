@@ -6,7 +6,7 @@
  */
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://my-rocket-api.duckdns.org';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 const client = axios.create({
   baseURL: API_BASE,
@@ -21,6 +21,8 @@ client.interceptors.request.use((config) => {
   const tg = window.Telegram?.WebApp;
   if (tg?.initData) {
     config.headers['X-Telegram-Init-Data'] = tg.initData;
+  } else {
+    console.warn('[API] No Telegram initData found. Authenticated requests will fail.');
   }
   return config;
 });
@@ -48,6 +50,11 @@ export const api = {
    * Get user profile / balance.
    */
   getProfile: () => client.get('/api/profile'),
+
+  /**
+   * Join the active battle.
+   */
+  joinBattle: () => client.post('/api/battle/join'),
 };
 
 export default client;
