@@ -21,6 +21,8 @@ export default function App() {
   const [username, setUsername] = useState('Player');
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [limit, setLimit] = useState(100);
+  const [maxLimit, setMaxLimit] = useState(100);
   const [toast, setToast] = useState(null);
   
   const [battleId, setBattleId] = useState(null);
@@ -53,6 +55,13 @@ export default function App() {
         const profileRes = await api.getProfile();
         setBalance(profileRes.data.balance);
         setIsVip(profileRes.data.is_vip);
+        
+        // Limits & Cooldown
+        setLimit(profileRes.data.limit_remaining);
+        setMaxLimit(profileRes.data.limit_max);
+        if (profileRes.data.cooldown_seconds > 0) {
+            setCooldown(profileRes.data.cooldown_seconds);
+        }
         
         // Use first_name if username is missing/empty
         const { username, first_name } = profileRes.data;
@@ -118,6 +127,11 @@ export default function App() {
         if (data.cooldown_started) {
           setCooldown(data.cooldown_seconds);
         }
+        
+        // Update limit from response (VoteResult knows remaining_limit)
+        if (data.remaining_limit !== undefined) {
+            setLimit(data.remaining_limit);
+        }
 
         showToast(`🚀 Launched ${amount} rocket${amount > 1 ? 's' : ''}!`, 'success');
       } catch (err) {
@@ -140,7 +154,7 @@ export default function App() {
         setIsLoading(false);
       }
     },
-    []
+    [battleId]
   );
 
   // ── Toast helper ───────────────────────────────────────
@@ -215,6 +229,8 @@ export default function App() {
         <ControlPanel
           onFire={handleFire}
           balance={balance}
+          limit={limit}
+          maxLimit={maxLimit}
           isLoading={isLoading}
           cooldown={cooldown}
         />
