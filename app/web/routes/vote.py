@@ -101,6 +101,29 @@ async def vote(
                 )
                 await session.commit()
 
+                # 3 ── Broadcast new scores ───────────────────────────
+                # Fetch participants ordered by join time to identify Blue vs Red
+                # (Assuming 1st = Blue, 2nd = Red)
+                from sqlalchemy import select
+                from app.database.models import BattleParticipant
+                from app.web.routes.battle_ws import broadcast_battle_scores
+
+                stmt = (
+                    select(BattleParticipant)
+                    .where(BattleParticipant.battle_id == body.battle_id)
+                    .order_by(BattleParticipant.joined_at.asc())
+                )
+                participants = (await session.execute(stmt)).scalars().all()
+
+                blue_score = 0
+                red_score = 0
+                if len(participants) > 0:
+                    blue_score = participants[0].score
+                if len(participants) > 1:
+                    red_score = participants[1].score
+
+                await broadcast_battle_scores(body.battle_id, blue_score, red_score)
+
             except CooldownActiveError as exc:
                 raise HTTPException(
                     status_code=429,
@@ -123,13 +146,11 @@ async def vote(
             except Exception:
                 await session.rollback()
                 raise
-
+ 
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("Vote processing failed: %s", exc, exc_info=True)
-        # trace = traceback.format_exc()
-        # logger.error(trace)
         raise HTTPException(status_code=500, detail="Internal Server Error (Check logs)")
 
     return VoteResponse(

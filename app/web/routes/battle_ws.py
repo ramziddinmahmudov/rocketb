@@ -95,20 +95,15 @@ async def battle_ws(websocket: WebSocket, battle_id: uuid.UUID) -> None:
 # ── Helper for services to broadcast ─────────────────────────
 
 
-async def broadcast_score_update(
+async def broadcast_battle_scores(
     battle_id: uuid.UUID,
-    user_id: int,
-    new_score: int,
-    username: str | None = None,
+    blue_score: int,
+    red_score: int,
 ) -> None:
-    """Broadcast a score update to all WebSocket clients watching this battle.
-
-    Call this from the voting service after a successful vote.
-    """
+    """Broadcast the updated team scores to all clients."""
     await manager.broadcast(battle_id, {
         "type": "score_update",
-        "user_id": user_id,
-        "username": username,
-        "score": new_score,
+        "blue": blue_score,
+        "red": red_score,
         "battle_id": str(battle_id),
     })
