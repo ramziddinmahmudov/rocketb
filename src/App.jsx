@@ -13,6 +13,7 @@ import BattleArena from './components/BattleArena';
 import ControlPanel from './components/ControlPanel';
 import useBattleSocket from './hooks/useBattleSocket';
 import { api } from './api/client';
+import StoreModal from './components/StoreModal';
 
 export default function App() {
   // ── State ──────────────────────────────────────────────
@@ -30,6 +31,7 @@ export default function App() {
   const [endTime, setEndTime] = useState(null);
 
   const [isAuthError, setIsAuthError] = useState(false);
+  const [isStoreOpen, setIsStoreOpen] = useState(false);
 
   // ── WebSocket ──────────────────────────────────────────
   // Only connect when we have a valid battleId
@@ -204,29 +206,37 @@ export default function App() {
             </div>
           </div>
 
-          {/* Balance */}
-          <motion.div
-            className="glass-card px-4 py-2 flex items-center gap-2"
-            whileHover={{ scale: 1.02 }}
-          >
-            <span className="text-lg">🚀</span>
-            <div className="text-right">
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={balance}
-                  className="text-lg font-black text-white tabular-nums block leading-tight"
-                  style={{ fontFamily: 'Outfit, sans-serif' }}
-                  initial={{ opacity: 0, y: -5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {balance.toLocaleString()}
-                </motion.span>
-              </AnimatePresence>
-              <span className="text-[10px] text-gray-400 leading-none">rockets</span>
-            </div>
-          </motion.div>
+          {/* Balance & Store Button */}
+          <div className="flex items-center gap-2">
+              <motion.div
+                className="glass-card pl-4 pr-2 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/5 active:scale-95 transition-all"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setIsStoreOpen(true)}
+              >
+                <span className="text-lg">🚀</span>
+                <div className="text-right mr-2">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={balance}
+                      className="text-lg font-black text-white tabular-nums block leading-tight"
+                      style={{ fontFamily: 'Outfit, sans-serif' }}
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {balance.toLocaleString()}
+                    </motion.span>
+                  </AnimatePresence>
+                  <span className="text-[10px] text-gray-400 leading-none">rockets</span>
+                </div>
+                
+                {/* Plus Button */}
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg text-white font-bold text-lg">
+                    +
+                </div>
+              </motion.div>
+          </div>
         </header>
 
         {/* ── Battle Arena ──────────────────────────────── */}
@@ -250,7 +260,16 @@ export default function App() {
         />
       </div>
 
-      {/* ── Toast Notifications ─────────────────────────── */}
+        {/* ── Store Modal ───────────────────────────────── */}
+        <StoreModal
+            isOpen={isStoreOpen}
+            onClose={() => setIsStoreOpen(false)}
+            api={api}
+            showToast={showToast}
+            isVip={isVip}
+        />
+
+        {/* ── Toast Notifications ─────────────────────────── */}
       <AnimatePresence>
         {toast && (
           <motion.div
