@@ -14,6 +14,7 @@ import ControlPanel from './components/ControlPanel';
 import useBattleSocket from './hooks/useBattleSocket';
 import { api } from './api/client';
 import StoreModal from './components/StoreModal';
+import SplashScreen from './components/SplashScreen';
 
 export default function App() {
   // ── State ──────────────────────────────────────────────
