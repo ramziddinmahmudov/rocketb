@@ -26,6 +26,8 @@ export default function App() {
   const [toast, setToast] = useState(null);
   
   const [battleId, setBattleId] = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [endTime, setEndTime] = useState(null);
 
   const [isAuthError, setIsAuthError] = useState(false);
 
@@ -75,6 +77,13 @@ export default function App() {
         const joinRes = await api.joinBattle();
         console.log('Joined battle:', joinRes.data);
         setBattleId(joinRes.data.battle_id);
+        
+        if (joinRes.data.participants) {
+            setParticipants(joinRes.data.participants);
+        }
+        if (joinRes.data.end_time) {
+            setEndTime(new Date(joinRes.data.end_time));
+        }
 
       } catch (err) {
         console.error('Init failed:', err);
@@ -222,7 +231,12 @@ export default function App() {
 
         {/* ── Battle Arena ──────────────────────────────── */}
         <div className="flex-1 flex flex-col items-center justify-center">
-          <BattleArena scores={scores} isConnected={isConnected} />
+          <BattleArena 
+            scores={scores} 
+            isConnected={isConnected} 
+            participants={participants}
+            endTime={endTime}
+          />
         </div>
 
         {/* ── Control Panel ─────────────────────────────── */}
