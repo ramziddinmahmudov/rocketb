@@ -32,6 +32,7 @@ export default function App() {
 
   const [isAuthError, setIsAuthError] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   // ── WebSocket ──────────────────────────────────────────
   // Only connect when we have a valid battleId
@@ -95,11 +96,18 @@ export default function App() {
         } else {
             showToast('Failed to join battle. Please reload.', 'error');
         }
+      } finally {
+        // App is ready (even if error, we show UI or error screen)
+        setIsAppReady(true);
       }
     };
 
     initApp();
   }, []);
+
+  if (!isAppReady) {
+      return <SplashScreen />;
+  }
 
   if (isAuthError) {
       return (
