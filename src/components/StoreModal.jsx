@@ -15,7 +15,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
     setIsLoading(true);
     try {
         // 1. Get invoice link from backend
-        const res = await api.client.post('/payment/create-invoice', { 
+        const res = await api.client.post('/api/payment/create-invoice', { 
             type, 
             items: stars 
         });
