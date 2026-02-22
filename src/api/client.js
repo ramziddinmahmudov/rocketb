@@ -1,8 +1,5 @@
 /**
  * Axios client with Telegram WebApp auth interceptor.
- *
- * Every request automatically carries the `X-Telegram-Auth` header
- * containing the raw `initData` string from the Telegram Mini App SDK.
  */
 import axios from 'axios';
 
@@ -22,7 +19,7 @@ client.interceptors.request.use((config) => {
   if (tg?.initData) {
     config.headers['X-Telegram-Init-Data'] = tg.initData;
   } else {
-    console.warn('[API] No Telegram initData found. Authenticated requests will fail.');
+    console.warn('[API] No Telegram initData found.');
   }
   return config;
 });
@@ -38,23 +35,39 @@ client.interceptors.response.use(
 
 // ── API Methods ───────────────────────────────────────
 export const api = {
-  /**
-   * Send a vote (fire rockets).
-   * @param {string} battleId - UUID of the active battle
-   * @param {number} amount   - rockets to spend
-   */
+  // Profile
+  getProfile: () => client.get('/api/profile'),
+
+  // Battle
+  joinBattle: () => client.post('/api/battle/join'),
+  getBattle: (battleId) => client.get(`/api/battle/${battleId}`),
+  advanceRound: (battleId) => client.post(`/api/battle/${battleId}/advance`),
+
+  // Voting
   vote: (battleId, amount) =>
     client.post('/api/vote', { battle_id: battleId, amount }),
 
-  /**
-   * Get user profile / balance.
-   */
-  getProfile: () => client.get('/api/profile'),
+  // Rooms
+  createRoom: (name = 'Battle Room') =>
+    client.post('/api/room/create', { name }),
+  joinRoom: (inviteCode) =>
+    client.post(`/api/room/join/${inviteCode}`),
+  getRoom: (roomId) =>
+    client.get(`/api/room/${roomId}`),
+  listRooms: () =>
+    client.get('/api/rooms/active'),
 
-  /**
-   * Join the active battle.
-   */
-  joinBattle: () => client.post('/api/battle/join'),
+  // Daily Tasks
+  getDailyTasks: () =>
+    client.get('/api/daily-tasks'),
+  claimTask: (taskId) =>
+    client.post(`/api/daily-tasks/${taskId}/claim`),
+
+  // Gifts
+  sendGift: (receiverId, amount) =>
+    client.post('/api/gift', { receiver_id: receiverId, amount }),
+  getGiftLimit: (receiverId) =>
+    client.get(`/api/gift/limit/${receiverId}`),
 };
 
 export default client;
