@@ -51,30 +51,14 @@ WEBAPP_URL = settings.WEBAPP_URL
 
 
 def get_start_keyboard(user_id: int) -> InlineKeyboardMarkup:
-    """Build the /start inline keyboard with WebApp button."""
+    """Build the /start inline keyboard — single WebApp button."""
     builder = InlineKeyboardBuilder()
 
-    # 🚀 Main action — opens the Mini App
+    # 🚀 Single action — opens the Mini App directly
     builder.row(
         InlineKeyboardButton(
-            text="🚀 Battle boshlash",
+            text="🚀 Rocket Battle",
             web_app=WebAppInfo(url=WEBAPP_URL),
-        ),
-    )
-
-    # Secondary actions
-    builder.row(
-        InlineKeyboardButton(text="📊 Balans", callback_data="balance"),
-        InlineKeyboardButton(text="📋 Vazifalar", callback_data="daily_tasks"),
-    )
-    builder.row(
-        InlineKeyboardButton(text="👑 VIP sotib olish", callback_data="buy_vip"),
-        InlineKeyboardButton(text="🎁 Do'stga yuborish", callback_data="gift_rockets"),
-    )
-    builder.row(
-        InlineKeyboardButton(
-            text="🔗 Taklif havolasi",
-            callback_data="referral_link",
         ),
     )
 

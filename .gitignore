@@ -24,3 +24,4 @@ yarn-error.log*
 
 # Docker
 docker-compose.override.yml
+temp_frontend_repo/
