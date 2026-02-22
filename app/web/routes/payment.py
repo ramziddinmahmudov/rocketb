@@ -39,7 +39,7 @@ async def create_invoice(request: CreateInvoiceRequest) -> CreateInvoiceResponse
             
             rockets = payment_service.rockets_for_stars(stars)
             if rockets is None:
-                raise HTTPException(status_code=400, detail="Invalid rocket package")
+                raise HTTPException(status_code=400, detail=f"Invalid rocket package: {stars} stars")
             
             title = f"🚀 {rockets} Rockets"
             description = f"Purchase {rockets} rockets for {stars} Telegram Stars."
@@ -59,17 +59,22 @@ async def create_invoice(request: CreateInvoiceRequest) -> CreateInvoiceResponse
         else:
              raise HTTPException(status_code=400, detail="Invalid purchase type")
 
+        logger.info("Creating invoice: type=%s title=%s prices=%s", request.type, title, prices)
+
         link = await bot.create_invoice_link(
             title=title,
             description=description,
             payload=payload,
+            provider_token="",  # Required for Telegram Stars (XTR)
             currency="XTR",
             prices=prices,
         )
         return CreateInvoiceResponse(invoice_link=link)
 
+    except HTTPException:
+        raise  # Don't catch HTTPException — let FastAPI handle it
     except Exception as e:
-        logger.error("Failed to create invoice: %s", e)
-        raise HTTPException(status_code=500, detail="Failed to create invoice link")
+        logger.error("Failed to create invoice: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to create invoice: {e}")
     finally:
         await bot.session.close()
