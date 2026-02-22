@@ -10,6 +10,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { Swords, PlusCircle, Users, Link2, Trash2, RefreshCw, Sparkles, Loader, ArrowRight, Clock } from 'lucide-react';
 import { api } from '../api/client';
 
 export default function RoomBrowser({
@@ -57,7 +58,7 @@ export default function RoomBrowser({
     <div className="room-browser">
       {/* Header */}
       <div className="rb-header">
-        <h2 className="rb-title">🏟️ Battle Xonalari</h2>
+        <h2 className="rb-title"><Swords size={22} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />Battle Xonalari</h2>
         <p className="rb-subtitle">Xona tanlang yoki yangi yarating</p>
       </div>
 
@@ -66,7 +67,7 @@ export default function RoomBrowser({
         className="rb-create-btn"
         onClick={() => setShowCreateModal(true)}
       >
-        <span>➕</span>
+        <span><PlusCircle size={18} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /></span>
         <span>Yangi xona yaratish</span>
       </button>
 
@@ -74,7 +75,7 @@ export default function RoomBrowser({
       <div className="rb-list">
         {isLoading && rooms.length === 0 ? (
           <div className="rb-empty">
-            <span className="rb-empty-icon">⏳</span>
+            <span className="rb-empty-icon"><Clock size={28} color="#a78bfa" /></span>
             <p>Yuklanmoqda...</p>
           </div>
         ) : rooms.length === 0 ? (
@@ -103,7 +104,7 @@ export default function RoomBrowser({
                 </div>
                 <div className="rb-room-meta">
                   <span className="rb-player-count">
-                    👥 {room.player_count || 0}/{room.max_players || 16}
+                    <Users size={14} color="#38bdf8" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {room.player_count || 0}/{room.max_players || 16}
                   </span>
                   <span className="rb-room-code">
                     #{room.invite_code}
@@ -125,14 +126,14 @@ export default function RoomBrowser({
                   className="rb-join-btn"
                   onClick={() => onJoinRoom(room.invite_code)}
                 >
-                  Kirish ➜
+                  Kirish <ArrowRight size={14} style={{ display: 'inline', verticalAlign: 'middle' }} />
                 </button>
                 <button
                   className="rb-share-btn"
                   onClick={() => handleCopyLink(room.invite_code)}
                   title="Havolani nusxalash"
                 >
-                  🔗
+                  <Link2 size={16} color="#38bdf8" />
                 </button>
                 {room.creator_id === myUserId && (
                   <button
@@ -140,7 +141,7 @@ export default function RoomBrowser({
                     onClick={() => onDeleteRoom(room.id)}
                     title="Xonani o'chirish"
                   >
-                    🗑️
+                    <Trash2 size={16} color="#f87171" />
                   </button>
                 )}
               </div>
@@ -155,7 +156,7 @@ export default function RoomBrowser({
         onClick={onRefresh}
         disabled={isLoading}
       >
-        {isLoading ? '⏳ Yangilanmoqda...' : '🔄 Yangilash'}
+        {isLoading ? <><Loader size={14} className="spin-icon" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Yangilanmoqda...</> : <><RefreshCw size={14} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Yangilash</>}
       </button>
 
       {/* ── Create Room Modal ──────────────────────── */}
@@ -175,7 +176,7 @@ export default function RoomBrowser({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <h3 className="rb-modal-title">🏟️ Yangi xona</h3>
+              <h3 className="rb-modal-title"><Swords size={20} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Yangi xona</h3>
               <input
                 type="text"
                 className="rb-modal-input"
@@ -198,7 +199,7 @@ export default function RoomBrowser({
                   onClick={handleCreate}
                   disabled={isCreating || !newRoomName.trim()}
                 >
-                  {isCreating ? '⏳' : 'Yaratish ✨'}
+                  {isCreating ? <Loader size={14} className="spin-icon" style={{ display: 'inline' }} /> : <><Sparkles size={14} color="#facc15" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />Yaratish</>}
                 </button>
               </div>
             </motion.div>

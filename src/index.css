@@ -2401,3 +2401,18 @@ body {
     background-position: 100% 50%;
   }
 }
+
+/* ── Spin Icon Animation ──────────────────────────── */
+@keyframes spin-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-icon {
+  animation: spin-rotate 1s linear infinite;
+}
