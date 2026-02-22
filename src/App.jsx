@@ -10,13 +10,13 @@
  */
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Swords, ClipboardList, Store, Link2, ArrowLeft, BadgeCheck, Rocket } from 'lucide-react';
 
 import RoomBrowser from './components/RoomBrowser';
 import BattleArena from './components/BattleArena';
 import BattleLobby from './components/BattleLobby';
 import ControlPanel from './components/ControlPanel';
 import DailyTasks from './components/DailyTasks';
-import GiftRockets from './components/GiftRockets';
 import StoreModal from './components/StoreModal';
 import SplashScreen from './components/SplashScreen';
 import useBattleSocket from './hooks/useBattleSocket';
@@ -58,7 +58,6 @@ export default function App() {
   const [isAuthError, setIsAuthError] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isTasksOpen, setIsTasksOpen] = useState(false);
-  const [isGiftOpen, setIsGiftOpen] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
   const [isReferralOpen, setIsReferralOpen] = useState(false);
   const [referralLink, setReferralLink] = useState('');
@@ -351,7 +350,7 @@ export default function App() {
           <div className="header-left">
             {screen !== SCREEN.ROOMS && (
               <button className="back-btn" onClick={handleLeaveRoom}>
-                ←
+                <ArrowLeft size={20} color="#a78bfa" />
               </button>
             )}
             <motion.div className="avatar-circle" whileHover={{ scale: 1.1 }}>
@@ -361,7 +360,7 @@ export default function App() {
               <div className="header-username-row">
                 <p className="header-username">{username}</p>
                 <span className="verified-badge">
-                  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                  <BadgeCheck size={16} color="#38bdf8" />
                 </span>
               </div>
               {isVip && <span className="vip-badge-small">👑 VIP</span>}
@@ -374,7 +373,7 @@ export default function App() {
               whileHover={{ scale: 1.02 }}
               onClick={() => setIsStoreOpen(true)}
             >
-              <span className="balance-rocket">🚀</span>
+              <span className="balance-rocket"><Rocket size={20} color="#f97316" /></span>
               <div className="balance-info">
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -453,23 +452,19 @@ export default function App() {
             className={`nav-btn ${screen === SCREEN.ROOMS ? 'nav-active' : ''}`}
             onClick={() => { handleLeaveRoom(); }}
           >
-            <span className="nav-icon">🏟️</span>
+            <span className="nav-icon"><Swords size={22} color="#a78bfa" /></span>
             <span className="nav-label">Xonalar</span>
           </button>
           <button className="nav-btn" onClick={() => setIsTasksOpen(true)}>
-            <span className="nav-icon">📋</span>
+            <span className="nav-icon"><ClipboardList size={22} color="#34d399" /></span>
             <span className="nav-label">Vazifalar</span>
           </button>
-          <button className="nav-btn" onClick={() => setIsGiftOpen(true)}>
-            <span className="nav-icon">🎁</span>
-            <span className="nav-label">Yuborish</span>
-          </button>
           <button className="nav-btn" onClick={() => setIsStoreOpen(true)}>
-            <span className="nav-icon">🏪</span>
+            <span className="nav-icon"><Store size={22} color="#f97316" /></span>
             <span className="nav-label">Do'kon</span>
           </button>
           <button className="nav-btn" onClick={() => setIsReferralOpen(true)}>
-            <span className="nav-icon">🔗</span>
+            <span className="nav-icon"><Link2 size={22} color="#38bdf8" /></span>
             <span className="nav-label">Taklif</span>
           </button>
         </nav>
@@ -491,13 +486,7 @@ export default function App() {
         showToast={showToast}
       />
 
-      <GiftRockets
-        isOpen={isGiftOpen}
-        onClose={() => setIsGiftOpen(false)}
-        balance={balance}
-        onBalanceUpdate={setBalance}
-        showToast={showToast}
-      />
+
 
       {/* ── Referral Modal ─────────────────────────────────── */}
       <AnimatePresence>
