@@ -35,6 +35,9 @@ client.interceptors.response.use(
 
 // ── API Methods ───────────────────────────────────────
 export const api = {
+  // Expose the raw axios client for direct calls
+  client,
+
   // Profile
   getProfile: () => client.get('/api/profile'),
 
@@ -70,6 +73,10 @@ export const api = {
     client.post('/api/gift', { receiver_id: receiverId, amount }),
   getGiftLimit: (receiverId) =>
     client.get(`/api/gift/limit/${receiverId}`),
+
+  // Payment / Invoice
+  createInvoice: (type, items) =>
+    client.post('/api/payment/create-invoice', { type, items }),
 };
 
 export default client;

@@ -16,10 +16,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
     try {
         console.log('[DEBUG] Creating invoice:', { type, items: stars });
         // 1. Get invoice link from backend
-        const res = await api.client.post('/api/payment/create-invoice', { 
-            type, 
-            items: stars 
-        });
+        const res = await api.createInvoice(type, stars);
         console.log('[DEBUG] Invoice response:', res.data);
         const { invoice_link } = res.data;
 
