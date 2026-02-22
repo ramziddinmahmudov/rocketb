@@ -60,6 +60,8 @@ export default function App() {
   const [isTasksOpen, setIsTasksOpen] = useState(false);
   const [isGiftOpen, setIsGiftOpen] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
+  const [isReferralOpen, setIsReferralOpen] = useState(false);
+  const [referralLink, setReferralLink] = useState('');
 
   // ── WebSocket ──────────────────────────────────────────
   const { scores, isConnected } = useBattleSocket(battleId);
@@ -121,6 +123,13 @@ export default function App() {
           setCooldown(profileRes.data.cooldown_seconds);
         }
         if (profileRes.data.user_id) setMyUserId(profileRes.data.user_id);
+
+        // Build referral link
+        const tg = window.Telegram?.WebApp;
+        const botUsername = tg?.initDataUnsafe?.user?.id;
+        if (botUsername) {
+          setReferralLink(`https://t.me/rocketbattle_uz_bot?start=${botUsername}`);
+        }
 
         const { username: uname, first_name } = profileRes.data;
         if (uname) setUsername(uname);
@@ -307,8 +316,33 @@ export default function App() {
   // ── Render ─────────────────────────────────────────────
   return (
     <div className="app-container">
+      {/* Background image layer */}
+      <div className="bg-image-layer">
+        <img src="/space-bg.png" alt="" />
+      </div>
+
+      {/* Aurora / Nebula layer */}
+      <div className="aurora-layer" />
+
       {/* Stars background */}
       <div className="stars-bg" />
+
+      {/* Floating orbs */}
+      <div className="floating-orbs">
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+        <div className="orb" />
+      </div>
+
+      {/* Meteor trails */}
+      <div className="meteor-container">
+        <div className="meteor" />
+        <div className="meteor" />
+        <div className="meteor" />
+      </div>
 
       {/* Content */}
       <div className="app-content">
@@ -324,7 +358,12 @@ export default function App() {
               {username.charAt(0).toUpperCase()}
             </motion.div>
             <div>
-              <p className="header-username">{username}</p>
+              <div className="header-username-row">
+                <p className="header-username">{username}</p>
+                <span className="verified-badge">
+                  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                </span>
+              </div>
               {isVip && <span className="vip-badge-small">👑 VIP</span>}
             </div>
           </div>
@@ -429,6 +468,10 @@ export default function App() {
             <span className="nav-icon">🏪</span>
             <span className="nav-label">Do'kon</span>
           </button>
+          <button className="nav-btn" onClick={() => setIsReferralOpen(true)}>
+            <span className="nav-icon">🔗</span>
+            <span className="nav-label">Taklif</span>
+          </button>
         </nav>
       </div>
 
@@ -455,6 +498,73 @@ export default function App() {
         onBalanceUpdate={setBalance}
         showToast={showToast}
       />
+
+      {/* ── Referral Modal ─────────────────────────────────── */}
+      <AnimatePresence>
+        {isReferralOpen && (
+          <>
+            <motion.div
+              className="modal-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsReferralOpen(false)}
+            />
+            <motion.div
+              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 101 }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            >
+              <div className="referral-modal">
+                <div className="referral-header">
+                  <h3 className="referral-title">🔗 Taklif havolasi</h3>
+                  <button className="referral-close" onClick={() => setIsReferralOpen(false)}>✕</button>
+                </div>
+
+                <div
+                  className="referral-link-card"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`);
+                    showToast('📋 Havola nusxalandi!', 'success');
+                  }}
+                >
+                  {referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`}
+                </div>
+
+                <button
+                  className="referral-copy-btn"
+                  onClick={() => {
+                    const link = referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`;
+                    navigator.clipboard?.writeText(link);
+                    showToast('📋 Havola nusxalandi!', 'success');
+                  }}
+                >
+                  📋 Nusxalash
+                </button>
+
+                <button
+                  className="referral-share-btn"
+                  onClick={() => {
+                    const link = referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`;
+                    const text = `🚀 Rocket Battle o'yiniga qo'shiling! ${link}`;
+                    if (window.Telegram?.WebApp) {
+                      window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🚀 Rocket Battle o\'yiniga qo\'shiling!')}`);
+                    } else {
+                      window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
+                    }
+                  }}
+                >
+                  📤 Ulashish
+                </button>
+
+                <p className="referral-bonus-info">Har bir do'st uchun +10 🚀 bonus!</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── Toast Notifications ─────────────────────────── */}
       <AnimatePresence>
