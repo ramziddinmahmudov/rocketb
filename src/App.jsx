@@ -360,9 +360,6 @@ export default function App() {
             <div>
               <div className="header-username-row">
                 <p className="header-username">{username}</p>
-                <span className="verified-badge">
-                  <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                </span>
               </div>
               {isVip && <span className="vip-badge-small">👑 VIP</span>}
             </div>
