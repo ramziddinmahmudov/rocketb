@@ -63,7 +63,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
 
           {/* Modal */}
           <motion.div
-            className="fixed inset-x-2 bottom-2 top-20 sm:inset-x-4 sm:bottom-4 z-50 flex flex-col pointer-events-none"
+            className="fixed inset-0 top-[10vh] z-50 flex flex-col pointer-events-none p-4 sm:p-6"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
