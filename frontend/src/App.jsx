@@ -3,41 +3,89 @@
  *
  * Structure:
  *   Header (balance + VIP badge)
- *   BattleArena (live scores)
+ *   BattleLobby (waiting) or BattleArena (active)
  *   ControlPanel (fire button)
+ *   Bottom Nav (Tasks, Gift, Rooms)
  */
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import BattleArena from './components/BattleArena';
+import BattleLobby from './components/BattleLobby';
 import ControlPanel from './components/ControlPanel';
-import useBattleSocket from './hooks/useBattleSocket';
-import { api } from './api/client';
+import DailyTasks from './components/DailyTasks';
+import GiftRockets from './components/GiftRockets';
 import StoreModal from './components/StoreModal';
 import SplashScreen from './components/SplashScreen';
+import useBattleSocket from './hooks/useBattleSocket';
+import { api } from './api/client';
 
 export default function App() {
   // ── State ──────────────────────────────────────────────
   const [balance, setBalance] = useState(10);
   const [isVip, setIsVip] = useState(false);
   const [username, setUsername] = useState('Player');
+  const [myUserId, setMyUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [limit, setLimit] = useState(100);
   const [maxLimit, setMaxLimit] = useState(100);
   const [toast, setToast] = useState(null);
-  
+
   const [battleId, setBattleId] = useState(null);
+  const [battleStatus, setBattleStatus] = useState('waiting');
+  const [currentRound, setCurrentRound] = useState(0);
+  const [totalRounds, setTotalRounds] = useState(4);
   const [participants, setParticipants] = useState([]);
-  const [endTime, setEndTime] = useState(null);
+  const [currentMatches, setCurrentMatches] = useState([]);
+  const [roomCode, setRoomCode] = useState(null);
+  const [roomName, setRoomName] = useState(null);
 
   const [isAuthError, setIsAuthError] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
+  const [isTasksOpen, setIsTasksOpen] = useState(false);
+  const [isGiftOpen, setIsGiftOpen] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
 
   // ── WebSocket ──────────────────────────────────────────
-  // Only connect when we have a valid battleId
   const { scores, isConnected } = useBattleSocket(battleId);
+
+  // Handle WS messages for round events
+  useEffect(() => {
+    if (scores?.type === 'round_started') {
+      setCurrentRound(scores.round_number);
+      setCurrentMatches([{
+        player1_id: scores.player1_id,
+        player2_id: scores.player2_id,
+        player1_username: scores.player1_username,
+        player2_username: scores.player2_username,
+        player1_score: 0,
+        player2_score: 0,
+        duration_seconds: scores.duration_seconds,
+        status: 'active',
+      }]);
+    }
+    if (scores?.type === 'battle_finished') {
+      setBattleStatus('finished');
+    }
+    if (scores?.type === 'player_joined') {
+      // Refresh battle info
+      refreshBattle();
+    }
+  }, [scores]);
+
+  const refreshBattle = async () => {
+    if (!battleId) return;
+    try {
+      const { data } = await api.getBattle(battleId);
+      setParticipants(data.participants || []);
+      setBattleStatus(data.status);
+      setCurrentRound(data.current_round);
+      setTotalRounds(data.total_rounds);
+    } catch (err) {
+      console.error('Failed to refresh battle:', err);
+    }
+  };
 
   // ── Init Telegram WebApp & Fetch Profile ────────────────
   useEffect(() => {
@@ -49,62 +97,49 @@ export default function App() {
       tg.setBackgroundColor('#050A18');
 
       const user = tg.initDataUnsafe?.user;
-      if (user?.first_name) {
-        setUsername(user.first_name);
-      }
+      if (user?.first_name) setUsername(user.first_name);
+      if (user?.id) setMyUserId(user.id);
     }
 
-    // Fetch profile and join battle
     const initApp = async () => {
       try {
-        console.log("Init started");
         // 1. Get Profile
         const profileRes = await api.getProfile();
-        console.log("Profile loaded", profileRes.data);
         setBalance(profileRes.data.balance);
         setIsVip(profileRes.data.is_vip);
-        
-        // Limits & Cooldown
         setLimit(profileRes.data.limit_remaining);
         setMaxLimit(profileRes.data.limit_max);
         if (profileRes.data.cooldown_seconds > 0) {
-            setCooldown(profileRes.data.cooldown_seconds);
+          setCooldown(profileRes.data.cooldown_seconds);
         }
-        
-        // Use first_name if username is missing/empty
-        const { username, first_name } = profileRes.data;
-        if (username) {
-          setUsername(username);
-        } else if (first_name) {
-          setUsername(first_name);
-        }
+        if (profileRes.data.user_id) setMyUserId(profileRes.data.user_id);
+
+        const { username: uname, first_name } = profileRes.data;
+        if (uname) setUsername(uname);
+        else if (first_name) setUsername(first_name);
 
         // 2. Join Battle
         const joinRes = await api.joinBattle();
-        console.log('Joined battle:', joinRes.data);
         setBattleId(joinRes.data.battle_id);
-        
-        if (joinRes.data.participants) {
-            setParticipants(joinRes.data.participants);
-        }
-        if (joinRes.data.end_time) {
-            setEndTime(new Date(joinRes.data.end_time));
-        }
+        setBattleStatus(joinRes.data.status);
+        setCurrentRound(joinRes.data.current_round || 0);
+        setTotalRounds(joinRes.data.total_rounds || 4);
 
+        if (joinRes.data.participants) {
+          setParticipants(joinRes.data.participants);
+        }
+        if (joinRes.data.current_matches) {
+          setCurrentMatches(joinRes.data.current_matches);
+        }
       } catch (err) {
         console.error('Init failed:', err);
-        // Show visible error to user
-        alert(`Init Error: ${err.message || JSON.stringify(err)}`);
-        
         if (err.response?.status === 401) {
-            setIsAuthError(true);
-            showToast('Authentication failed. Please open in Telegram.', 'error');
+          setIsAuthError(true);
+          showToast('Autentifikatsiya xatosi. Telegramda oching.', 'error');
         } else {
-            showToast('Failed to join battle. Please reload.', 'error');
+          showToast('Yuklashda xatolik. Qayta yuklang.', 'error');
         }
       } finally {
-        // App is ready (even if error, we show UI or error screen)
-        console.log("Setting app ready");
         setIsAppReady(true);
       }
     };
@@ -112,20 +147,18 @@ export default function App() {
     initApp();
   }, []);
 
-  if (!isAppReady) {
-      return <SplashScreen />;
-  }
+  if (!isAppReady) return <SplashScreen />;
 
   if (isAuthError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-black text-white p-4 text-center">
-            <div>
-                <h1 className="text-2xl font-bold text-red-500 mb-2">Authentication Failed</h1>
-                <p className="text-gray-400">Could not verify Telegram credentials.</p>
-                <p className="text-sm mt-4">Please restart the bot via /start</p>
-            </div>
+    return (
+      <div className="auth-error-screen">
+        <div>
+          <h1>❌ Autentifikatsiya xatosi</h1>
+          <p>Telegram ma'lumotlarini tekshirib bo'lmadi.</p>
+          <p className="sub">Iltimos, /start orqali qayta boshlang</p>
         </div>
-      );
+      </div>
+    );
   }
 
   // ── Cooldown timer ─────────────────────────────────────
@@ -140,47 +173,45 @@ export default function App() {
   // ── Fire handler ───────────────────────────────────────
   const handleFire = useCallback(
     async (amount) => {
-      console.log('Fire clicked. Amount:', amount, 'BattleID:', battleId);
       if (!battleId) {
-        showToast('Error: No active battle found. Please reload.', 'error');
+        showToast('Xatolik: Aktiv battle topilmadi.', 'error');
+        return;
+      }
+      if (battleStatus !== 'active') {
+        showToast('Battle hali boshlanmagan!', 'error');
         return;
       }
       setIsLoading(true);
       try {
         const { data } = await api.vote(battleId, amount);
         setBalance(data.new_balance);
+        if (data.cooldown_started) setCooldown(data.cooldown_seconds);
+        if (data.remaining_limit !== undefined) setLimit(data.remaining_limit);
 
-        if (data.cooldown_started) {
-          setCooldown(data.cooldown_seconds);
-        }
-        
-        // Update limit from response (VoteResult knows remaining_limit)
-        if (data.remaining_limit !== undefined) {
-            setLimit(data.remaining_limit);
+        // Update match scores locally
+        if (data.player1_score !== undefined) {
+          setCurrentMatches((prev) =>
+            prev.map((m) => ({
+              ...m,
+              player1_score: data.player1_score,
+              player2_score: data.player2_score,
+            }))
+          );
         }
 
-        showToast(`🚀 Launched ${amount} rocket${amount > 1 ? 's' : ''}!`, 'success');
+        showToast(`🚀 ${amount} ta raketa otildi!`, 'success');
       } catch (err) {
-        const msg =
-          err.response?.data?.detail || 'Something went wrong. Try again.';
-
+        const msg = err.response?.data?.detail || 'Xatolik yuz berdi.';
         if (err.response?.status === 429) {
-          // Extract cooldown TTL from message
           const match = msg.match(/(\d+)s/);
           if (match) setCooldown(parseInt(match[1], 10));
         }
-
         showToast(`❌ ${msg}`, 'error');
-
-        // Error haptic
-        try {
-          window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('error');
-        } catch (e) { /* silent */ }
       } finally {
         setIsLoading(false);
       }
     },
-    [battleId]
+    [battleId, battleStatus]
   );
 
   // ── Toast helper ───────────────────────────────────────
@@ -198,108 +229,130 @@ export default function App() {
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* ── Header ────────────────────────────────────── */}
-        <header className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+        <header className="app-header">
+          <div className="header-left">
             <motion.div
-              className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500
-                          flex items-center justify-center text-lg font-bold shadow-lg"
+              className="avatar-circle"
               whileHover={{ scale: 1.1 }}
             >
               {username.charAt(0).toUpperCase()}
             </motion.div>
             <div>
-              <p className="text-sm font-semibold text-white/90">{username}</p>
-              <div className="flex items-center gap-1.5">
-                {isVip && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r
-                                   from-amber-400/20 to-yellow-500/20 text-amber-300
-                                   font-bold border border-amber-400/20">
-                    👑 VIP
-                  </span>
-                )}
-              </div>
+              <p className="header-username">{username}</p>
+              {isVip && <span className="vip-badge-small">👑 VIP</span>}
             </div>
           </div>
 
-          {/* Balance & Store Button */}
-          <div className="flex items-center gap-2">
-              <motion.div
-                className="glass-card pl-4 pr-2 py-2 flex items-center gap-2 cursor-pointer hover:bg-white/5 active:scale-95 transition-all"
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setIsStoreOpen(true)}
-              >
-                <span className="text-lg">🚀</span>
-                <div className="text-right mr-2">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={balance}
-                      className="text-lg font-black text-white tabular-nums block leading-tight"
-                      style={{ fontFamily: 'Outfit, sans-serif' }}
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {balance.toLocaleString()}
-                    </motion.span>
-                  </AnimatePresence>
-                  <span className="text-[10px] text-gray-400 leading-none">rockets</span>
-                </div>
-                
-                {/* Plus Button */}
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-lg text-white font-bold text-lg">
-                    +
-                </div>
-              </motion.div>
+          <div className="header-right">
+            <motion.div
+              className="balance-card"
+              whileHover={{ scale: 1.02 }}
+              onClick={() => setIsStoreOpen(true)}
+            >
+              <span className="balance-rocket">🚀</span>
+              <div className="balance-info">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={balance}
+                    className="balance-number"
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {balance.toLocaleString()}
+                  </motion.span>
+                </AnimatePresence>
+                <span className="balance-label">raketalar</span>
+              </div>
+              <div className="balance-plus">+</div>
+            </motion.div>
           </div>
         </header>
 
-        {/* ── Battle Arena ──────────────────────────────── */}
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <BattleArena 
-            scores={scores} 
-            isConnected={isConnected} 
-            participants={participants}
-            endTime={endTime}
-          />
+        {/* ── Main Content ────────────────────────────────── */}
+        <div className="flex-1 flex flex-col">
+          {battleStatus === 'waiting' ? (
+            <BattleLobby
+              roomCode={roomCode || battleId?.slice(0, 8)}
+              roomName={roomName || 'Battle Arena'}
+              participants={participants}
+              maxPlayers={16}
+              battleStatus={battleStatus}
+            />
+          ) : (
+            <BattleArena
+              scores={scores}
+              isConnected={isConnected}
+              participants={participants}
+              currentRound={currentRound}
+              totalRounds={totalRounds}
+              currentMatches={currentMatches}
+              battleStatus={battleStatus}
+              myUserId={myUserId}
+            />
+          )}
         </div>
 
-        {/* ── Control Panel ─────────────────────────────── */}
-        <ControlPanel
-          onFire={handleFire}
-          balance={balance}
-          limit={limit}
-          maxLimit={maxLimit}
-          isLoading={isLoading}
-          cooldown={cooldown}
-        />
+        {/* ── Control Panel (only during active battle) ──── */}
+        {battleStatus === 'active' && (
+          <ControlPanel
+            onFire={handleFire}
+            balance={balance}
+            limit={limit}
+            maxLimit={maxLimit}
+            isLoading={isLoading}
+            cooldown={cooldown}
+          />
+        )}
+
+        {/* ── Bottom Navigation ────────────────────────────── */}
+        <nav className="bottom-nav">
+          <button className="nav-btn" onClick={() => setIsTasksOpen(true)}>
+            <span className="nav-icon">📋</span>
+            <span className="nav-label">Vazifalar</span>
+          </button>
+          <button className="nav-btn" onClick={() => setIsGiftOpen(true)}>
+            <span className="nav-icon">🎁</span>
+            <span className="nav-label">Yuborish</span>
+          </button>
+          <button className="nav-btn" onClick={() => setIsStoreOpen(true)}>
+            <span className="nav-icon">🏪</span>
+            <span className="nav-label">Do'kon</span>
+          </button>
+        </nav>
       </div>
 
-        {/* ── Store Modal ───────────────────────────────── */}
-        <StoreModal
-            isOpen={isStoreOpen}
-            onClose={() => setIsStoreOpen(false)}
-            api={api}
-            showToast={showToast}
-            isVip={isVip}
-        />
+      {/* ── Modals ───────────────────────────────────── */}
+      <StoreModal
+        isOpen={isStoreOpen}
+        onClose={() => setIsStoreOpen(false)}
+        api={api}
+        showToast={showToast}
+        isVip={isVip}
+      />
 
-        {/* ── Toast Notifications ─────────────────────────── */}
+      <DailyTasks
+        isOpen={isTasksOpen}
+        onClose={() => setIsTasksOpen(false)}
+        onBalanceUpdate={setBalance}
+        showToast={showToast}
+      />
+
+      <GiftRockets
+        isOpen={isGiftOpen}
+        onClose={() => setIsGiftOpen(false)}
+        balance={balance}
+        onBalanceUpdate={setBalance}
+        showToast={showToast}
+      />
+
+      {/* ── Toast Notifications ─────────────────────────── */}
       <AnimatePresence>
         {toast && (
           <motion.div
             key={toast.id}
-            className={`
-              fixed top-4 left-1/2 z-50 -translate-x-1/2
-              glass-card px-5 py-3 max-w-[90vw]
-              text-sm font-medium text-center
-              ${toast.type === 'success'
-                ? 'border-green-400/30 text-green-200'
-                : toast.type === 'error'
-                ? 'border-red-400/30 text-red-200'
-                : 'border-white/10 text-white/80'
-              }
-            `}
+            className={`toast ${toast.type}`}
             initial={{ opacity: 0, y: -20, x: '-50%' }}
             animate={{ opacity: 1, y: 0, x: '-50%' }}
             exit={{ opacity: 0, y: -20, x: '-50%' }}

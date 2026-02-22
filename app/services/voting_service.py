@@ -1,11 +1,11 @@
-"""Voting service — orchestrates the full vote flow.
+"""Voting service — orchestrates the full vote flow for round-based battles.
 
 The vote pipeline:
 1. Check cooldown  (Redis)
 2. Init / read vote limit  (Redis)
 3. Atomically decrement limit  (Redis Lua)
 4. Deduct balance  (DB  SELECT … FOR UPDATE)
-5. Update battle score  (DB)
+5. Update round score  (DB)
 6. If limit hit 0 → start cooldown  (Redis TTL)
 
 On any DB failure the Redis limit is restored (compensating action).
@@ -37,6 +37,9 @@ class VoteResult:
     score: int
     cooldown_started: bool
     cooldown_seconds: int
+    round_number: int
+    player1_score: int
+    player2_score: int
 
 
 class VotingError(Exception):
@@ -63,6 +66,10 @@ class NoBattleError(VotingError):
     """User is not in an active battle."""
 
 
+class NoActiveRoundError(VotingError):
+    """User has no active round in this battle."""
+
+
 async def process_vote(
     session: AsyncSession,
     redis: RedisService,
@@ -73,8 +80,7 @@ async def process_vote(
     """Execute the full voting pipeline (Redis + DB).
 
     This is the single entry-point that the FastAPI endpoint and
-    any bot handler should call.  It guarantees atomicity across
-    Redis and PostgreSQL through compensating actions.
+    any bot handler should call.
     """
     if amount <= 0:
         raise VotingError("Vote amount must be positive")
@@ -114,8 +120,8 @@ async def process_vote(
         user.balance -= amount
         await session.flush()
 
-        # 5 ── Update battle score ────────────────────────────
-        new_score = await battle_service.update_score(
+        # 5 ── Update round score ─────────────────────────────
+        new_score, round_match = await battle_service.update_round_score(
             session, battle_id, user_id, amount,
         )
 
@@ -134,7 +140,6 @@ async def process_vote(
             settings.VIP_COOLDOWN if is_vip else settings.STANDARD_COOLDOWN
         )
         await redis.start_cooldown(user_id, cooldown_seconds)
-        # Reset limit so it re-initialises on next cycle
         await redis.reset_vote_limit(user_id)
         cooldown_started = True
         logger.info(
@@ -142,8 +147,8 @@ async def process_vote(
         )
 
     logger.info(
-        "Vote OK: user=%d battle=%s amount=%d balance=%d limit=%d",
-        user_id, battle_id, amount, user.balance, remaining,
+        "Vote OK: user=%d battle=%s round=%d amount=%d balance=%d limit=%d",
+        user_id, battle_id, round_match.round_number, amount, user.balance, remaining,
     )
 
     return VoteResult(
@@ -152,4 +157,7 @@ async def process_vote(
         score=new_score,
         cooldown_started=cooldown_started,
         cooldown_seconds=cooldown_seconds,
+        round_number=round_match.round_number,
+        player1_score=round_match.player1_score,
+        player2_score=round_match.player2_score,
     )

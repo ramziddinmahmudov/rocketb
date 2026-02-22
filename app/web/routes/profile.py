@@ -19,6 +19,7 @@ from app.config.settings import settings
 from app.services.redis_service import get_redis
 
 class UserProfile(BaseModel):
+    user_id: int
     id: int
     username: str | None
     first_name: str | None
@@ -27,6 +28,7 @@ class UserProfile(BaseModel):
     limit_remaining: int
     limit_max: int
     cooldown_seconds: int
+    daily_rockets_remaining: int = 300
 
 
 @router.get("/profile", response_model=UserProfile)
@@ -58,6 +60,7 @@ async def get_profile(
             session=session,
             user_id=user_id,
             username=username,
+            first_name=first_name,
         )
         await session.commit()
         
@@ -69,9 +72,6 @@ async def get_profile(
         cooldown_seconds = ttl if ttl > 0 else 0
         
         # 2. Vote Limit
-        # If on cooldown, limit is 0.
-        # If no key in Redis, limit is FULL (max).
-        # Otherwise, use the value in Redis.
         limit_max = settings.VIP_VOTE_LIMIT if user.is_vip else settings.STANDARD_VOTE_LIMIT
         
         if cooldown_seconds > 0:
@@ -81,12 +81,14 @@ async def get_profile(
             limit_remaining = current if current is not None else limit_max
 
         return UserProfile(
+            user_id=user.id,
             id=user.id,
             username=user.username,
-            first_name=first_name,
+            first_name=user.first_name or first_name,
             balance=user.balance,
             is_vip=user.is_vip,
             limit_remaining=limit_remaining,
             limit_max=limit_max,
             cooldown_seconds=cooldown_seconds,
+            daily_rockets_remaining=user.daily_rockets_remaining,
         )

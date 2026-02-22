@@ -2,15 +2,14 @@
 
 This file provides the /start command with an inline keyboard
 containing a "🚀 Start Battle" button that opens the Telegram Mini App.
+Supports battle room links via deep linking.
 
 Usage:
     python bot.py
 
 Environment variables:
     BOT_TOKEN   — Telegram Bot API token (from @BotFather)
-    WEBAPP_URL  — Public URL of the Frontend (e.g. https://yourdomain.com)
-                  This is the URL Telegram opens inside the Mini App.
-                  For local testing: use ngrok/localtunnel to expose port 80.
+    WEBAPP_URL  — Public URL of the Frontend
 """
 
 from __future__ import annotations
@@ -35,8 +34,6 @@ from app.services.redis_service import close_redis, setup_redis
 
 import logging.handlers
 
-# ... imports ...
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
@@ -50,7 +47,6 @@ logger = logging.getLogger(__name__)
 # ── Router ────────────────────────────────────────────────
 router = Router(name="bot_main")
 
-# Read WEBAPP_URL from environment (set in .env or docker-compose)
 WEBAPP_URL = settings.WEBAPP_URL
 
 
@@ -61,26 +57,23 @@ def get_start_keyboard(user_id: int) -> InlineKeyboardMarkup:
     # 🚀 Main action — opens the Mini App
     builder.row(
         InlineKeyboardButton(
-            text="🚀 Start Battle",
+            text="🚀 Battle boshlash",
             web_app=WebAppInfo(url=WEBAPP_URL),
         ),
     )
 
     # Secondary actions
     builder.row(
-        InlineKeyboardButton(text="📊 Balance", callback_data="balance"),
-        InlineKeyboardButton(text="🏪 Store", callback_data="store"),
+        InlineKeyboardButton(text="📊 Balans", callback_data="balance"),
+        InlineKeyboardButton(text="📋 Vazifalar", callback_data="daily_tasks"),
     )
     builder.row(
-        InlineKeyboardButton(text="👑 Buy VIP", callback_data="buy_vip"),
-        InlineKeyboardButton(
-            text="🔗 Invite Friend",
-            switch_inline_query=f"Join me in Rocket Battle! 🚀",
-        ),
+        InlineKeyboardButton(text="👑 VIP sotib olish", callback_data="buy_vip"),
+        InlineKeyboardButton(text="🎁 Do'stga yuborish", callback_data="gift_rockets"),
     )
     builder.row(
         InlineKeyboardButton(
-            text="📋 Referral Link",
+            text="🔗 Taklif havolasi",
             callback_data="referral_link",
         ),
     )
@@ -97,41 +90,75 @@ async def cmd_start_deeplink(
     command: CommandObject,
     session,
 ) -> None:
-    """Handle /start with referral deep link."""
+    """Handle /start with referral or room deep link."""
     referrer_id: int | None = None
+    room_code: str | None = None
+
     if command.args:
-        try:
-            referrer_id = int(command.args)
-        except ValueError:
-            referrer_id = None
+        args = command.args
+        if args.startswith("room_"):
+            # Room invite link: /start room_ABCD1234
+            room_code = args[5:]
+        else:
+            try:
+                referrer_id = int(args)
+            except ValueError:
+                referrer_id = None
 
     user, created = await user_service.get_or_create_user(
         session,
         user_id=message.from_user.id,
         username=message.from_user.username,
+        first_name=message.from_user.first_name,
         referrer_id=referrer_id,
     )
     await session.commit()
 
+    if room_code:
+        # User came from a room invite
+        text = (
+            f"🏟️ <b>Battle xonasiga taklif!</b>\n\n"
+            f"Xona kodi: <code>{room_code}</code>\n\n"
+            f"Balansingiz: <b>{user.balance} 🚀</b>\n\n"
+            f"<b>Battle boshlash</b> tugmasini bosib xonaga qo'shiling! ⚔️"
+        )
+        # Build keyboard with room-specific URL
+        builder = InlineKeyboardBuilder()
+        builder.row(
+            InlineKeyboardButton(
+                text="🏟️ Xonaga qo'shilish",
+                web_app=WebAppInfo(url=f"{WEBAPP_URL}?room={room_code}"),
+            ),
+        )
+        builder.row(
+            InlineKeyboardButton(text="📊 Balans", callback_data="balance"),
+        )
+        await message.answer(
+            text,
+            parse_mode="HTML",
+            reply_markup=builder.as_markup(),
+        )
+        return
+
     if created and referrer_id:
         text = (
-            f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
-            f"You've been invited by a friend!\n"
-            f"🎁 <b>+10 bonus rockets</b> for you and your referrer.\n\n"
-            f"Your balance: <b>{user.balance} 🚀</b>\n\n"
-            f"Tap <b>Start Battle</b> to join the arena! ⚔️"
+            f"🚀 <b>Rocket Battle ga xush kelibsiz!</b>\n\n"
+            f"Siz do'stingiz tomonidan taklif qilindingiz!\n"
+            f"🎁 <b>+10 bonus raketa</b> siz va do'stingizga.\n\n"
+            f"Balansingiz: <b>{user.balance} 🚀</b>\n\n"
+            f"<b>Battle boshlash</b> tugmasini bosing! ⚔️"
         )
     elif created:
         text = (
-            f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
-            f"You start with <b>{user.balance} 🚀</b> rockets.\n\n"
-            f"Tap <b>Start Battle</b> to launch your first attack! ⚔️"
+            f"🚀 <b>Rocket Battle ga xush kelibsiz!</b>\n\n"
+            f"Siz <b>{user.balance} 🚀</b> raketa bilan boshladingiz.\n\n"
+            f"<b>Battle boshlash</b> tugmasini bosing! ⚔️"
         )
     else:
         text = (
-            f"🚀 <b>Welcome back!</b>\n\n"
-            f"Your balance: <b>{user.balance} 🚀</b>\n\n"
-            f"Ready for another battle? 💥"
+            f"🚀 <b>Qaytganingiz bilan!</b>\n\n"
+            f"Balansingiz: <b>{user.balance} 🚀</b>\n\n"
+            f"Yangi battle boshlashga tayyormisiz? 💥"
         )
 
     await message.answer(
@@ -148,13 +175,14 @@ async def cmd_start(message: types.Message, session) -> None:
         session,
         user_id=message.from_user.id,
         username=message.from_user.username,
+        first_name=message.from_user.first_name,
     )
     await session.commit()
 
     text = (
-        f"🚀 <b>Welcome{'!' if created else ' back!'}</b>\n\n"
-        f"Your balance: <b>{user.balance} 🚀</b>\n\n"
-        f"Tap <b>Start Battle</b> to enter the arena! ⚔️"
+        f"🚀 <b>{'Xush kelibsiz!' if created else 'Qaytganingiz bilan!'}</b>\n\n"
+        f"Balansingiz: <b>{user.balance} 🚀</b>\n\n"
+        f"<b>Battle boshlash</b> tugmasini bosing! ⚔️"
     )
 
     await message.answer(
@@ -164,7 +192,7 @@ async def cmd_start(message: types.Message, session) -> None:
     )
 
 
-# ── Referral link callback ────────────────────────────────
+# ── Callback handlers ────────────────────────────────────
 
 
 @router.callback_query(F.data == "referral_link")
@@ -175,9 +203,39 @@ async def cb_referral_link(callback: types.CallbackQuery) -> None:
     link = f"https://t.me/{bot_info.username}?start={callback.from_user.id}"
 
     await callback.message.answer(
-        f"🔗 <b>Your Referral Link:</b>\n\n"
+        f"🔗 <b>Sizning taklif havolangiz:</b>\n\n"
         f"<code>{link}</code>\n\n"
-        f"Share it and earn <b>+10 🚀</b> for each new friend!",
+        f"Ulashing va har bir yangi do'st uchun <b>+10 🚀</b> oling!",
+        parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data == "daily_tasks")
+async def cb_daily_tasks(callback: types.CallbackQuery) -> None:
+    """Open daily tasks info."""
+    await callback.answer()
+    await callback.message.answer(
+        "📋 <b>Kunlik vazifalar</b>\n\n"
+        "Kunlik vazifalarni bajarib bepul raketalar oling!\n"
+        "Vazifalaringizni ko'rish uchun Mini App ni oching.\n\n"
+        "🎮 Battle ga qo'shiling — <b>+50 🚀</b>\n"
+        "🏆 3 ta raund yuting — <b>+100 🚀</b>\n"
+        "🎁 Do'stga raketa yuboring — <b>+30 🚀</b>\n"
+        "👥 Do'stni taklif qiling — <b>+50 🚀</b>",
+        parse_mode="HTML",
+    )
+
+
+@router.callback_query(F.data == "gift_rockets")
+async def cb_gift_rockets(callback: types.CallbackQuery) -> None:
+    """Gift rockets info."""
+    await callback.answer()
+    await callback.message.answer(
+        "🎁 <b>Do'stga raketa yuborish</b>\n\n"
+        "Do'stlaringizga raketa yuborishingiz mumkin!\n\n"
+        "📌 Oddiy foydalanuvchi: <b>100 ta/do'st</b> kuniga\n"
+        "👑 VIP foydalanuvchi: <b>900 ta/do'st</b> kuniga\n\n"
+        "Mini App da 🎁 Yuborish tugmasini bosing.",
         parse_mode="HTML",
     )
 
@@ -194,6 +252,12 @@ async def main() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+    # Seed daily tasks
+    from app.services import daily_task_service
+    async with session_factory() as session:
+        await daily_task_service.seed_default_tasks(session)
+        await session.commit()
+
     logger.info("Initialising Redis…")
     setup_redis(settings.REDIS_URL)
 
@@ -208,9 +272,7 @@ async def main() -> None:
     dp.update.outer_middleware(LoggingMiddleware())
     dp.update.outer_middleware(ThrottleMiddleware(rate_seconds=1))
 
-    # Include this file's router + all existing handlers
-    dp.include_router(router)
-
+    # Include routers
     dp.include_router(router)
 
     from app.bot.handlers import admin, balance, payment

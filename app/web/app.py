@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-import os
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.web.routes import battle, battle_ws, profile, vote, payment
+from app.web.routes import battle, battle_ws, profile, vote, payment, room, daily_tasks, gift
 
 
 def create_app() -> FastAPI:
@@ -15,14 +13,10 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Antigravity — Rocket Battle API",
         description="WebApp backend for the Rocket Battle Telegram Mini App",
-        version="1.0.0",
+        version="2.0.0",
     )
 
     # ── CORS ──────────────────────────────────────────────────
-    # In production, set CORS_ORIGINS to your domain(s):
-    #   CORS_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-    # Default "*" allows all origins (fine for development).
-    # Dynamic CORS: Allow any HTTP/HTTPS origin with credentials
     app.add_middleware(
         CORSMiddleware,
         allow_origin_regex="https?://.*",
@@ -37,6 +31,9 @@ def create_app() -> FastAPI:
     app.include_router(battle.router)
     app.include_router(battle_ws.router)
     app.include_router(payment.router)
+    app.include_router(room.router)
+    app.include_router(daily_tasks.router)
+    app.include_router(gift.router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:

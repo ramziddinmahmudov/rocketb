@@ -30,7 +30,12 @@ class Settings(BaseSettings):
     VIP_PRICE_STARS: int = 1000
     VIP_DURATION_DAYS: int = 30
 
-    # ── Vote Limits ───────────────────────────────────────────
+    # ── Battle (16-player tournament) ─────────────────────────
+    BATTLE_PLAYERS: int = 16          # Players needed to auto-start
+    ROUND_DURATION: int = 60          # Seconds per 1v1 round
+    BATTLE_TOTAL_ROUNDS: int = 4      # log2(16) = 4 bracket rounds
+
+    # ── Vote Limits (per battle round) ────────────────────────
     STANDARD_VOTE_LIMIT: int = 100
     VIP_VOTE_LIMIT: int = 300
 
@@ -38,9 +43,13 @@ class Settings(BaseSettings):
     STANDARD_COOLDOWN: int = 3 * 3600   # 3 hours
     VIP_COOLDOWN: int = 1 * 3600        # 1 hour
 
-    # ── Battle ────────────────────────────────────────────────
-    BATTLE_QUEUE_SIZE: int = 2
-    BATTLE_DURATION: int = 3 * 3600     # 3 hours
+    # ── Daily Rockets ─────────────────────────────────────────
+    DAILY_ROCKETS_STANDARD: int = 300   # Free rockets per day (standard)
+    DAILY_ROCKETS_VIP: int = 1000       # Free rockets per day (VIP)
+
+    # ── Rocket Gifting ────────────────────────────────────────
+    GIFT_LIMIT_STANDARD: int = 100      # Max rockets per friend (standard)
+    GIFT_LIMIT_VIP: int = 900           # Max rockets per friend (VIP)
 
     # ── Rocket Store (stars → rockets) ────────────────────────
     ROCKET_PACKAGES: dict[int, int] = {

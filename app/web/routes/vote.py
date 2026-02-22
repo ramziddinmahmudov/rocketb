@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-import traceback
 import uuid
 
 from fastapi import APIRouter, Header, HTTPException
@@ -15,6 +14,7 @@ from app.services.voting_service import (
     CooldownActiveError,
     InsufficientBalanceError,
     InsufficientLimitError,
+    NoActiveRoundError,
     NoBattleError,
     VoteResult,
     VotingError,
@@ -42,6 +42,9 @@ class VoteResponse(BaseModel):
     score: int
     cooldown_started: bool
     cooldown_seconds: int
+    round_number: int = 0
+    player1_score: int = 0
+    player2_score: int = 0
 
 
 class ErrorResponse(BaseModel):
@@ -65,11 +68,7 @@ async def vote(
     body: VoteRequest,
     x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
 ) -> VoteResponse:
-    """Process a vote from the WebApp.
-
-    The WebApp must send the Telegram ``initData`` string in the
-    ``X-Telegram-Init-Data`` header for authentication.
-    """
+    """Process a vote from the WebApp."""
     # 1 ── Authenticate ────────────────────────────────────────
     try:
         user_data = validate_init_data(x_telegram_init_data)
@@ -80,7 +79,6 @@ async def vote(
 
     # 2 ── Execute vote pipeline ──────────────────────────────
     if base.async_session_factory is None:
-        logger.error("Database not initialised (base.async_session_factory is None)")
         raise HTTPException(status_code=500, detail="Database not initialised")
 
     try:
@@ -101,28 +99,14 @@ async def vote(
                 )
                 await session.commit()
 
-                # 3 ── Broadcast new scores ───────────────────────────
-                # Fetch participants ordered by join time to identify Blue vs Red
-                # (Assuming 1st = Blue, 2nd = Red)
-                from sqlalchemy import select
-                from app.database.models import BattleParticipant
-                from app.web.routes.battle_ws import broadcast_battle_scores
-
-                stmt = (
-                    select(BattleParticipant)
-                    .where(BattleParticipant.battle_id == body.battle_id)
-                    .order_by(BattleParticipant.joined_at.asc())
+                # 3 ── Broadcast scores via WebSocket ─────────────
+                from app.web.routes.battle_ws import broadcast_round_scores
+                await broadcast_round_scores(
+                    body.battle_id,
+                    result.round_number,
+                    result.player1_score,
+                    result.player2_score,
                 )
-                participants = (await session.execute(stmt)).scalars().all()
-
-                blue_score = 0
-                red_score = 0
-                if len(participants) > 0:
-                    blue_score = participants[0].score
-                if len(participants) > 1:
-                    red_score = participants[1].score
-
-                await broadcast_battle_scores(body.battle_id, blue_score, red_score)
 
             except CooldownActiveError as exc:
                 raise HTTPException(
@@ -146,12 +130,12 @@ async def vote(
             except Exception:
                 await session.rollback()
                 raise
- 
+
     except HTTPException:
         raise
     except Exception as exc:
         logger.error("Vote processing failed: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal Server Error (Check logs)")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
     return VoteResponse(
         success=True,
@@ -160,4 +144,7 @@ async def vote(
         score=result.score,
         cooldown_started=result.cooldown_started,
         cooldown_seconds=result.cooldown_seconds,
+        round_number=result.round_number,
+        player1_score=result.player1_score,
+        player2_score=result.player2_score,
     )

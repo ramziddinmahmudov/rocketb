@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +18,7 @@ async def get_or_create_user(
     session: AsyncSession,
     user_id: int,
     username: str | None = None,
+    first_name: str | None = None,
     referrer_id: int | None = None,
 ) -> tuple[User, bool]:
     """Register a user if they don't exist, handling referral bonuses.
@@ -26,9 +27,15 @@ async def get_or_create_user(
     """
     user = await session.get(User, user_id)
     if user is not None:
-        # Update username if it changed
+        # Update username/first_name if changed
+        changed = False
         if username and user.username != username:
             user.username = username
+            changed = True
+        if first_name and user.first_name != first_name:
+            user.first_name = first_name
+            changed = True
+        if changed:
             await session.flush()
         logger.debug("Retrieved existing user: %d", user_id)
         return user, False
@@ -37,7 +44,10 @@ async def get_or_create_user(
     user = User(
         id=user_id,
         username=username,
+        first_name=first_name,
         balance=settings.INITIAL_ROCKETS,
+        daily_rockets_remaining=settings.DAILY_ROCKETS_STANDARD,
+        daily_rockets_reset_at=datetime.now(timezone.utc),
         referrer_id=referrer_id if referrer_id and referrer_id != user_id else None,
     )
     session.add(user)
@@ -138,7 +148,6 @@ async def deduct_rockets(session: AsyncSession, user_id: int, amount: int) -> in
     Raises ``ValueError`` if balance is insufficient.
     Returns the updated balance.
     """
-    # Lock the row to prevent concurrent modifications
     result = await session.execute(
         select(User)
         .where(User.id == user_id)
@@ -175,8 +184,10 @@ async def set_vip(
         raise ValueError(f"User {user_id} not found")
 
     user.is_vip = True
-    user.vip_expire_date = datetime.now(timezone.utc).replace(
-        day=datetime.now(timezone.utc).day + duration_days,
-    )
+    user.vip_expire_date = datetime.now(timezone.utc) + timedelta(days=duration_days)
+
+    # Upgrade daily rockets if becoming VIP
+    user.daily_rockets_remaining = settings.DAILY_ROCKETS_VIP
+
     await session.flush()
     return user

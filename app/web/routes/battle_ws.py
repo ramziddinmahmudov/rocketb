@@ -73,12 +73,16 @@ async def battle_ws(websocket: WebSocket, battle_id: uuid.UUID) -> None:
     """WebSocket endpoint for live battle score streaming.
 
     Clients connect and receive JSON broadcasts whenever scores change.
-    Clients can send a JSON ``{"type": "ping"}`` to keep alive.
+    Messages include:
+    - score_update: round scores updated
+    - round_started: new round begins
+    - round_finished: round ended with winner
+    - battle_finished: entire battle completed
+    - player_joined: new player entered the room
     """
     await manager.connect(battle_id, websocket)
     try:
         while True:
-            # Keep the connection alive by reading incoming messages
             data = await websocket.receive_text()
             try:
                 msg = json.loads(data)
@@ -92,15 +96,102 @@ async def battle_ws(websocket: WebSocket, battle_id: uuid.UUID) -> None:
         await manager.disconnect(battle_id, websocket)
 
 
-# ── Helper for services to broadcast ─────────────────────────
+# ── Helper functions for services to broadcast ───────────────
 
 
+async def broadcast_round_scores(
+    battle_id: uuid.UUID,
+    round_number: int,
+    player1_score: int,
+    player2_score: int,
+) -> None:
+    """Broadcast updated round scores to all clients."""
+    await manager.broadcast(battle_id, {
+        "type": "score_update",
+        "round_number": round_number,
+        "player1_score": player1_score,
+        "player2_score": player2_score,
+        "battle_id": str(battle_id),
+    })
+
+
+async def broadcast_round_started(
+    battle_id: uuid.UUID,
+    round_number: int,
+    player1_id: int,
+    player2_id: int,
+    player1_username: str,
+    player2_username: str,
+    duration_seconds: int,
+) -> None:
+    """Broadcast that a new round has started."""
+    await manager.broadcast(battle_id, {
+        "type": "round_started",
+        "round_number": round_number,
+        "player1_id": player1_id,
+        "player2_id": player2_id,
+        "player1_username": player1_username,
+        "player2_username": player2_username,
+        "duration_seconds": duration_seconds,
+        "battle_id": str(battle_id),
+    })
+
+
+async def broadcast_round_finished(
+    battle_id: uuid.UUID,
+    round_number: int,
+    winner_id: int,
+    player1_score: int,
+    player2_score: int,
+) -> None:
+    """Broadcast round result."""
+    await manager.broadcast(battle_id, {
+        "type": "round_finished",
+        "round_number": round_number,
+        "winner_id": winner_id,
+        "player1_score": player1_score,
+        "player2_score": player2_score,
+        "battle_id": str(battle_id),
+    })
+
+
+async def broadcast_battle_finished(
+    battle_id: uuid.UUID,
+    winner_id: int | None,
+) -> None:
+    """Broadcast that the entire battle is finished."""
+    await manager.broadcast(battle_id, {
+        "type": "battle_finished",
+        "winner_id": winner_id,
+        "battle_id": str(battle_id),
+    })
+
+
+async def broadcast_player_joined(
+    battle_id: uuid.UUID,
+    user_id: int,
+    username: str,
+    current_count: int,
+    max_count: int,
+) -> None:
+    """Broadcast that a new player joined the room."""
+    await manager.broadcast(battle_id, {
+        "type": "player_joined",
+        "user_id": user_id,
+        "username": username,
+        "current_count": current_count,
+        "max_count": max_count,
+        "battle_id": str(battle_id),
+    })
+
+
+# Keep backward compatibility
 async def broadcast_battle_scores(
     battle_id: uuid.UUID,
     blue_score: int,
     red_score: int,
 ) -> None:
-    """Broadcast the updated team scores to all clients."""
+    """Legacy: Broadcast team scores."""
     await manager.broadcast(battle_id, {
         "type": "score_update",
         "blue": blue_score,
