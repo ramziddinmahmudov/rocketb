@@ -9,7 +9,7 @@
  * Bottom Nav: Tasks, Gift, Store
  */
 import { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import RoomBrowser from './components/RoomBrowser';
 import BattleArena from './components/BattleArena';
