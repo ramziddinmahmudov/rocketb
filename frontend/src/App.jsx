@@ -1,15 +1,17 @@
 /**
  * App.jsx — Main layout for the Rocket Battle Mini App.
  *
- * Structure:
- *   Header (balance + VIP badge)
- *   BattleLobby (waiting) or BattleArena (active)
- *   ControlPanel (fire button)
- *   Bottom Nav (Tasks, Gift, Rooms)
+ * Flow:
+ *   1. RoomBrowser (main screen — browse, create, join rooms)
+ *   2. BattleLobby (waiting for players in a room)
+ *   3. BattleArena (active battle with tournament bracket)
+ *
+ * Bottom Nav: Tasks, Gift, Store
  */
 import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import RoomBrowser from './components/RoomBrowser';
 import BattleArena from './components/BattleArena';
 import BattleLobby from './components/BattleLobby';
 import ControlPanel from './components/ControlPanel';
@@ -19,6 +21,13 @@ import StoreModal from './components/StoreModal';
 import SplashScreen from './components/SplashScreen';
 import useBattleSocket from './hooks/useBattleSocket';
 import { api } from './api/client';
+
+// ── Screens ──────────────────────────────────────────
+const SCREEN = {
+  ROOMS: 'rooms',
+  LOBBY: 'lobby',
+  ARENA: 'arena',
+};
 
 export default function App() {
   // ── State ──────────────────────────────────────────────
@@ -32,14 +41,19 @@ export default function App() {
   const [maxLimit, setMaxLimit] = useState(100);
   const [toast, setToast] = useState(null);
 
+  // Screen navigation
+  const [screen, setScreen] = useState(SCREEN.ROOMS);
+  const [rooms, setRooms] = useState([]);
+  const [isRoomsLoading, setIsRoomsLoading] = useState(false);
+
+  // Battle state
   const [battleId, setBattleId] = useState(null);
   const [battleStatus, setBattleStatus] = useState('waiting');
   const [currentRound, setCurrentRound] = useState(0);
   const [totalRounds, setTotalRounds] = useState(4);
   const [participants, setParticipants] = useState([]);
   const [currentMatches, setCurrentMatches] = useState([]);
-  const [roomCode, setRoomCode] = useState(null);
-  const [roomName, setRoomName] = useState(null);
+  const [currentRoom, setCurrentRoom] = useState(null);
 
   const [isAuthError, setIsAuthError] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
@@ -49,6 +63,12 @@ export default function App() {
 
   // ── WebSocket ──────────────────────────────────────────
   const { scores, isConnected } = useBattleSocket(battleId);
+
+  // ── Toast helper ───────────────────────────────────────
+  const showToast = useCallback((message, type = 'info') => {
+    setToast({ message, type, id: Date.now() });
+    setTimeout(() => setToast(null), 3000);
+  }, []);
 
   // Handle WS messages for round events
   useEffect(() => {
@@ -64,28 +84,16 @@ export default function App() {
         duration_seconds: scores.duration_seconds,
         status: 'active',
       }]);
+      setScreen(SCREEN.ARENA);
+      setBattleStatus('active');
     }
     if (scores?.type === 'battle_finished') {
       setBattleStatus('finished');
     }
     if (scores?.type === 'player_joined') {
-      // Refresh battle info
       refreshBattle();
     }
   }, [scores]);
-
-  const refreshBattle = async () => {
-    if (!battleId) return;
-    try {
-      const { data } = await api.getBattle(battleId);
-      setParticipants(data.participants || []);
-      setBattleStatus(data.status);
-      setCurrentRound(data.current_round);
-      setTotalRounds(data.total_rounds);
-    } catch (err) {
-      console.error('Failed to refresh battle:', err);
-    }
-  };
 
   // ── Init Telegram WebApp & Fetch Profile ────────────────
   useEffect(() => {
@@ -118,18 +126,15 @@ export default function App() {
         if (uname) setUsername(uname);
         else if (first_name) setUsername(first_name);
 
-        // 2. Join Battle
-        const joinRes = await api.joinBattle();
-        setBattleId(joinRes.data.battle_id);
-        setBattleStatus(joinRes.data.status);
-        setCurrentRound(joinRes.data.current_round || 0);
-        setTotalRounds(joinRes.data.total_rounds || 4);
+        // 2. Load rooms
+        await loadRooms();
 
-        if (joinRes.data.participants) {
-          setParticipants(joinRes.data.participants);
-        }
-        if (joinRes.data.current_matches) {
-          setCurrentMatches(joinRes.data.current_matches);
+        // 3. Check if coming from room invite link
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomParam = urlParams.get('room');
+        if (roomParam) {
+          // Auto-join room from invite link
+          await handleJoinRoom(roomParam);
         }
       } catch (err) {
         console.error('Init failed:', err);
@@ -145,21 +150,7 @@ export default function App() {
     };
 
     initApp();
-  }, []);
-
-  if (!isAppReady) return <SplashScreen />;
-
-  if (isAuthError) {
-    return (
-      <div className="auth-error-screen">
-        <div>
-          <h1>❌ Autentifikatsiya xatosi</h1>
-          <p>Telegram ma'lumotlarini tekshirib bo'lmadi.</p>
-          <p className="sub">Iltimos, /start orqali qayta boshlang</p>
-        </div>
-      </div>
-    );
-  }
+  }, [showToast]);
 
   // ── Cooldown timer ─────────────────────────────────────
   useEffect(() => {
@@ -169,6 +160,91 @@ export default function App() {
     }, 1000);
     return () => clearInterval(interval);
   }, [cooldown]);
+
+  // ── Room actions ───────────────────────────────────────
+  const loadRooms = async () => {
+    setIsRoomsLoading(true);
+    try {
+      const { data } = await api.listRooms();
+      setRooms(data.rooms || data || []);
+    } catch (err) {
+      console.error('Failed to load rooms:', err);
+    } finally {
+      setIsRoomsLoading(false);
+    }
+  };
+
+  const handleCreateRoom = async (name) => {
+    try {
+      const { data } = await api.createRoom(name);
+      showToast('✅ Xona yaratildi!', 'success');
+      await loadRooms();
+      // Auto-join the created room
+      if (data.invite_code) {
+        await handleJoinRoom(data.invite_code);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Xona yaratib bo\'lmadi';
+      showToast(`❌ ${msg}`, 'error');
+      throw err;
+    }
+  };
+
+  const handleJoinRoom = async (inviteCode) => {
+    try {
+      const { data } = await api.joinRoom(inviteCode);
+      setCurrentRoom(data);
+      setBattleId(data.battle_id || null);
+      setBattleStatus(data.battle_status || 'waiting');
+      setParticipants(data.participants || []);
+      setCurrentRound(data.current_round || 0);
+      setTotalRounds(data.total_rounds || 4);
+
+      if (data.battle_status === 'active') {
+        setScreen(SCREEN.ARENA);
+      } else {
+        setScreen(SCREEN.LOBBY);
+      }
+
+      showToast('✅ Xonaga qo\'shildingiz!', 'success');
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Xonaga kirib bo\'lmadi';
+      showToast(`❌ ${msg}`, 'error');
+    }
+  };
+
+  const handleDeleteRoom = async (roomId) => {
+    try {
+      await api.deleteRoom(roomId);
+      showToast('🗑️ Xona o\'chirildi', 'success');
+      await loadRooms();
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'O\'chirib bo\'lmadi';
+      showToast(`❌ ${msg}`, 'error');
+    }
+  };
+
+  const handleLeaveRoom = () => {
+    setCurrentRoom(null);
+    setBattleId(null);
+    setBattleStatus('waiting');
+    setParticipants([]);
+    setScreen(SCREEN.ROOMS);
+    loadRooms();
+  };
+
+  const refreshBattle = async () => {
+    if (!battleId) return;
+    try {
+      const { data } = await api.getBattle(battleId);
+      setParticipants(data.participants || []);
+      setBattleStatus(data.status);
+      setCurrentRound(data.current_round);
+      setTotalRounds(data.total_rounds);
+    } catch (err) {
+      console.error('Failed to refresh battle:', err);
+    }
+  };
 
   // ── Fire handler ───────────────────────────────────────
   const handleFire = useCallback(
@@ -188,7 +264,6 @@ export default function App() {
         if (data.cooldown_started) setCooldown(data.cooldown_seconds);
         if (data.remaining_limit !== undefined) setLimit(data.remaining_limit);
 
-        // Update match scores locally
         if (data.player1_score !== undefined) {
           setCurrentMatches((prev) =>
             prev.map((m) => ({
@@ -211,30 +286,41 @@ export default function App() {
         setIsLoading(false);
       }
     },
-    [battleId, battleStatus]
+    [battleId, battleStatus, showToast]
   );
 
-  // ── Toast helper ───────────────────────────────────────
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type, id: Date.now() });
-    setTimeout(() => setToast(null), 3000);
-  };
+  // ── Early returns AFTER all hooks ──────────────────────
+  if (!isAppReady) return <SplashScreen />;
+
+  if (isAuthError) {
+    return (
+      <div className="auth-error-screen">
+        <div>
+          <h1>❌ Autentifikatsiya xatosi</h1>
+          <p>Telegram ma'lumotlarini tekshirib bo'lmadi.</p>
+          <p className="sub">Iltimos, /start orqali qayta boshlang</p>
+        </div>
+      </div>
+    );
+  }
 
   // ── Render ─────────────────────────────────────────────
   return (
-    <div className="relative min-h-screen flex flex-col">
+    <div className="app-container">
       {/* Stars background */}
       <div className="stars-bg" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="app-content">
         {/* ── Header ────────────────────────────────────── */}
         <header className="app-header">
           <div className="header-left">
-            <motion.div
-              className="avatar-circle"
-              whileHover={{ scale: 1.1 }}
-            >
+            {screen !== SCREEN.ROOMS && (
+              <button className="back-btn" onClick={handleLeaveRoom}>
+                ←
+              </button>
+            )}
+            <motion.div className="avatar-circle" whileHover={{ scale: 1.1 }}>
               {username.charAt(0).toUpperCase()}
             </motion.div>
             <div>
@@ -271,16 +357,32 @@ export default function App() {
         </header>
 
         {/* ── Main Content ────────────────────────────────── */}
-        <div className="flex-1 flex flex-col">
-          {battleStatus === 'waiting' ? (
-            <BattleLobby
-              roomCode={roomCode || battleId?.slice(0, 8)}
-              roomName={roomName || 'Battle Arena'}
-              participants={participants}
-              maxPlayers={16}
-              battleStatus={battleStatus}
+        <div className="main-content">
+          {screen === SCREEN.ROOMS && (
+            <RoomBrowser
+              rooms={rooms}
+              onJoinRoom={handleJoinRoom}
+              onCreateRoom={handleCreateRoom}
+              onDeleteRoom={handleDeleteRoom}
+              onRefresh={loadRooms}
+              isLoading={isRoomsLoading}
+              myUserId={myUserId}
+              showToast={showToast}
             />
-          ) : (
+          )}
+
+          {screen === SCREEN.LOBBY && (
+            <BattleLobby
+              roomCode={currentRoom?.invite_code}
+              roomName={currentRoom?.name || 'Battle Room'}
+              participants={participants}
+              maxPlayers={currentRoom?.max_players || 16}
+              battleStatus={battleStatus}
+              onLeave={handleLeaveRoom}
+            />
+          )}
+
+          {screen === SCREEN.ARENA && (
             <BattleArena
               scores={scores}
               isConnected={isConnected}
@@ -295,7 +397,7 @@ export default function App() {
         </div>
 
         {/* ── Control Panel (only during active battle) ──── */}
-        {battleStatus === 'active' && (
+        {screen === SCREEN.ARENA && battleStatus === 'active' && (
           <ControlPanel
             onFire={handleFire}
             balance={balance}
@@ -308,6 +410,13 @@ export default function App() {
 
         {/* ── Bottom Navigation ────────────────────────────── */}
         <nav className="bottom-nav">
+          <button
+            className={`nav-btn ${screen === SCREEN.ROOMS ? 'nav-active' : ''}`}
+            onClick={() => { handleLeaveRoom(); }}
+          >
+            <span className="nav-icon">🏟️</span>
+            <span className="nav-label">Xonalar</span>
+          </button>
           <button className="nav-btn" onClick={() => setIsTasksOpen(true)}>
             <span className="nav-icon">📋</span>
             <span className="nav-label">Vazifalar</span>

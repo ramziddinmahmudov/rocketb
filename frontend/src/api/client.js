@@ -56,6 +56,8 @@ export const api = {
     client.get(`/api/room/${roomId}`),
   listRooms: () =>
     client.get('/api/rooms/active'),
+  deleteRoom: (roomId) =>
+    client.delete(`/api/room/${roomId}`),
 
   // Daily Tasks
   getDailyTasks: () =>

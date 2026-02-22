@@ -47,11 +47,13 @@ class RoomResponse(BaseModel):
 
 
 class RoomListItem(BaseModel):
+    id: uuid.UUID
     room_id: uuid.UUID
     invite_code: str
     name: str
     max_players: int
-    current_players: int
+    player_count: int = 0
+    creator_id: int | None = None
     creator_username: str | None = None
 
 
@@ -204,14 +206,43 @@ async def list_rooms(
                     session, battle.id
                 )
             items.append(RoomListItem(
+                id=room.id,
                 room_id=room.id,
                 invite_code=room.invite_code,
                 name=room.name,
                 max_players=room.max_players,
-                current_players=count,
+                player_count=count,
+                creator_id=room.creator_id,
                 creator_username=room.creator.username if room.creator else None,
             ))
         return items
+
+
+@router.delete("/{room_id}")
+async def delete_room(
+    room_id: uuid.UUID,
+    x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
+):
+    """Delete a room (only creator can delete)."""
+    try:
+        user_data = validate_init_data(x_telegram_init_data)
+        user_id = user_data["id"]
+    except AuthError as exc:
+        raise HTTPException(status_code=401, detail=str(exc))
+
+    if base.async_session_factory is None:
+        raise HTTPException(status_code=500, detail="Database not initialised")
+
+    async with base.async_session_factory() as session:
+        room = await room_service.get_room(session, room_id)
+        if room is None:
+            raise HTTPException(status_code=404, detail="Xona topilmadi")
+        if room.creator_id != user_id:
+            raise HTTPException(status_code=403, detail="Faqat yaratuvchi o'chira oladi")
+
+        room.is_active = False
+        await session.commit()
+        return {"status": "deleted"}
 
 
 # ── Helpers ───────────────────────────────────────────────────
