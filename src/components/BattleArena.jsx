@@ -1,195 +1,254 @@
 /**
- * BattleArena — the main game display with two animated team counters.
+ * BattleArena — Tournament bracket view with 1v1 rounds.
  */
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
-export default function BattleArena({ scores, isConnected, participants, endTime }) {
-  const [timeLeft, setTimeLeft] = useState(null);
+export default function BattleArena({
+  scores,
+  isConnected,
+  participants,
+  currentRound,
+  totalRounds,
+  currentMatches,
+  battleStatus,
+  myUserId,
+}) {
+  const [roundTimeLeft, setRoundTimeLeft] = useState(60);
 
-  // Identify players (assuming 2 player battle for now)
-  const player1 = participants[0] || { username: 'Waiting...' };
-  const player2 = participants[1] || { username: 'Waiting...' };
+  // Find current user's active match
+  const myMatch = useMemo(() => {
+    if (!currentMatches || !myUserId) return null;
+    return currentMatches.find(
+      (m) => m.player1_id === myUserId || m.player2_id === myUserId
+    );
+  }, [currentMatches, myUserId]);
 
+  // Round countdown timer
   useEffect(() => {
-    if (!endTime) return;
+    if (battleStatus !== 'active') return;
+    const duration = myMatch?.duration_seconds || 60;
+    setRoundTimeLeft(duration);
     const interval = setInterval(() => {
-        const now = new Date();
-        const diff = endTime - now;
-        if (diff <= 0) {
-            setTimeLeft("00:00:00");
-            clearInterval(interval);
-        } else {
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            setTimeLeft(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
-        }
+      setRoundTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
-  }, [endTime]);
+  }, [currentRound, battleStatus, myMatch]);
+
+  const formatTime = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  };
+
+  const roundNames = ['', 'R16', 'Chorak final', 'Yarim final', 'FINAL'];
+  const roundName = roundNames[currentRound] || `Raund ${currentRound}`;
+
+  // If battle hasn't started yet
+  if (battleStatus === 'waiting') {
+    return (
+      <div className="arena-waiting">
+        <motion.div
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="waiting-pulse"
+        >
+          <span className="waiting-icon">⏳</span>
+          <p className="waiting-main">Battle boshlanishi kutilmoqda...</p>
+          <p className="waiting-sub">
+            {participants?.length || 0} / 16 o'yinchi
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // If battle is finished
+  if (battleStatus === 'finished') {
+    const winner = participants
+      ?.filter((p) => !p.is_eliminated)
+      .sort((a, b) => b.score - a.score)[0];
+
+    return (
+      <div className="arena-finished">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 200 }}
+        >
+          <span className="trophy-icon">🏆</span>
+          <h2 className="winner-title">G'olib!</h2>
+          <p className="winner-name">{winner?.username || 'Noma\'lum'}</p>
+          <p className="winner-score">{winner?.score || 0} 🚀</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="relative w-full px-4 py-6">
+    <div className="arena-container">
       {/* Connection indicator */}
-      <div className="flex items-center justify-center gap-2 mb-2">
-        <span
-          className={`w-2 h-2 rounded-full ${
-            isConnected ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]' : 'bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]'
-          }`}
-        />
-        <span className="text-xs text-gray-400 uppercase tracking-widest font-medium">
-          {isConnected ? 'Live Battle' : 'Reconnecting…'}
+      <div className="connection-bar">
+        <span className={`conn-dot ${isConnected ? 'connected' : 'disconnected'}`} />
+        <span className="conn-text">
+          {isConnected ? 'Live Battle' : 'Ulanmoqda…'}
         </span>
       </div>
-      
-      {/* Battle Timer */}
-      {timeLeft && (
-        <div className="text-center mb-6">
-            <span className="text-2xl font-mono font-bold text-white tracking-widest shadow-lg">
-                ⏱ {timeLeft}
-            </span>
+
+      {/* Round info */}
+      <div className="round-info">
+        <span className="round-badge">{roundName}</span>
+        <span className="round-number">
+          Raund {currentRound}/{totalRounds}
+        </span>
+      </div>
+
+      {/* Timer */}
+      <motion.div
+        className="round-timer"
+        animate={roundTimeLeft <= 10 ? { color: ['#fff', '#ef4444', '#fff'] } : {}}
+        transition={{ duration: 1, repeat: roundTimeLeft <= 10 ? Infinity : 0 }}
+      >
+        ⏱ {formatTime(roundTimeLeft)}
+      </motion.div>
+
+      {/* Active Match (user's current 1v1) */}
+      {myMatch ? (
+        <div className="active-match">
+          <MatchCard
+            match={myMatch}
+            myUserId={myUserId}
+            scores={scores}
+            isMyMatch={true}
+          />
+        </div>
+      ) : (
+        <div className="eliminated-message">
+          <p>😔 Siz eliminatsiya qilindingiz</p>
+          <p className="sub">Boshqa matchlarni tomosha qiling</p>
         </div>
       )}
 
-      {/* VS Banner */}
-      <div className="flex items-center justify-center mb-2">
-        <motion.span
-          className="text-xs font-bold tracking-[0.3em] text-gray-500 uppercase"
-          animate={{ opacity: [0.4, 1, 0.4] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          ⚔️ Battle Arena ⚔️
-        </motion.span>
-      </div>
-
-      {/* Score Panels */}
-      <div className="flex items-stretch gap-3 w-full">
-        <TeamPanel
-          label={player1.username}
-          score={scores.blue} // Assuming player1 is blue since join order 1 -> blue logic usually
-          emoji="🔵"
-          color="from-cyan-500/20 to-blue-600/20"
-          borderColor="border-cyan-400/20"
-          textColor="text-cyan-300"
-          glowClass="glow-blue"
-          avatar={player1.avatar_url}
-        />
-
-        {/* VS divider */}
-        <div className="flex flex-col items-center justify-center flex-shrink-0">
-          <motion.div
-            className="text-2xl font-black text-white/30"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
-            animate={{ scale: [1, 1.15, 1], rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            VS
-          </motion.div>
+      {/* All current matches */}
+      {currentMatches && currentMatches.length > 1 && (
+        <div className="other-matches">
+          <h3 className="matches-title">Boshqa matchlar</h3>
+          <div className="matches-grid">
+            {currentMatches
+              .filter((m) => m !== myMatch)
+              .map((match, idx) => (
+                <MatchCard key={idx} match={match} myUserId={myUserId} isMyMatch={false} />
+              ))}
+          </div>
         </div>
+      )}
 
-        <TeamPanel
-          label={player2.username}
-          score={scores.red}
-          emoji="🔴"
-          color="from-pink-500/20 to-red-600/20"
-          borderColor="border-pink-400/20"
-          textColor="text-pink-300"
-          glowClass="glow-red"
-          avatar={player2.avatar_url}
-        />
-      </div>
-
-      {/* Progress bar */}
-      <div className="mt-6 px-1">
-        <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden flex">
-          <motion.div
-            className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-l-full"
-            animate={{
-              width: scores.blue + scores.red > 0
-                ? `${(scores.blue / (scores.blue + scores.red)) * 100}%`
-                : '50%',
-            }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          />
-          <motion.div
-            className="h-full bg-gradient-to-r from-pink-500 to-red-500 rounded-r-full"
-            animate={{
-              width: scores.blue + scores.red > 0
-                ? `${(scores.red / (scores.blue + scores.red)) * 100}%`
-                : '50%',
-            }}
-            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
-          />
-        </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-[10px] text-cyan-400/60 font-mono">
-            {scores.blue + scores.red > 0
-              ? `${Math.round((scores.blue / (scores.blue + scores.red)) * 100)}%`
-              : '50%'}
-          </span>
-          <span className="text-[10px] text-pink-400/60 font-mono">
-            {scores.blue + scores.red > 0
-              ? `${Math.round((scores.red / (scores.blue + scores.red)) * 100)}%`
-              : '50%'}
-          </span>
+      {/* Bracket Overview */}
+      <div className="bracket-overview">
+        <h3 className="bracket-title">📊 Bracket</h3>
+        <div className="bracket-players">
+          {participants
+            ?.sort((a, b) => a.bracket_position - b.bracket_position)
+            .map((p, idx) => (
+              <motion.div
+                key={p.user_id}
+                className={`bracket-player ${p.is_eliminated ? 'eliminated' : 'active'} ${
+                  p.user_id === myUserId ? 'is-me' : ''
+                }`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.03 }}
+              >
+                <span className="bp-position">#{idx + 1}</span>
+                <span className="bp-name">{p.username}</span>
+                <span className="bp-score">{p.score} 🚀</span>
+                {p.is_eliminated && <span className="bp-elim">❌</span>}
+              </motion.div>
+            ))}
         </div>
       </div>
     </div>
   );
 }
 
-/* ── Team Score Panel ───────────────────────────────── */
-function TeamPanel({ label, score, emoji, color, borderColor, textColor, glowClass, avatar }) {
-  const [prevScore, setPrevScore] = useState(score);
-  const [isPulsing, setIsPulsing] = useState(false);
-
-  useEffect(() => {
-    if (score !== prevScore) {
-      setIsPulsing(true);
-      setPrevScore(score);
-      const timeout = setTimeout(() => setIsPulsing(false), 400);
-      return () => clearTimeout(timeout);
-    }
-  }, [score, prevScore]);
+/* ── Match Card ───────────────────────────────────────── */
+function MatchCard({ match, myUserId, scores, isMyMatch }) {
+  const p1Score = scores?.player1_score ?? match.player1_score ?? 0;
+  const p2Score = scores?.player2_score ?? match.player2_score ?? 0;
+  const isP1 = match.player1_id === myUserId;
 
   return (
     <motion.div
-      className={`
-        flex-1 glass-card p-4 flex flex-col items-center justify-center
-        bg-gradient-to-b ${color} ${borderColor} border
-        ${isPulsing ? glowClass : ''}
-      `}
-      animate={isPulsing ? { scale: [1, 1.03, 1] } : {}}
-      transition={{ duration: 0.3 }}
+      className={`match-card ${isMyMatch ? 'my-match' : 'other-match'}`}
+      layout
     >
-      <div className="mb-2 relative">
-           {avatar ? (
-                <img src={avatar} alt="Avatar" className="w-10 h-10 rounded-full border-2 border-white/20" />
-           ) : (
-                <span className="text-2xl">{emoji}</span>
-           )}
+      <div className="match-players">
+        {/* Player 1 */}
+        <div className={`match-player p1 ${isP1 && isMyMatch ? 'is-me' : ''}`}>
+          <span className="mp-emoji">🔵</span>
+          <span className="mp-name">{match.player1_username || `#${match.player1_id}`}</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={p1Score}
+              className="mp-score"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+            >
+              {p1Score}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+
+        <span className="match-vs">VS</span>
+
+        {/* Player 2 */}
+        <div className={`match-player p2 ${!isP1 && isMyMatch ? 'is-me' : ''}`}>
+          <span className="mp-emoji">🔴</span>
+          <span className="mp-name">{match.player2_username || `#${match.player2_id}`}</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={p2Score}
+              className="mp-score"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+            >
+              {p2Score}
+            </motion.span>
+          </AnimatePresence>
+        </div>
       </div>
-      
-      <span className={`text-xs font-semibold uppercase tracking-wider ${textColor} opacity-90 mb-2 truncate max-w-[80px]`}>
-        {label}
-      </span>
 
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={score}
-          className={`text-4xl font-black ${textColor} tabular-nums`}
-          style={{ fontFamily: 'Outfit, sans-serif' }}
-          initial={{ opacity: 0, y: 10, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -10, scale: 0.8 }}
-          transition={{ duration: 0.25 }}
-        >
-          {score.toLocaleString()}
-        </motion.span>
-      </AnimatePresence>
+      {/* Score Bar */}
+      {isMyMatch && (
+        <div className="match-bar">
+          <motion.div
+            className="bar-p1"
+            animate={{
+              width: p1Score + p2Score > 0
+                ? `${(p1Score / (p1Score + p2Score)) * 100}%`
+                : '50%',
+            }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          />
+          <motion.div
+            className="bar-p2"
+            animate={{
+              width: p1Score + p2Score > 0
+                ? `${(p2Score / (p1Score + p2Score)) * 100}%`
+                : '50%',
+            }}
+            transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+          />
+        </div>
+      )}
 
-      <span className="text-[10px] text-gray-500 mt-1">rockets</span>
+      {match.winner_id && (
+        <div className="match-winner">
+          🏆 G'olib: {match.winner_id === match.player1_id ? match.player1_username : match.player2_username}
+        </div>
+      )}
     </motion.div>
   );
 }
