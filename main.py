@@ -72,8 +72,19 @@ async def main() -> None:
     # Create tables (use Alembic migrations in production)
     from app.database.base import engine
 
+    # Run migrations first (adds new columns to existing tables)
+    from app.database.migrate import run_migrations
+    await run_migrations(engine)
+
+    # Then create any brand-new tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Seed daily tasks
+    from app.services import daily_task_service
+    async with session_factory() as session:
+        await daily_task_service.seed_default_tasks(session)
+        await session.commit()
 
     logger.info("Initialising Redis…")
     setup_redis(settings.REDIS_URL)

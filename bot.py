@@ -249,6 +249,12 @@ async def main() -> None:
     session_factory = setup_database(settings.DATABASE_URL)
 
     from app.database.base import engine
+
+    # Run migrations first (adds new columns to existing tables)
+    from app.database.migrate import run_migrations
+    await run_migrations(engine)
+
+    # Then create any brand-new tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
