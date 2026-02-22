@@ -233,24 +233,26 @@ body {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* ── Telegram-style Verification Checkmark ──────────── */
+/* ── Telegram-style Verification Checkmark / Rich Dog Badge ──────────── */
 .verified-badge {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
   background: linear-gradient(135deg, #2AABEE, #1E96D1);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   box-shadow: 0 2px 8px rgba(42, 171, 238, 0.4);
   animation: checkmark-pulse 2.5s ease-in-out infinite;
 }
 
 .verified-badge svg {
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   fill: white;
+  transform: translateY(1px);
+  /* Slight adjustment for visual center in star */
 }
 
 @keyframes checkmark-pulse {
