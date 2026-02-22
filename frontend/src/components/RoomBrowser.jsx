@@ -45,7 +45,7 @@ export default function RoomBrowser({
 
   const handleCopyLink = (inviteCode) => {
     const botUsername = 'rocketbattleebot'; // TODO: from env
-    const link = `https://t.me/${botUsername}?start=room_${inviteCode}`;
+    const link = `https://t.me/RocketBattle_bot?start=room_${inviteCode}`;
     navigator.clipboard.writeText(link).then(() => {
       showToast('📋 Havola nusxalandi!', 'success');
     }).catch(() => {

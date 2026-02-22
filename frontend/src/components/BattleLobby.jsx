@@ -17,7 +17,7 @@ export default function BattleLobby({
   const progress = (count / maxPlayers) * 100;
 
   const handleCopy = () => {
-    const link = `https://t.me/your_bot?start=room_${roomCode}`;
+    const link = `https://t.me/rocketbattle_uz_bot?start=room_${roomCode}`;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);

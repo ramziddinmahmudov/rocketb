@@ -9,7 +9,7 @@
  * Bottom Nav: Tasks, Gift, Store
  */
 import { useCallback, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 
 import RoomBrowser from './components/RoomBrowser';
 import BattleArena from './components/BattleArena';
@@ -126,9 +126,9 @@ export default function App() {
 
         // Build referral link
         const tg = window.Telegram?.WebApp;
-        const botUsername = tg?.initDataUnsafe?.user?.id;
-        if (botUsername) {
-          setReferralLink(`https://t.me/rocketbattle_uz_bot?start=${botUsername}`);
+        const userId = tg?.initDataUnsafe?.user?.id;
+        if (userId) {
+          setReferralLink(`https://t.me/RocketBattle_bot?start=${userId}`);
         }
 
         const { username: uname, first_name } = profileRes.data;
@@ -526,38 +526,39 @@ export default function App() {
                 <div
                   className="referral-link-card"
                   onClick={() => {
-                    navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`);
+                    navigator.clipboard?.writeText(referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`);
                     showToast('📋 Havola nusxalandi!', 'success');
                   }}
                 >
-                  {referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`}
+                  <p className="ref-url">
+                  {referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`}
+                  </p>
                 </div>
-
-                <button
-                  className="referral-copy-btn"
-                  onClick={() => {
-                    const link = referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`;
-                    navigator.clipboard?.writeText(link);
-                    showToast('📋 Havola nusxalandi!', 'success');
-                  }}
-                >
-                  📋 Nusxalash
-                </button>
-
-                <button
-                  className="referral-share-btn"
-                  onClick={() => {
-                    const link = referralLink || `https://t.me/rocketbattle_uz_bot?start=${myUserId}`;
-                    const text = `🚀 Rocket Battle o'yiniga qo'shiling! ${link}`;
-                    if (window.Telegram?.WebApp) {
-                      window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('🚀 Rocket Battle o\'yiniga qo\'shiling!')}`);
-                    } else {
-                      window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
-                    }
-                  }}
-                >
-                  📤 Ulashish
-                </button>
+                <div className="ref-actions">
+                  <button
+                    className="ref-btn copy-btn"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`);
+                      showToast('Havola nusxalandi!', 'success');
+                    }}
+                  >
+                    Nusxalash
+                  </button>
+                  <button
+                    className="ref-btn send-btn"
+                    onClick={() => {
+                      const link = referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`;
+                      const text = '🚀 Rocket Battle o\'yiniga qo\'shiling!';
+                      if (window.Telegram?.WebApp?.openTelegramLink) {
+                        window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
+                      } else {
+                        window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
+                      }
+                    }}
+                  >
+                    📤 Ulashish
+                  </button>
+                </div>
 
                 <p className="referral-bonus-info">Har bir do'st uchun +10 🚀 bonus!</p>
               </div>
