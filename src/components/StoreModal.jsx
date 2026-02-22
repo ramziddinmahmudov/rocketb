@@ -63,13 +63,13 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
 
           {/* Modal */}
           <motion.div
-            className="fixed inset-x-4 bottom-4 top-20 z-50 flex flex-col pointer-events-none p-4"
+            className="fixed inset-x-2 bottom-2 top-20 sm:inset-x-4 sm:bottom-4 z-50 flex flex-col pointer-events-none"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
-            <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-y-auto pointer-events-auto h-full flex flex-col relative max-w-md mx-auto w-full">
+            <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-4 sm:p-6 shadow-2xl overflow-y-auto pointer-events-auto h-full flex flex-col relative max-w-md mx-auto w-full">
               
               {/* Close Button */}
               <button 
@@ -110,7 +110,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
               )}
 
               {/* Rocket Packages */}
-              <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-4 flex-1 overflow-y-auto pr-1 custom-scrollbar pb-4">
                 {packages.map((pkg) => (
                     <div key={pkg.stars} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
