@@ -12,17 +12,6 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     """Main menu keyboard shown after /start and in profiles."""
     builder = InlineKeyboardBuilder()
     builder.row(
-        InlineKeyboardButton(text="📊 Balance", callback_data="balance"),
-        InlineKeyboardButton(text="🏪 Store", callback_data="store"),
-    )
-    builder.row(
-        InlineKeyboardButton(
-            text="⚔️ Join Battle",
-            web_app=WebAppInfo(url=settings.WEBAPP_URL),
-        ),
-        InlineKeyboardButton(text="👑 Buy VIP", callback_data="buy_vip"),
-    )
-    builder.row(
         InlineKeyboardButton(
             text="🎮 Open WebApp",
             web_app=WebAppInfo(url=settings.WEBAPP_URL),
