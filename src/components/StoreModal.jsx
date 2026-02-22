@@ -14,11 +14,13 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
   const handlePurchase = async (type, stars) => {
     setIsLoading(true);
     try {
+        console.log('[DEBUG] Creating invoice:', { type, items: stars });
         // 1. Get invoice link from backend
         const res = await api.client.post('/api/payment/create-invoice', { 
             type, 
             items: stars 
         });
+        console.log('[DEBUG] Invoice response:', res.data);
         const { invoice_link } = res.data;
 
         // 2. Open Telegram Invoice
@@ -27,8 +29,6 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
                 if (status === 'paid') {
                     showToast('Payment successful! Rockets incoming 🚀', 'success');
                     onClose();
-                    // Ideally trigger a balance refresh here or via socket
-                    // For now, page reload or simple toast is feedback enough until refresh logic is better
                     setTimeout(() => window.location.reload(), 1500); 
                 } else if (status === 'cancelled') {
                     showToast('Payment cancelled', 'info');
@@ -40,8 +40,12 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
              window.open(invoice_link, '_blank');
         }
     } catch (err) {
-        console.error("Purchase failed", err);
-        showToast("Failed to create invoice", "error");
+        console.error("[DEBUG] Purchase failed:", err);
+        const status = err.response?.status || 'N/A';
+        const detail = err.response?.data?.detail || err.message || 'Unknown error';
+        const debugMsg = `[${status}] ${detail}`;
+        console.error('[DEBUG] Error detail:', debugMsg);
+        showToast(`❌ ${debugMsg}`, 'error');
     } finally {
         setIsLoading(false);
     }
