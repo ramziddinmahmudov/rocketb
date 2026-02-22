@@ -127,7 +127,7 @@ export default function App() {
         const tg = window.Telegram?.WebApp;
         const userId = tg?.initDataUnsafe?.user?.id;
         if (userId) {
-          setReferralLink(`https://t.me/RocketBattle_bot?start=${userId}`);
+          setReferralLink(`https://t.me/rocketbattleebot?start=${userId}`);
         }
 
         const { username: uname, first_name } = profileRes.data;
@@ -512,19 +512,19 @@ export default function App() {
                 <div
                   className="referral-link-card"
                   onClick={() => {
-                    navigator.clipboard?.writeText(referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`);
+                    navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`);
                     showToast('📋 Havola nusxalandi!', 'success');
                   }}
                 >
                   <p className="ref-url">
-                  {referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`}
+                  {referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`}
                   </p>
                 </div>
                 <div className="ref-actions">
                   <button
                     className="ref-btn copy-btn"
                     onClick={() => {
-                      navigator.clipboard?.writeText(referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`);
+                      navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`);
                       showToast('Havola nusxalandi!', 'success');
                     }}
                   >
@@ -533,7 +533,7 @@ export default function App() {
                   <button
                     className="ref-btn send-btn"
                     onClick={() => {
-                      const link = referralLink || `https://t.me/RocketBattle_bot?start=${myUserId}`;
+                      const link = referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`;
                       const text = '🚀 Rocket Battle o\'yiniga qo\'shiling!';
                       if (window.Telegram?.WebApp?.openTelegramLink) {
                         window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
