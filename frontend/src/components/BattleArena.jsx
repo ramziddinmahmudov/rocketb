@@ -3,6 +3,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
+import { Clock, Trophy, Timer, BarChart3, XCircle, Rocket, Frown, CircleDot } from 'lucide-react';
 
 export default function BattleArena({
   scores,
@@ -53,7 +54,7 @@ export default function BattleArena({
           transition={{ duration: 2, repeat: Infinity }}
           className="waiting-pulse"
         >
-          <span className="waiting-icon">⏳</span>
+          <span className="waiting-icon"><Clock size={28} color="#facc15" /></span>
           <p className="waiting-main">Battle boshlanishi kutilmoqda...</p>
           <p className="waiting-sub">
             {participants?.length || 0} / 16 o'yinchi
@@ -76,10 +77,10 @@ export default function BattleArena({
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200 }}
         >
-          <span className="trophy-icon">🏆</span>
+          <span className="trophy-icon"><Trophy size={48} color="#facc15" /></span>
           <h2 className="winner-title">G'olib!</h2>
           <p className="winner-name">{winner?.username || 'Noma\'lum'}</p>
-          <p className="winner-score">{winner?.score || 0} 🚀</p>
+          <p className="winner-score">{winner?.score || 0} <Rocket size={16} color="#f97316" style={{ display: 'inline', verticalAlign: 'middle' }} /></p>
         </motion.div>
       </div>
     );
@@ -109,7 +110,7 @@ export default function BattleArena({
         animate={roundTimeLeft <= 10 ? { color: ['#fff', '#ef4444', '#fff'] } : {}}
         transition={{ duration: 1, repeat: roundTimeLeft <= 10 ? Infinity : 0 }}
       >
-        ⏱ {formatTime(roundTimeLeft)}
+        <Timer size={16} color="#38bdf8" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {formatTime(roundTimeLeft)}
       </motion.div>
 
       {/* Active Match (user's current 1v1) */}
@@ -124,7 +125,7 @@ export default function BattleArena({
         </div>
       ) : (
         <div className="eliminated-message">
-          <p>😔 Siz eliminatsiya qilindingiz</p>
+          <p><Frown size={20} color="#f87171" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Siz eliminatsiya qilindingiz</p>
           <p className="sub">Boshqa matchlarni tomosha qiling</p>
         </div>
       )}
@@ -145,7 +146,7 @@ export default function BattleArena({
 
       {/* Bracket Overview */}
       <div className="bracket-overview">
-        <h3 className="bracket-title">📊 Bracket</h3>
+        <h3 className="bracket-title"><BarChart3 size={18} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Bracket</h3>
         <div className="bracket-players">
           {participants
             ?.sort((a, b) => a.bracket_position - b.bracket_position)
@@ -161,8 +162,8 @@ export default function BattleArena({
               >
                 <span className="bp-position">#{idx + 1}</span>
                 <span className="bp-name">{p.username}</span>
-                <span className="bp-score">{p.score} 🚀</span>
-                {p.is_eliminated && <span className="bp-elim">❌</span>}
+                <span className="bp-score">{p.score} <Rocket size={12} color="#f97316" style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
+                {p.is_eliminated && <span className="bp-elim"><XCircle size={14} color="#f87171" /></span>}
               </motion.div>
             ))}
         </div>
@@ -185,7 +186,7 @@ function MatchCard({ match, myUserId, scores, isMyMatch }) {
       <div className="match-players">
         {/* Player 1 */}
         <div className={`match-player p1 ${isP1 && isMyMatch ? 'is-me' : ''}`}>
-          <span className="mp-emoji">🔵</span>
+          <span className="mp-emoji"><CircleDot size={16} color="#3b82f6" /></span>
           <span className="mp-name">{match.player1_username || `#${match.player1_id}`}</span>
           <AnimatePresence mode="wait">
             <motion.span
@@ -204,7 +205,7 @@ function MatchCard({ match, myUserId, scores, isMyMatch }) {
 
         {/* Player 2 */}
         <div className={`match-player p2 ${!isP1 && isMyMatch ? 'is-me' : ''}`}>
-          <span className="mp-emoji">🔴</span>
+          <span className="mp-emoji"><CircleDot size={16} color="#ef4444" /></span>
           <span className="mp-name">{match.player2_username || `#${match.player2_id}`}</span>
           <AnimatePresence mode="wait">
             <motion.span
@@ -246,7 +247,7 @@ function MatchCard({ match, myUserId, scores, isMyMatch }) {
 
       {match.winner_id && (
         <div className="match-winner">
-          🏆 G'olib: {match.winner_id === match.player1_id ? match.player1_username : match.player2_username}
+          <Trophy size={16} color="#facc15" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> G'olib: {match.winner_id === match.player1_id ? match.player1_username : match.player2_username}
         </div>
       )}
     </motion.div>

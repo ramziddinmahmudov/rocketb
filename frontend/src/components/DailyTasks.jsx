@@ -3,6 +3,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { ClipboardList, X, Rocket, Loader, Gift, CheckCircle2 } from 'lucide-react';
 import { api } from '../api/client';
 
 export default function DailyTasks({ isOpen, onClose, onBalanceUpdate, showToast }) {
@@ -62,8 +63,8 @@ export default function DailyTasks({ isOpen, onClose, onBalanceUpdate, showToast
         >
           {/* Header */}
           <div className="dt-header">
-            <h2 className="dt-title">📋 Kunlik vazifalar</h2>
-            <button className="dt-close" onClick={onClose}>✕</button>
+            <h2 className="dt-title"><ClipboardList size={20} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} /> Kunlik vazifalar</h2>
+            <button className="dt-close" onClick={onClose}><X size={20} /></button>
           </div>
 
           {/* Tasks List */}
@@ -73,7 +74,9 @@ export default function DailyTasks({ isOpen, onClose, onBalanceUpdate, showToast
                 <motion.span
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                >⏳</motion.span>
+                >
+                  <Loader size={18} color="#a78bfa" />
+                </motion.span>
                 Yuklanmoqda...
               </div>
             ) : tasks.length === 0 ? (
@@ -90,7 +93,7 @@ export default function DailyTasks({ isOpen, onClose, onBalanceUpdate, showToast
                   <div className="dt-card-content">
                     <div className="dt-card-header">
                       <h3 className="dt-card-title">{task.title}</h3>
-                      <span className="dt-reward">+{task.rocket_reward} 🚀</span>
+                      <span className="dt-reward">+{task.rocket_reward} <Rocket size={14} color="#f97316" style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
                     </div>
                     <p className="dt-card-desc">{task.description}</p>
 
@@ -119,12 +122,12 @@ export default function DailyTasks({ isOpen, onClose, onBalanceUpdate, showToast
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        {claiming === task.id ? '⏳' : '🎁 Olish'}
+                        {claiming === task.id ? <Loader size={14} className="spin-icon" /> : <><Gift size={14} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Olish</>}
                       </motion.button>
                     )}
 
                     {task.claimed && (
-                      <span className="dt-claimed-badge">✅ Olingan</span>
+                      <span className="dt-claimed-badge"><CheckCircle2 size={14} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Olingan</span>
                     )}
                   </div>
                 </motion.div>

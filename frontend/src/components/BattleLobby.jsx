@@ -3,6 +3,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
+import { Swords, Link2, Check, Clock, Rocket } from 'lucide-react';
 
 export default function BattleLobby({
   roomCode,
@@ -17,7 +18,7 @@ export default function BattleLobby({
   const progress = (count / maxPlayers) * 100;
 
   const handleCopy = () => {
-    const link = `https://t.me/rocketbattle_uz_bot?start=room_${roomCode}`;
+    const link = `https://t.me/RocketBattle_bot?start=room_${roomCode}`;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -34,7 +35,7 @@ export default function BattleLobby({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          🏟️ {roomName || 'Battle Room'}
+          <Swords size={20} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />{roomName || 'Battle Room'}
         </motion.h2>
         <div className="lobby-code">
           Kod: <span className="code-text">{roomCode}</span>
@@ -73,7 +74,7 @@ export default function BattleLobby({
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            ⏳ {maxPlayers - count} ta o'yinchi kutilmoqda...
+            <Clock size={16} color="#facc15" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {maxPlayers - count} ta o'yinchi kutilmoqda...
           </motion.p>
         )}
       </div>
@@ -85,7 +86,7 @@ export default function BattleLobby({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        {copied ? '✅ Nusxalandi!' : '🔗 Havola nusxalash'}
+        {copied ? <><Check size={16} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Nusxalandi!</> : <><Link2 size={16} color="#38bdf8" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Havola nusxalash</>}
       </motion.button>
 
       {/* Player Grid */}
@@ -133,7 +134,7 @@ export default function BattleLobby({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          🚀 Battle boshlanmoqda...
+          <Rocket size={20} color="#f97316" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Battle boshlanmoqda...
         </motion.div>
       )}
     </div>
