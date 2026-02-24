@@ -6,10 +6,26 @@ import logging
 
 from aiogram import Router, types
 from aiogram.filters import CommandObject, CommandStart
+from aiogram.types import FSInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.keyboards.inline import main_menu_kb
 from app.services import user_service
+
+router = Router(name="start")
+logger = logging.getLogger(__name__)
+
+PROMO_TEXT = (
+    "<b>What is Rocket Battle?</b>\n"
+    "It's not just a game. It's a <b>flex</b>. "
+    "Earn rockets. Hold them. Watch your empire grow "
+    "while you sleep like a boss.\n\n"
+    "<b>Need help or have questions?</b>\n"
+    "💬 Message @rocketbattleebot, we've got you covered!\n\n"
+    "<b>Ready to fly?</b>\n"
+    "🚀 Just tap the 🐶 <b>Play</b> 🐶 button!"
+)
+
 
 router = Router(name="start")
 logger = logging.getLogger(__name__)
@@ -37,27 +53,40 @@ async def cmd_start_deeplink(
     )
     await session.commit()
 
+    photo = FSInputFile("public/splash.png")
+
     if created and referrer_id:
-        await message.answer(
-            f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
-            f"You've been invited by a friend!\n"
-            f"🎁 +10 bonus rockets for you and your referrer.\n\n"
-            f"Your balance: <b>{user.balance} 🚀</b>",
+        await message.answer_photo(
+            photo=photo,
+            caption=(
+                f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
+                f"You've been invited by a friend!\n"
+                f"🎁 +10 bonus rockets for you and your referrer.\n"
+                f"Your balance: <b>{user.balance} 🚀</b>\n\n"
+                f"{PROMO_TEXT}"
+            ),
             parse_mode="HTML",
             reply_markup=main_menu_kb(),
         )
     elif created:
-        await message.answer(
-            f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
-            f"You start with <b>{user.balance} 🚀</b> rockets.\n"
-            f"Join a battle and show your power!",
+        await message.answer_photo(
+            photo=photo,
+            caption=(
+                f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
+                f"You start with <b>{user.balance} 🚀</b> rockets.\n\n"
+                f"{PROMO_TEXT}"
+            ),
             parse_mode="HTML",
             reply_markup=main_menu_kb(),
         )
     else:
-        await message.answer(
-            f"🚀 <b>Welcome back!</b>\n\n"
-            f"Your balance: <b>{user.balance} 🚀</b>",
+        await message.answer_photo(
+            photo=photo,
+            caption=(
+                f"🚀 <b>Welcome back!</b>\n\n"
+                f"Your balance: <b>{user.balance} 🚀</b>\n\n"
+                f"{PROMO_TEXT}"
+            ),
             parse_mode="HTML",
             reply_markup=main_menu_kb(),
         )
@@ -81,18 +110,27 @@ async def cmd_start(
     )
     await session.commit()
 
+    photo = FSInputFile("public/splash.png")
+
     if created:
-        await message.answer(
-            f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
-            f"You start with <b>{user.balance} 🚀</b> rockets.\n"
-            f"Join a battle and show your power!",
+        await message.answer_photo(
+            photo=photo,
+            caption=(
+                f"🚀 <b>Welcome to Rocket Battle!</b>\n\n"
+                f"You start with <b>{user.balance} 🚀</b> rockets.\n\n"
+                f"{PROMO_TEXT}"
+            ),
             parse_mode="HTML",
             reply_markup=main_menu_kb(),
         )
     else:
-        await message.answer(
-            f"🚀 <b>Welcome back!</b>\n\n"
-            f"Your balance: <b>{user.balance} 🚀</b>",
+        await message.answer_photo(
+            photo=photo,
+            caption=(
+                f"🚀 <b>Welcome back!</b>\n\n"
+                f"Your balance: <b>{user.balance} 🚀</b>\n\n"
+                f"{PROMO_TEXT}"
+            ),
             parse_mode="HTML",
             reply_markup=main_menu_kb(),
         )

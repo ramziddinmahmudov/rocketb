@@ -13,8 +13,20 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="🎮 Open WebApp",
+            text="🐶 Play 🐶",
             web_app=WebAppInfo(url=settings.WEBAPP_URL),
+        ),
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="Join Community ↗",
+            url="https://t.me/rocketbattleebot",  # Placeholder link
+        ),
+    )
+    builder.row(
+        InlineKeyboardButton(
+            text="Follow on X ↗",
+            url="https://x.com",  # Placeholder link
         ),
     )
     return builder.as_markup()
