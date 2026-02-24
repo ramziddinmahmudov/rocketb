@@ -96,6 +96,13 @@ export default function App() {
     }
   }, [scores]);
 
+  // Transition from Lobby to Arena dynamically if battle starts
+  useEffect(() => {
+    if (battleStatus === 'active' && screen === SCREEN.LOBBY) {
+      setScreen(SCREEN.ARENA);
+    }
+  }, [battleStatus, screen]);
+
   // ── Init Telegram WebApp & Fetch Profile ────────────────
   useEffect(() => {
     const tg = window.Telegram?.WebApp;

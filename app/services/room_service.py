@@ -144,8 +144,7 @@ async def join_room(
     )
     count = count_result.scalar_one()
 
-    if count >= room.max_players:
-        raise ValueError("Room is full")
+    new_count = count + 1
 
     # Add participant with bracket position
     participant = BattleParticipant(
@@ -158,8 +157,15 @@ async def join_room(
 
     logger.info(
         "User %d joined room %s (battle %s), position %d, total %d/%d",
-        user_id, room.invite_code, battle.id, count, count + 1, room.max_players,
+        user_id, room.invite_code, battle.id, count, new_count, room.max_players,
     )
+
+    if new_count >= room.max_players:
+        from app.services.battle_service import _start_battle
+        await _start_battle(session, battle)
+        # Create a new room with the same name to keep the cycle going
+        await create_room(session, creator_id=room.creator_id, name=room.name)
+        logger.info("Room %s reached max players, battle %s started. A new room was automatically created.", room.invite_code, battle.id)
 
     return room, battle, False
 
