@@ -497,7 +497,7 @@ export default function App() {
               roomCode={currentRoom?.invite_code}
               roomName={currentRoom?.name || 'Battle Room'}
               participants={participants}
-              maxPlayers={currentRoom?.max_players || 16}
+              maxPlayers={currentRoom?.max_players || 4}
               battleStatus={battleStatus}
               onLeave={handleLeaveRoom}
             />

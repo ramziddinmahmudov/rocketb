@@ -80,7 +80,7 @@ export default function RoomBrowser({
                 </div>
                 <div className="rb-room-meta">
                   <span className="rb-player-count">
-                    <Users size={14} color="#38bdf8" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {room.player_count || 0}/{room.max_players || 16}
+                    <Users size={14} color="#38bdf8" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> {room.player_count || 0}/{room.max_players || 4}
                   </span>
                   <span className="rb-room-code">
                     #{room.invite_code}
@@ -91,7 +91,7 @@ export default function RoomBrowser({
                   <div
                     className="rb-player-bar-fill"
                     style={{
-                      width: `${((room.player_count || 0) / (room.max_players || 16)) * 100}%`,
+                      width: `${((room.player_count || 0) / (room.max_players || 4)) * 100}%`,
                     }}
                   />
                 </div>
