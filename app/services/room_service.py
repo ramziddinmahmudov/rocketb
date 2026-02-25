@@ -188,7 +188,11 @@ async def list_active_rooms(session: AsyncSession) -> list[BattleRoom]:
     """List all active rooms with waiting battles."""
     result = await session.execute(
         select(BattleRoom)
-        .where(BattleRoom.is_active == True)
+        .join(Battle, BattleRoom.id == Battle.room_id)
+        .where(
+            BattleRoom.is_active == True,
+            Battle.status == BattleStatus.WAITING
+        )
         .order_by(BattleRoom.created_at.desc())
         .limit(50)
     )
