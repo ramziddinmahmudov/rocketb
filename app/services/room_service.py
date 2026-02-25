@@ -185,13 +185,13 @@ async def get_room_participants_count(
 
 
 async def list_active_rooms(session: AsyncSession) -> list[BattleRoom]:
-    """List all active rooms with waiting battles."""
+    """List all active rooms with waiting or active battles."""
     result = await session.execute(
         select(BattleRoom)
         .join(Battle, BattleRoom.id == Battle.room_id)
         .where(
             BattleRoom.is_active == True,
-            Battle.status == BattleStatus.WAITING
+            Battle.status.in_([BattleStatus.WAITING, BattleStatus.ACTIVE])
         )
         .order_by(BattleRoom.created_at.desc())
         .limit(50)

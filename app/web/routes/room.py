@@ -199,8 +199,16 @@ async def list_rooms(
     async with base.async_session_factory() as session:
         rooms = await room_service.list_active_rooms(session)
         
-        # Auto-create if fully empty to kickstart the room lifecycle
-        if not rooms:
+        # Check if there are any WAITING rooms
+        has_waiting = False
+        for room in rooms:
+            battle = await room_service.get_room_battle(session, room.id)
+            if battle and battle.status.value == "waiting":
+                has_waiting = True
+                break
+
+        # Auto-create if no WAITING rooms exist to kickstart the room lifecycle
+        if not has_waiting:
             try:
                 new_room = await room_service.create_room(session, creator_id=user_id, name="Global Battle")
                 await session.commit()
