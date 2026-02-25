@@ -8,13 +8,17 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from app.config.settings import settings
 
 
-def main_menu_kb() -> InlineKeyboardMarkup:
+def main_menu_kb(start_param: str | None = None) -> InlineKeyboardMarkup:
     """Main menu keyboard shown after /start and in profiles."""
+    url = settings.WEBAPP_URL
+    if start_param:
+        url = f"{url}?start={start_param}"
+
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
             text="🐶 Play 🐶",
-            web_app=WebAppInfo(url=settings.WEBAPP_URL),
+            web_app=WebAppInfo(url=url),
         ),
     )
     builder.row(

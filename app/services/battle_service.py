@@ -233,31 +233,31 @@ async def get_current_round_matches(
 async def update_round_score(
     session: AsyncSession,
     battle_id: uuid.UUID,
-    user_id: int,
+    target_id: int,
     amount: int,
 ) -> tuple[int, BattleRound]:
     """Add rockets to a player's score in their current active round.
 
     Returns (new_score, round).
     """
-    # Find the player's active round
+    # Find the target player's active round
     result = await session.execute(
         select(BattleRound)
         .where(
             BattleRound.battle_id == battle_id,
             BattleRound.status == RoundStatus.ACTIVE,
             (
-                (BattleRound.player1_id == user_id)
-                | (BattleRound.player2_id == user_id)
+                (BattleRound.player1_id == target_id)
+                | (BattleRound.player2_id == target_id)
             ),
         )
     )
     round_match = result.scalar_one_or_none()
 
     if round_match is None:
-        raise ValueError(f"User {user_id} has no active round in battle {battle_id}")
+        raise ValueError(f"Target {target_id} has no active round in battle {battle_id}")
 
-    if round_match.player1_id == user_id:
+    if round_match.player1_id == target_id:
         round_match.player1_score += amount
         new_score = round_match.player1_score
     else:
@@ -268,7 +268,7 @@ async def update_round_score(
     p_result = await session.execute(
         select(BattleParticipant).where(
             BattleParticipant.battle_id == battle_id,
-            BattleParticipant.user_id == user_id,
+            BattleParticipant.user_id == target_id,
         )
     )
     participant = p_result.scalar_one_or_none()

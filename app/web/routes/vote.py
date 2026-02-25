@@ -33,6 +33,7 @@ router = APIRouter(prefix="/api", tags=["voting"])
 class VoteRequest(BaseModel):
     battle_id: uuid.UUID
     amount: int = Field(gt=0, le=100, description="Number of rockets to spend")
+    target_id: int | None = Field(default=None, description="Optional ID of the player to vote for")
 
 
 class VoteResponse(BaseModel):
@@ -90,10 +91,12 @@ async def vote(
     try:
         async with base.async_session_factory() as session:
             try:
+                target_user_id = body.target_id if body.target_id else user_id
                 result: VoteResult = await process_vote(
                     session=session,
                     redis=redis,
                     user_id=user_id,
+                    target_id=target_user_id,
                     battle_id=body.battle_id,
                     amount=body.amount,
                 )

@@ -28,6 +28,8 @@ class ParticipantSchema(BaseModel):
     username: str
     first_name: str | None = None
     avatar_url: str | None = None
+    is_vip: bool = False
+    vip_emoji: str | None = None
     score: int = 0
     bracket_position: int = 0
     is_eliminated: bool = False
@@ -230,6 +232,8 @@ def _build_participants(battle) -> list[ParticipantSchema]:
             username=u.username or f"User {u.id}",
             first_name=u.first_name,
             avatar_url=avatar,
+            is_vip=u.is_vip,
+            vip_emoji=u.vip_emoji,
             score=p.score,
             bracket_position=p.bracket_position,
             is_eliminated=p.is_eliminated,

@@ -89,6 +89,10 @@ class User(Base):
     vip_expire_date: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True,
     )
+    vip_emoji: Mapped[str | None] = mapped_column(
+        String(10), nullable=True,
+        doc="Custom emoji/sticker for VIP users",
+    )
     daily_rockets_remaining: Mapped[int] = mapped_column(
         Integer, default=300, server_default="300",
         doc="Rockets available to use today (resets daily)",

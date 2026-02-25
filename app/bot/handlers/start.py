@@ -39,11 +39,15 @@ async def cmd_start_deeplink(
 ) -> None:
     """Handle ``/start <referral_id>``."""
     referrer_id: int | None = None
+    start_param: str | None = None
+
     if command.args:
-        try:
-            referrer_id = int(command.args)
-        except ValueError:
-            referrer_id = None
+        start_param = command.args
+        if command.args.isdigit():
+            try:
+                referrer_id = int(command.args)
+            except ValueError:
+                pass
 
     user, created = await user_service.get_or_create_user(
         session,
@@ -66,7 +70,7 @@ async def cmd_start_deeplink(
                 f"{PROMO_TEXT}"
             ),
             parse_mode="HTML",
-            reply_markup=main_menu_kb(),
+            reply_markup=main_menu_kb(start_param),
         )
     elif created:
         await message.answer_photo(
@@ -77,7 +81,7 @@ async def cmd_start_deeplink(
                 f"{PROMO_TEXT}"
             ),
             parse_mode="HTML",
-            reply_markup=main_menu_kb(),
+            reply_markup=main_menu_kb(start_param),
         )
     else:
         await message.answer_photo(
@@ -88,7 +92,7 @@ async def cmd_start_deeplink(
                 f"{PROMO_TEXT}"
             ),
             parse_mode="HTML",
-            reply_markup=main_menu_kb(),
+            reply_markup=main_menu_kb(start_param),
         )
 
     logger.info(

@@ -74,6 +74,7 @@ async def process_vote(
     session: AsyncSession,
     redis: RedisService,
     user_id: int,
+    target_id: int,
     battle_id: uuid.UUID,
     amount: int,
 ) -> VoteResult:
@@ -122,7 +123,7 @@ async def process_vote(
 
         # 5 ── Update round score ─────────────────────────────
         new_score, round_match = await battle_service.update_round_score(
-            session, battle_id, user_id, amount,
+            session, battle_id, target_id, amount,
         )
 
         await session.flush()
