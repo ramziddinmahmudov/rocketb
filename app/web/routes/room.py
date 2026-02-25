@@ -204,7 +204,7 @@ async def list_rooms(
             try:
                 new_room = await room_service.create_room(session, creator_id=user_id, name="Global Battle")
                 await session.commit()
-                rooms = [new_room]
+                rooms = await room_service.list_active_rooms(session)
                 logger.info("Auto-created initial room %s by user %d", new_room.invite_code, user_id)
             except Exception as e:
                 await session.rollback()
