@@ -418,7 +418,7 @@ async def get_waiting_battle_for_user(
             selectinload(Battle.participants).selectinload(BattleParticipant.user)
         )
     )
-    return result.scalar_one_or_none()
+    return result.scalars().first()
 
 
 async def get_battle_with_participants(
