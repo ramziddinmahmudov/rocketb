@@ -17,7 +17,7 @@ def main_menu_kb(start_param: str | None = None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     builder.row(
         InlineKeyboardButton(
-            text="🐶 Play 🐶",
+            text="Play",
             web_app=WebAppInfo(url=url),
         ),
     )
