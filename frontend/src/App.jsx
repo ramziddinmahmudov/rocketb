@@ -164,6 +164,10 @@ export default function App() {
             await handleVoteDeepLink(bId, targetId);
           }
         }
+
+        // Wait an extra 2.5s so the splash screen doesn't instantly vanish on fast networks
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
       } catch (err) {
         console.error('Init failed:', err);
         if (err.response?.status === 401) {
@@ -372,7 +376,13 @@ export default function App() {
   );
 
   // ── Early returns AFTER all hooks ──────────────────────
-  if (!isAppReady) return <SplashScreen />;
+  if (!isAppReady) {
+    return (
+      <AnimatePresence>
+        <SplashScreen />
+      </AnimatePresence>
+    );
+  }
 
   if (isAuthError) {
     return (

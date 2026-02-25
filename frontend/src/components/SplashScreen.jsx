@@ -7,10 +7,11 @@ export default function SplashScreen() {
             <motion.img 
                 src="/splash.png" 
                 alt="Rocket Battle Splash"
-                className="absolute inset-0 w-full h-full object-cover"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="absolute inset-0 w-full h-full object-contain"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.05 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
             />
         </div>
     );
