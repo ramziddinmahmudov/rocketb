@@ -6,11 +6,12 @@ import logging
 
 from aiogram import Router, types
 from aiogram.filters import CommandObject, CommandStart
-from aiogram.types import FSInputFile
+from aiogram.types import URLInputFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.keyboards.inline import main_menu_kb
 from app.services import user_service
+from app.config.settings import settings
 
 router = Router(name="start")
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ PROMO_TEXT = (
     "<b>Need help or have questions?</b>\n"
     "💬 Message @rocketbattleebot, we've got you covered!\n\n"
     "<b>Ready to fly?</b>\n"
-    "🚀 Just tap the 🐶 <b>Play</b> 🐶 button!"
+    "🚀 Just tap the <b>Play</b> button!"
 )
 
 
@@ -57,7 +58,7 @@ async def cmd_start_deeplink(
     )
     await session.commit()
 
-    photo = FSInputFile("public/splash.png")
+    photo = URLInputFile(f"{settings.WEBAPP_URL}/splash.png")
 
     if created and referrer_id:
         await message.answer_photo(
@@ -114,7 +115,7 @@ async def cmd_start(
     )
     await session.commit()
 
-    photo = FSInputFile("public/splash.png")
+    photo = URLInputFile(f"{settings.WEBAPP_URL}/splash.png")
 
     if created:
         await message.answer_photo(

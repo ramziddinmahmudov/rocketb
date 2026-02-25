@@ -111,15 +111,6 @@ export default function RoomBrowser({
                 >
                   <Link2 size={16} color="#38bdf8" />
                 </button>
-                {room.creator_id === myUserId && (
-                  <button
-                    className="rb-delete-btn"
-                    onClick={() => onDeleteRoom(room.id)}
-                    title="Xonani o'chirish"
-                  >
-                    <Trash2 size={16} color="#f87171" />
-                  </button>
-                )}
               </div>
             </motion.div>
           ))
