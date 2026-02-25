@@ -129,7 +129,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
               )}
 
               {isVip && (
-                  <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-2xl p-4 mb-6 relative overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-2xl p-4 mb-6 relative overflow-hidden mt-6">
                     <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
                         VIP PERK
                     </div>
@@ -158,7 +158,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
               )}
 
               {/* Rocket Packages */}
-              <div className="space-y-4 flex-1 overflow-y-auto pr-1 custom-scrollbar pb-4">
+              <div className="space-y-4 flex-1 overflow-y-auto pr-1 custom-scrollbar pb-4 mt-4">
                 {packages.map((pkg) => (
                     <div key={pkg.stars} className="bg-white/5 border border-white/5 rounded-2xl p-4 flex items-center justify-between hover:bg-white/10 transition-colors">
                         <div className="flex items-center gap-3">
