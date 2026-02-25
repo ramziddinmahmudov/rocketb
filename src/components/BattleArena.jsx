@@ -44,7 +44,7 @@ export default function BattleArena({
     return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
   };
 
-  const roundNames = ['', 'R16', 'Chorak final', 'Yarim final', 'FINAL'];
+  const roundNames = ['', 'Yarim final', 'FINAL'];
   const roundName = roundNames[currentRound] || `Raund ${currentRound}`;
 
   const handleShareVote = () => {
@@ -69,7 +69,7 @@ export default function BattleArena({
           <span className="waiting-icon"><Clock size={28} color="#facc15" /></span>
           <p className="waiting-main">Battle boshlanishi kutilmoqda...</p>
           <p className="waiting-sub">
-            {participants?.length || 0} / 16 o'yinchi
+            {participants?.length || 0} / 4 o'yinchi
           </p>
         </motion.div>
       </div>
