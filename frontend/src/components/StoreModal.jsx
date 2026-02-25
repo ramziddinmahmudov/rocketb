@@ -82,13 +82,13 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
 
           {/* Modal */}
           <motion.div
-            className="fixed inset-0 top-[10vh] z-50 flex flex-col pointer-events-none p-4 sm:p-6"
+            className="fixed inset-0 top-[5vh] z-50 flex flex-col pointer-events-none p-6 sm:p-8"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           >
-            <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-4 sm:p-6 shadow-2xl overflow-y-auto pointer-events-auto h-full flex flex-col relative max-w-md mx-auto w-full">
+            <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden pointer-events-auto h-full flex flex-col relative max-w-md mx-auto w-full mb-6">
               
               {/* Close Button */}
               <button 
