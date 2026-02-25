@@ -5,7 +5,7 @@ export default function SplashScreen() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#050A18] overflow-hidden">
             {/* Fullscreen Image */}
             <motion.img 
-                src="/splash.png" 
+                src="/splash1.png" 
                 alt="Rocket Battle Splash"
                 className="absolute inset-0 w-full h-full object-contain"
                 initial={{ opacity: 0, scale: 0.95 }}
