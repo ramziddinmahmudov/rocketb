@@ -186,9 +186,10 @@ async def get_room(
 async def list_rooms(
     x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
 ) -> list[RoomListItem]:
-    """List all active rooms."""
+    """List all active rooms. If none exist, auto-create one."""
     try:
-        validate_init_data(x_telegram_init_data)
+        user_data = validate_init_data(x_telegram_init_data)
+        user_id = user_data["id"] 
     except AuthError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
 
@@ -197,6 +198,18 @@ async def list_rooms(
 
     async with base.async_session_factory() as session:
         rooms = await room_service.list_active_rooms(session)
+        
+        # Auto-create if fully empty to kickstart the room lifecycle
+        if not rooms:
+            try:
+                new_room = await room_service.create_room(session, creator_id=user_id, name="Global Battle")
+                await session.commit()
+                rooms = [new_room]
+                logger.info("Auto-created initial room %s by user %d", new_room.invite_code, user_id)
+            except Exception as e:
+                await session.rollback()
+                logger.warning("Auto-create initial room failed: %s", e)
+
         items = []
         for room in rooms:
             battle = await room_service.get_room_battle(session, room.id)
