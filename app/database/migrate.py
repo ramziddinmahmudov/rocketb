@@ -34,6 +34,18 @@ MIGRATION_STATEMENTS: list[str] = [
     ALTER TABLE users
         ADD COLUMN IF NOT EXISTS daily_rockets_reset_at TIMESTAMPTZ;
     """,
+    """
+    ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS is_vip BOOLEAN DEFAULT FALSE;
+    """,
+    """
+    ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS vip_expire_date TIMESTAMPTZ;
+    """,
+    """
+    ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS vip_emoji VARCHAR(32);
+    """,
 
     # ── battle_participants: new columns ──────────────────────
     """
