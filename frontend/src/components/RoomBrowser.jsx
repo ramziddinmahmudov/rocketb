@@ -44,14 +44,7 @@ export default function RoomBrowser({
 
       {/* Random Button */}
       <div className="flex flex-col gap-3 px-4 mb-4">
-        <button
-          className="rb-create-btn w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 hover:bg-purple-500/30 hover:border-purple-500/50"
-          onClick={onJoinRandom}
-          disabled={isLoading}
-        >
-          <span>🎲</span>
-          <span>Tasodifiy o'yinga kirish</span>
-        </button>
+        {/* Random button removed as per request */}
       </div>
 
       {/* Room List */}
