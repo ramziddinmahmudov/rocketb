@@ -16,7 +16,7 @@ import { api } from '../api/client';
 export default function RoomBrowser({
   rooms,
   onJoinRoom,
-  onCreateRoom,
+  onCreateRoom, // This won't be called from UI anymore, but keeping prop for now backwards compatibility or remove it in parent
   onDeleteRoom,
   onRefresh,
   isLoading,
@@ -24,27 +24,6 @@ export default function RoomBrowser({
   showToast,
   onJoinRandom,
 }) {
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newRoomName, setNewRoomName] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
-
-  const handleCreate = async () => {
-    if (!newRoomName.trim()) {
-      showToast('Xona nomini kiriting', 'error');
-      return;
-    }
-    setIsCreating(true);
-    try {
-      await onCreateRoom(newRoomName.trim());
-      setNewRoomName('');
-      setShowCreateModal(false);
-    } catch (err) {
-      // parent handles error
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
   const handleCopyLink = (inviteCode) => {
     const botUsername = 'rocketbattleebot'; // TODO: from env
     const link = `https://t.me/rocketbattleebot?start=room_${inviteCode}`;
@@ -63,16 +42,8 @@ export default function RoomBrowser({
         <p className="rb-subtitle">Xona tanlang yoki yangi yarating</p>
       </div>
 
-      {/* Create Room & Random Button */}
+      {/* Random Button */}
       <div className="flex flex-col gap-3 px-4 mb-4">
-        <button
-          className="rb-create-btn w-full"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <span><PlusCircle size={18} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /></span>
-          <span>Yangi xona yaratish</span>
-        </button>
-
         <button
           className="rb-create-btn w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 hover:bg-purple-500/30 hover:border-purple-500/50"
           onClick={onJoinRandom}
@@ -171,53 +142,6 @@ export default function RoomBrowser({
         {isLoading ? <><Loader size={14} className="spin-icon" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Yangilanmoqda...</> : <><RefreshCw size={14} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} /> Yangilash</>}
       </button>
 
-      {/* ── Create Room Modal ──────────────────────── */}
-      <AnimatePresence>
-        {showCreateModal && (
-          <>
-            <motion.div
-              className="modal-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowCreateModal(false)}
-            />
-            <motion.div
-              className="rb-create-modal"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <h3 className="rb-modal-title"><Swords size={20} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Yangi xona</h3>
-              <input
-                type="text"
-                className="rb-modal-input"
-                placeholder="Xona nomi..."
-                value={newRoomName}
-                onChange={(e) => setNewRoomName(e.target.value)}
-                maxLength={50}
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              />
-              <div className="rb-modal-actions">
-                <button
-                  className="rb-modal-cancel"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Bekor qilish
-                </button>
-                <button
-                  className="rb-modal-confirm"
-                  onClick={handleCreate}
-                  disabled={isCreating || !newRoomName.trim()}
-                >
-                  {isCreating ? <Loader size={14} className="spin-icon" style={{ display: 'inline' }} /> : <><Sparkles size={14} color="#facc15" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />Yaratish</>}
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
