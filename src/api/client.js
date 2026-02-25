@@ -40,6 +40,7 @@ export const api = {
 
   // Profile
   getProfile: () => client.get('/api/profile'),
+  updateVipEmoji: (emoji) => client.post('/api/profile/emoji', { emoji }),
 
   // Battle
   joinBattle: () => client.post('/api/battle/join'),

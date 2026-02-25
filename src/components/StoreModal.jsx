@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
+export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vipEmoji, onEmojiUpdate }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [emojiInput, setEmojiInput] = useState(vipEmoji || '');
 
   const packages = [
     { stars: 10, rockets: 10, label: 'Starter' },
@@ -15,7 +16,6 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
     setIsLoading(true);
     try {
         console.log('[DEBUG] Creating invoice:', { type, items: stars });
-        // 1. Get invoice link from backend
         const res = await api.createInvoice(type, stars);
         console.log('[DEBUG] Invoice response:', res.data);
         const { invoice_link } = res.data;
@@ -43,6 +43,25 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
         const debugMsg = `[${status}] ${detail}`;
         console.error('[DEBUG] Error detail:', debugMsg);
         showToast(`❌ ${debugMsg}`, 'error');
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+  const handleUpdateEmoji = async () => {
+    if (!emojiInput) return;
+    setIsLoading(true);
+    try {
+        const res = await api.updateVipEmoji(emojiInput);
+        if (res.data.success) {
+            showToast('VIP Emoji updated! 👑', 'success');
+            if (onEmojiUpdate) {
+                onEmojiUpdate(res.data.vip_emoji);
+            }
+        }
+    } catch (err) {
+        console.error("Emoji update failed:", err);
+        showToast(err.response?.data?.detail || 'Failed to update emoji', 'error');
     } finally {
         setIsLoading(false);
     }
@@ -106,6 +125,35 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip }) {
                     >
                         {isLoading ? 'Processing...' : 'Upgrade for 1000 ⭐'}
                     </button>
+                  </div>
+              )}
+
+              {isVip && (
+                  <div className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/30 rounded-2xl p-4 mb-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                        VIP PERK
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-purple-300 mb-1">Custom Status Emoji</h3>
+                        <p className="text-xs text-purple-200/70 mb-3">Set an emoji or short text (max 10) to display next to your name.</p>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                type="text"
+                                maxLength={10}
+                                value={emojiInput}
+                                onChange={(e) => setEmojiInput(e.target.value)}
+                                placeholder="👑"
+                                className="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-white w-full focus:outline-none focus:border-purple-500 transition-colors"
+                            />
+                            <button
+                                onClick={handleUpdateEmoji}
+                                disabled={isLoading || emojiInput === (vipEmoji || '')}
+                                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
                   </div>
               )}
 

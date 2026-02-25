@@ -22,6 +22,7 @@ export default function RoomBrowser({
   isLoading,
   myUserId,
   showToast,
+  onJoinRandom,
 }) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
@@ -62,14 +63,25 @@ export default function RoomBrowser({
         <p className="rb-subtitle">Xona tanlang yoki yangi yarating</p>
       </div>
 
-      {/* Create Room Button */}
-      <button
-        className="rb-create-btn"
-        onClick={() => setShowCreateModal(true)}
-      >
-        <span><PlusCircle size={18} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /></span>
-        <span>Yangi xona yaratish</span>
-      </button>
+      {/* Create Room & Random Button */}
+      <div className="flex flex-col gap-3 px-4 mb-4">
+        <button
+          className="rb-create-btn w-full"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <span><PlusCircle size={18} color="#34d399" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /></span>
+          <span>Yangi xona yaratish</span>
+        </button>
+
+        <button
+          className="rb-create-btn w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border-purple-500/30 hover:bg-purple-500/30 hover:border-purple-500/50"
+          onClick={onJoinRandom}
+          disabled={isLoading}
+        >
+          <span>🎲</span>
+          <span>Tasodifiy o'yinga kirish</span>
+        </button>
+      </div>
 
       {/* Room List */}
       <div className="rb-list">

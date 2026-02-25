@@ -3,7 +3,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
-import { Clock, Trophy, Timer, BarChart3, XCircle, Rocket, Frown, CircleDot } from 'lucide-react';
+import { Clock, Trophy, Timer, BarChart3, XCircle, Rocket, Frown, CircleDot, Share2, Check } from 'lucide-react';
 
 export default function BattleArena({
   scores,
@@ -14,8 +14,10 @@ export default function BattleArena({
   currentMatches,
   battleStatus,
   myUserId,
+  onSelectTarget,
 }) {
   const [roundTimeLeft, setRoundTimeLeft] = useState(60);
+  const [copiedVote, setCopiedVote] = useState(false);
 
   // Find current user's active match
   const myMatch = useMemo(() => {
@@ -44,6 +46,16 @@ export default function BattleArena({
 
   const roundNames = ['', 'R16', 'Chorak final', 'Yarim final', 'FINAL'];
   const roundName = roundNames[currentRound] || `Raund ${currentRound}`;
+
+  const handleShareVote = () => {
+    if (!myUserId || !scores?.battle_id && !currentMatches?.[0]?.battle_id) return;
+    const bid = scores?.battle_id || currentMatches?.[0]?.battle_id || 'unknown';
+    const link = `https://t.me/rocketbattleebot?start=vote_${bid}_${myUserId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      setCopiedVote(true);
+      setTimeout(() => setCopiedVote(false), 2000);
+    });
+  };
 
   // If battle hasn't started yet
   if (battleStatus === 'waiting') {
@@ -138,7 +150,7 @@ export default function BattleArena({
             {currentMatches
               .filter((m) => m !== myMatch)
               .map((match, idx) => (
-                <MatchCard key={idx} match={match} myUserId={myUserId} isMyMatch={false} />
+                <MatchCard key={idx} match={match} myUserId={myUserId} isMyMatch={false} onSelectTarget={onSelectTarget} />
               ))}
           </div>
         </div>
@@ -146,14 +158,26 @@ export default function BattleArena({
 
       {/* Bracket Overview */}
       <div className="bracket-overview">
-        <h3 className="bracket-title"><BarChart3 size={18} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Bracket</h3>
+        <div className="flex items-center justify-between mb-4">
+            <h3 className="bracket-title !mb-0"><BarChart3 size={18} color="#a78bfa" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6 }} /> Bracket</h3>
+            {myUserId && !participants?.find(p => p.user_id === myUserId)?.is_eliminated && (
+                <button
+                    onClick={handleShareVote}
+                    className="flex items-center gap-1.5 text-xs bg-purple-500/20 text-purple-300 px-3 py-1.5 rounded-lg hover:bg-purple-500/30 transition-colors"
+                >
+                    {copiedVote ? <Check size={14} /> : <Share2 size={14} />} 
+                    {copiedVote ? "Nusxalandi" : "Ovoz Yig'ish"}
+                </button>
+            )}
+        </div>
         <div className="bracket-players">
           {participants
             ?.sort((a, b) => a.bracket_position - b.bracket_position)
             .map((p, idx) => (
               <motion.div
                 key={p.user_id}
-                className={`bracket-player ${p.is_eliminated ? 'eliminated' : 'active'} ${
+                onClick={() => onSelectTarget && onSelectTarget(p.user_id)}
+                className={`bracket-player cursor-pointer hover:bg-white/10 transition-colors ${p.is_eliminated ? 'eliminated' : 'active'} ${
                   p.user_id === myUserId ? 'is-me' : ''
                 }`}
                 initial={{ opacity: 0, x: -20 }}
@@ -161,7 +185,9 @@ export default function BattleArena({
                 transition={{ delay: idx * 0.03 }}
               >
                 <span className="bp-position">#{idx + 1}</span>
-                <span className="bp-name">{p.username}</span>
+                <span className="bp-name truncate">{p.username}</span>
+                {p.is_vip && p.vip_emoji && <span className="bp-emoji text-xs shrink-0">{p.vip_emoji}</span>}
+                {p.is_vip && !p.vip_emoji && <span className="text-[8px] bg-amber-500/20 text-amber-500 rounded px-1 font-bold shrink-0">VIP</span>}
                 <span className="bp-score">{p.score} <Rocket size={12} color="#f97316" style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
                 {p.is_eliminated && <span className="bp-elim"><XCircle size={14} color="#f87171" /></span>}
               </motion.div>
@@ -173,7 +199,7 @@ export default function BattleArena({
 }
 
 /* ── Match Card ───────────────────────────────────────── */
-function MatchCard({ match, myUserId, scores, isMyMatch }) {
+function MatchCard({ match, myUserId, scores, isMyMatch, onSelectTarget }) {
   const p1Score = scores?.player1_score ?? match.player1_score ?? 0;
   const p2Score = scores?.player2_score ?? match.player2_score ?? 0;
   const isP1 = match.player1_id === myUserId;
@@ -185,7 +211,10 @@ function MatchCard({ match, myUserId, scores, isMyMatch }) {
     >
       <div className="match-players">
         {/* Player 1 */}
-        <div className={`match-player p1 ${isP1 && isMyMatch ? 'is-me' : ''}`}>
+        <div 
+            className={`match-player p1 cursor-pointer hover:bg-white/5 transition-colors ${isP1 && isMyMatch ? 'is-me' : ''}`}
+            onClick={() => onSelectTarget && onSelectTarget(match.player1_id)}
+        >
           <span className="mp-emoji"><CircleDot size={16} color="#3b82f6" /></span>
           <span className="mp-name">{match.player1_username || `#${match.player1_id}`}</span>
           <AnimatePresence mode="wait">
@@ -204,7 +233,10 @@ function MatchCard({ match, myUserId, scores, isMyMatch }) {
         <span className="match-vs">VS</span>
 
         {/* Player 2 */}
-        <div className={`match-player p2 ${!isP1 && isMyMatch ? 'is-me' : ''}`}>
+        <div 
+            className={`match-player p2 cursor-pointer hover:bg-white/5 transition-colors ${!isP1 && isMyMatch ? 'is-me' : ''}`}
+            onClick={() => onSelectTarget && onSelectTarget(match.player2_id)}
+        >
           <span className="mp-emoji"><CircleDot size={16} color="#ef4444" /></span>
           <span className="mp-name">{match.player2_username || `#${match.player2_id}`}</span>
           <AnimatePresence mode="wait">

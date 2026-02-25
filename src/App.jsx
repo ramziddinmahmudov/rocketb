@@ -33,6 +33,7 @@ export default function App() {
   // ── State ──────────────────────────────────────────────
   const [balance, setBalance] = useState(10);
   const [isVip, setIsVip] = useState(false);
+  const [vipEmoji, setVipEmoji] = useState('');
   const [username, setUsername] = useState('Player');
   const [myUserId, setMyUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function App() {
   const [isAppReady, setIsAppReady] = useState(false);
   const [isReferralOpen, setIsReferralOpen] = useState(false);
   const [referralLink, setReferralLink] = useState('');
+  const [voteTarget, setVoteTarget] = useState(null);
 
   // ── WebSocket ──────────────────────────────────────────
   const { scores, isConnected } = useBattleSocket(battleId);
@@ -123,6 +125,7 @@ export default function App() {
         const profileRes = await api.getProfile();
         setBalance(profileRes.data.balance);
         setIsVip(profileRes.data.is_vip);
+        setVipEmoji(profileRes.data.vip_emoji || '');
         setLimit(profileRes.data.limit_remaining);
         setMaxLimit(profileRes.data.limit_max);
         if (profileRes.data.cooldown_seconds > 0) {
@@ -145,11 +148,21 @@ export default function App() {
         await loadRooms();
 
         // 3. Check if coming from room invite link
+        // 3. Check if coming from room invite link or vote referral
         const urlParams = new URLSearchParams(window.location.search);
         const roomParam = urlParams.get('room');
+        const startParam = window.Telegram?.WebApp?.initDataUnsafe?.start_param || urlParams.get('start');
+        
         if (roomParam) {
           // Auto-join room from invite link
           await handleJoinRoom(roomParam);
+        } else if (startParam && startParam.startsWith('vote_')) {
+          const parts = startParam.split('_');
+          if (parts.length >= 3) {
+            const bId = parts[1];
+            const targetId = parseInt(parts[2], 10);
+            await handleVoteDeepLink(bId, targetId);
+          }
         }
       } catch (err) {
         console.error('Init failed:', err);
@@ -228,6 +241,59 @@ export default function App() {
     }
   };
 
+  const handleJoinRandom = async () => {
+    setIsRoomsLoading(true);
+    try {
+      const { data } = await api.joinBattle();
+      setCurrentRoom(null); // No specific room
+      setBattleId(data.battle_id || null);
+      setBattleStatus(data.status || 'waiting');
+      setParticipants(data.participants || []);
+      setCurrentRound(data.current_round || 0);
+      setTotalRounds(data.total_rounds || 4);
+
+      if (data.status === 'active') {
+        setScreen(SCREEN.ARENA);
+      } else {
+        setScreen(SCREEN.LOBBY);
+      }
+
+      showToast('🎲 Tasodifiy o\'yinga tayyor', 'success');
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Tasodifiy o\'yinga kiritib bo\'lmadi';
+      showToast(`❌ ${msg}`, 'error');
+    } finally {
+      setIsRoomsLoading(false);
+    }
+  };
+
+  const handleVoteDeepLink = async (targetBattleId, targetPlayerId) => {
+    try {
+      // First, get the battle details
+      setIsRoomsLoading(true);
+      const { data } = await api.getBattle(targetBattleId);
+      
+      setCurrentRoom(null);
+      setBattleId(data.battle_id);
+      setBattleStatus(data.status);
+      setParticipants(data.participants || []);
+      setCurrentRound(data.current_round || 0);
+      setTotalRounds(data.total_rounds || 4);
+      
+      setVoteTarget(targetPlayerId);
+      setScreen(SCREEN.ARENA);
+      
+      // Auto-open control panel (if not participating, they can still vote)
+      // Since they are spectating/voting, they might not be part of `participants`
+      // We will handle passing targetId to ControlPanel when clicking
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'O\'yinga kirib bo\'lmadi';
+      showToast(`❌ ${msg}`, 'error');
+    } finally {
+      setIsRoomsLoading(false);
+    }
+  };
+
   const handleDeleteRoom = async (roomId) => {
     try {
       await api.deleteRoom(roomId);
@@ -263,7 +329,7 @@ export default function App() {
 
   // ── Fire handler ───────────────────────────────────────
   const handleFire = useCallback(
-    async (amount) => {
+    async (amount, customTargetId = null) => {
       if (!battleId) {
         showToast('Xatolik: Aktiv battle topilmadi.', 'error');
         return;
@@ -274,7 +340,8 @@ export default function App() {
       }
       setIsLoading(true);
       try {
-        const { data } = await api.vote(battleId, amount);
+        const payload = customTargetId ? { target_id: customTargetId } : {};
+        const { data } = await api.vote(battleId, amount, payload);
         setBalance(data.new_balance);
         if (data.cooldown_started) setCooldown(data.cooldown_seconds);
         if (data.remaining_limit !== undefined) setLimit(data.remaining_limit);
@@ -364,10 +431,11 @@ export default function App() {
               {username.charAt(0).toUpperCase()}
             </motion.div>
             <div>
-              <div className="header-username-row">
+              <div className="header-username-row flex items-center gap-1">
                 <p className="header-username">{username}</p>
+                {isVip && vipEmoji && <span className="text-xl ml-1">{vipEmoji}</span>}
               </div>
-              {isVip && <span className="vip-badge-small">👑 VIP</span>}
+              {isVip && !vipEmoji && <span className="vip-badge-small mt-1">👑 VIP</span>}
             </div>
           </div>
 
@@ -410,6 +478,7 @@ export default function App() {
               isLoading={isRoomsLoading}
               myUserId={myUserId}
               showToast={showToast}
+              onJoinRandom={handleJoinRandom}
             />
           )}
 
@@ -434,6 +503,7 @@ export default function App() {
               currentMatches={currentMatches}
               battleStatus={battleStatus}
               myUserId={myUserId}
+              onSelectTarget={setVoteTarget}
             />
           )}
         </div>
@@ -447,6 +517,8 @@ export default function App() {
             maxLimit={maxLimit}
             isLoading={isLoading}
             cooldown={cooldown}
+            voteTarget={voteTarget}
+            participants={participants}
           />
         )}
 
@@ -481,6 +553,8 @@ export default function App() {
         api={api}
         showToast={showToast}
         isVip={isVip}
+        vipEmoji={vipEmoji}
+        onEmojiUpdate={setVipEmoji}
       />
 
       <DailyTasks

@@ -4,8 +4,9 @@
 import { motion } from 'framer-motion';
 import { useCallback, useState, useRef } from 'react';
 
-export default function ControlPanel({ onFire, balance, isLoading, cooldown, limit, maxLimit }) {
+export default function ControlPanel({ onFire, balance, isLoading, cooldown, limit, maxLimit, voteTarget, participants }) {
   const [amount, setAmount] = useState(1);
+  const [currentTarget, setCurrentTarget] = useState(voteTarget || '');
   const [isShaking, setIsShaking] = useState(false);
   const [particles, setParticles] = useState([]);
   const particleIdRef = useRef(0);
@@ -38,8 +39,8 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown, lim
       1000
     );
 
-    onFire(amount);
-  }, [amount, balance, isLoading, cooldown, limit, onFire]);
+    onFire(amount, currentTarget || null);
+  }, [amount, balance, isLoading, cooldown, limit, currentTarget, onFire]);
 
   const handleAmountChange = (e) => {
     const val = parseInt(e.target.value, 10);
@@ -86,6 +87,25 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown, lim
             ⏳ Cooldown: {formatTime(cooldown)}
           </span>
         </motion.div>
+      )}
+
+      {/* Target selector (if spectators want to vote) */}
+      {participants && participants.length > 0 && (
+        <div className="glass-card p-3 mb-2 flex items-center justify-between">
+            <label className="text-xs text-gray-400 font-bold uppercase w-1/3">Target</label>
+            <select
+               value={currentTarget || ''}
+               onChange={(e) => setCurrentTarget(e.target.value ? Number(e.target.value) : '')}
+               className="w-2/3 bg-black/40 border border-white/10 rounded-lg text-white text-sm px-2 py-1.5 focus:outline-none focus:border-purple-400"
+            >
+                <option value="">Auto (Opponent)</option>
+                {participants.map(p => (
+                    <option key={p.user_id} value={p.user_id}>
+                        {p.username} {p.is_vip && p.vip_emoji ? p.vip_emoji : ''}
+                    </option>
+                ))}
+            </select>
+        </div>
       )}
 
       {/* Amount selector */}

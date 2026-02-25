@@ -112,7 +112,11 @@ export default function BattleLobby({
                       </span>
                     )}
                   </div>
-                  <span className="player-name">{player.username || `#${idx + 1}`}</span>
+                  <div className="player-name-wrapper flex items-center justify-center gap-1 w-full mx-auto px-1">
+                    <span className="player-name truncate">{player.username || `#${idx + 1}`}</span>
+                    {player.is_vip && player.vip_emoji && <span className="text-xs shrink-0">{player.vip_emoji}</span>}
+                  </div>
+                  {player.is_vip && !player.vip_emoji && <span className="text-[8px] bg-amber-500/20 text-amber-500 rounded px-1 -mt-1 font-bold">VIP</span>}
                 </>
               ) : (
                 <>
