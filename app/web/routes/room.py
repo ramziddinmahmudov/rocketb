@@ -64,41 +64,41 @@ class ErrorResponse(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────
 
 
-@router.post("/create", response_model=RoomResponse)
-async def create_room(
-    body: CreateRoomRequest,
-    x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
-) -> RoomResponse:
-    """Create a new battle room."""
-    try:
-        user_data = validate_init_data(x_telegram_init_data)
-        user_id = user_data["id"]
-    except AuthError as exc:
-        raise HTTPException(status_code=401, detail=str(exc))
-
-    if base.async_session_factory is None:
-        raise HTTPException(status_code=500, detail="Database not initialised")
-
-    async with base.async_session_factory() as session:
-        try:
-            room = await room_service.create_room(session, user_id, body.name)
-            battle = await room_service.get_room_battle(session, room.id)
-            await session.commit()
-
-            return RoomResponse(
-                room_id=room.id,
-                invite_code=room.invite_code,
-                name=room.name,
-                max_players=room.max_players,
-                current_players=0,
-                battle_id=battle.id if battle else None,
-                battle_status=battle.status.value if battle else None,
-                is_creator=True,
-            )
-        except Exception as exc:
-            await session.rollback()
-            logger.error("Failed to create room: %s", exc, exc_info=True)
-            raise HTTPException(status_code=500, detail="Failed to create room")
+# @router.post("/create", response_model=RoomResponse)
+# async def create_room(
+#     body: CreateRoomRequest,
+#     x_telegram_init_data: str = Header(..., alias="X-Telegram-Init-Data"),
+# ) -> RoomResponse:
+#     """Create a new battle room."""
+#     try:
+#         user_data = validate_init_data(x_telegram_init_data)
+#         user_id = user_data["id"]
+#     except AuthError as exc:
+#         raise HTTPException(status_code=401, detail=str(exc))
+# 
+#     if base.async_session_factory is None:
+#         raise HTTPException(status_code=500, detail="Database not initialised")
+# 
+#     async with base.async_session_factory() as session:
+#         try:
+#             room = await room_service.create_room(session, user_id, body.name)
+#             battle = await room_service.get_room_battle(session, room.id)
+#             await session.commit()
+# 
+#             return RoomResponse(
+#                 room_id=room.id,
+#                 invite_code=room.invite_code,
+#                 name=room.name,
+#                 max_players=room.max_players,
+#                 current_players=0,
+#                 battle_id=battle.id if battle else None,
+#                 battle_status=battle.status.value if battle else None,
+#                 is_creator=True,
+#             )
+#         except Exception as exc:
+#             await session.rollback()
+#             logger.error("Failed to create room: %s", exc, exc_info=True)
+#             raise HTTPException(status_code=500, detail="Failed to create room")
 
 
 @router.post("/join/{invite_code}", response_model=RoomResponse)
