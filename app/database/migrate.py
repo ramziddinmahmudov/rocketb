@@ -76,7 +76,7 @@ MIGRATION_STATEMENTS: list[str] = [
     """,
     """
     ALTER TABLE battles
-        ADD COLUMN IF NOT EXISTS total_rounds INTEGER DEFAULT 4;
+        ADD COLUMN IF NOT EXISTS total_rounds INTEGER DEFAULT 2;
     """,
 
     # ── Create new enum types (if not exists) ─────────────────
@@ -104,10 +104,18 @@ MIGRATION_STATEMENTS: list[str] = [
         invite_code VARCHAR(16) NOT NULL UNIQUE,
         name VARCHAR(128) DEFAULT 'Battle Room',
         creator_id BIGINT NOT NULL REFERENCES users(id),
-        max_players INTEGER DEFAULT 16,
+        max_players INTEGER DEFAULT 4,
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMPTZ DEFAULT NOW()
     );
+    """,
+    """
+    ALTER TABLE battle_rooms
+        ALTER COLUMN max_players SET DEFAULT 4;
+    """,
+    """
+    ALTER TABLE battles
+        ALTER COLUMN total_rounds SET DEFAULT 2;
     """,
 
     # ── FK battles → battle_rooms ─────────────────────────────

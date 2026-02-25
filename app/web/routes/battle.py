@@ -55,12 +55,12 @@ class JoinResponse(BaseModel):
     status: str
     started_at: datetime | None = None
     current_round: int = 0
-    total_rounds: int = 4
+    total_rounds: int = 2
     already_joined: bool
     participants: list[ParticipantSchema]
     current_matches: list[RoundSchema] = []
     players_count: int = 0
-    max_players: int = 16
+    max_players: int = 4
 
 
 class BattleDetailResponse(BaseModel):

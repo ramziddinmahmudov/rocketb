@@ -1,6 +1,6 @@
 """SQLAlchemy 2.0 ORM models for Antigravity (Rocket Battle).
 
-16-player tournament bracket system with rooms, rounds, daily tasks, and gifting.
+4-player tournament bracket system with rooms, rounds, daily tasks, and gifting.
 """
 
 from __future__ import annotations
@@ -166,7 +166,7 @@ class BattleRoom(Base):
         nullable=False,
     )
     max_players: Mapped[int] = mapped_column(
-        Integer, default=16, server_default="16",
+        Integer, default=4, server_default="4",
     )
     is_active: Mapped[bool] = mapped_column(
         Boolean, default=True, server_default="true",
@@ -189,7 +189,7 @@ class BattleRoom(Base):
 
 
 class Battle(Base):
-    """A battle instance — 16-player tournament bracket."""
+    """A battle instance — 4-player tournament bracket."""
 
     __tablename__ = "battles"
 
@@ -209,10 +209,10 @@ class Battle(Base):
     )
     current_round: Mapped[int] = mapped_column(
         Integer, default=0, server_default="0",
-        doc="Current bracket round (1-4 for 16 players)",
+        doc="Current bracket round (1-2 for 4 players)",
     )
     total_rounds: Mapped[int] = mapped_column(
-        Integer, default=4, server_default="4",
+        Integer, default=2, server_default="2",
         doc="Total rounds in bracket (log2 of players)",
     )
     started_at: Mapped[datetime | None] = mapped_column(
@@ -312,7 +312,7 @@ class BattleRound(Base):
     )
     round_number: Mapped[int] = mapped_column(
         Integer, nullable=False,
-        doc="Bracket round (1=R16, 2=QF, 3=SF, 4=Final)",
+        doc="Bracket round (1=SF, 2=Final)",
     )
     player1_id: Mapped[int] = mapped_column(
         BigInteger,

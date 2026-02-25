@@ -1,4 +1,4 @@
-"""Battle service — 16-player tournament bracket: queue, rounds, elimination."""
+"""Battle service — 4-player tournament bracket: queue, rounds, elimination."""
 
 from __future__ import annotations
 
@@ -150,10 +150,8 @@ async def create_round_matchups(
 ) -> list[BattleRound]:
     """Create 1v1 matchups for a given bracket round.
 
-    Round 1: 16 players → 8 matches
-    Round 2: 8 players → 4 matches
-    Round 3: 4 players → 2 matches
-    Round 4: 2 players → 1 match (Final)
+    Round 1: 4 players → 2 matches
+    Round 2: 2 players → 1 match (Final)
     """
     # Get non-eliminated participants, ordered by bracket position
     result = await session.execute(
@@ -465,7 +463,7 @@ async def finish_battle(
 async def get_leaderboard(
     session: AsyncSession,
     battle_id: uuid.UUID,
-    limit: int = 16,
+    limit: int = 4,
 ) -> list[BattleParticipant]:
     """Return top participants sorted by score descending."""
     result = await session.execute(

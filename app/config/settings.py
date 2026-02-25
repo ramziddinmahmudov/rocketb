@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     VIP_PRICE_STARS: int = 1000
     VIP_DURATION_DAYS: int = 30
 
-    # ── Battle (16-player tournament) ─────────────────────────
-    BATTLE_PLAYERS: int = 16          # Players needed to auto-start
+    # ── Battle (4-player tournament) ─────────────────────────
+    BATTLE_PLAYERS: int = 4           # Players needed to auto-start
     ROUND_DURATION: int = 60          # Seconds per 1v1 round
-    BATTLE_TOTAL_ROUNDS: int = 4      # log2(16) = 4 bracket rounds
+    BATTLE_TOTAL_ROUNDS: int = 2      # log2(4) = 2 bracket rounds
 
     # ── Vote Limits (per battle round) ────────────────────────
     STANDARD_VOTE_LIMIT: int = 100
