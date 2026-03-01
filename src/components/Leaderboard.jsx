@@ -54,7 +54,7 @@ export default function Leaderboard({ myUserId, showToast }) {
   const podiumSizes = [56, 72, 56];
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-24 custom-scrollbar">
+    <div className="flex flex-col gap-6 w-full text-white pb-6">
        
        {/* Header */}
        <div className="text-center pt-6 pb-2">
@@ -80,7 +80,7 @@ export default function Leaderboard({ myUserId, showToast }) {
        </div>
 
        {/* My Current Rank */}
-       <div className="mx-6 mb-8 relative rounded-3xl p-6 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
+       <div className="mb-2 relative rounded-3xl p-6 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-fuchsia-600/20 blur-[40px] rounded-full pointer-events-none" />
           
@@ -105,7 +105,7 @@ export default function Leaderboard({ myUserId, showToast }) {
           <>
              {/* Podium (Top 3) */}
              {top3.length >= 3 && (
-                <div className="flex justify-center items-end gap-4 px-6 mb-8">
+                <div className="flex justify-center items-end gap-4 mb-2">
                    {podiumOrder.map((entry, idx) => {
                       const isCenter = idx === 1;
                       const label = podiumLabels[idx];
@@ -148,7 +148,7 @@ export default function Leaderboard({ myUserId, showToast }) {
              )}
 
              {/* Leaderboard List */}
-             <div className="flex flex-col gap-3 px-6">
+             <div className="flex flex-col gap-3">
                 {(top3.length < 3 ? entries : rest).map((entry, idx) => {
                    const rank = top3.length < 3 ? idx + 1 : idx + 4;
                    const isMe = entry.user_id === myUserId;

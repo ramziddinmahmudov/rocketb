@@ -48,7 +48,7 @@ export default function RoomBrowser({
   });
 
   return (
-    <div className="room-browser flex flex-col h-full overflow-y-auto pb-28 px-6 pt-6 custom-scrollbar">
+    <div className="flex flex-col gap-6 w-full text-white pt-2 pb-6">
       {/* Header */}
       <div className="text-center mt-2 mb-4">
          <h2 className="text-lg font-bold text-white/90">Xonalar Sahifasi</h2>
