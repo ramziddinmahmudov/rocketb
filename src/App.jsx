@@ -12,19 +12,23 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Swords, ClipboardList, Store, Link2, ArrowLeft, BadgeCheck, Rocket } from 'lucide-react';
 
+import Home from './components/Home';
+import Profile from './components/Profile';
+import Navbar from './components/Navbar';
 import RoomBrowser from './components/RoomBrowser';
 import BattleArena from './components/BattleArena';
 import BattleLobby from './components/BattleLobby';
 import ControlPanel from './components/ControlPanel';
 import DailyTasks from './components/DailyTasks';
 import StoreModal from './components/StoreModal';
+import Leaderboard from './components/Leaderboard';
 import SplashScreen from './components/SplashScreen';
 import useBattleSocket from './hooks/useBattleSocket';
 import { api } from './api/client';
 
 // ── Screens ──────────────────────────────────────────
 const SCREEN = {
-  ROOMS: 'rooms',
+  TABS: 'tabs',
   LOBBY: 'lobby',
   ARENA: 'arena',
 };
@@ -43,7 +47,8 @@ export default function App() {
   const [toast, setToast] = useState(null);
 
   // Screen navigation
-  const [screen, setScreen] = useState(SCREEN.ROOMS);
+  const [screen, setScreen] = useState(SCREEN.TABS);
+  const [currentTab, setCurrentTab] = useState('home');
   const [rooms, setRooms] = useState([]);
   const [isRoomsLoading, setIsRoomsLoading] = useState(false);
 
@@ -314,7 +319,7 @@ export default function App() {
     setBattleId(null);
     setBattleStatus('waiting');
     setParticipants([]);
-    setScreen(SCREEN.ROOMS);
+    setScreen(SCREEN.TABS);
     loadRooms();
   };
 
@@ -432,7 +437,7 @@ export default function App() {
         {/* ── Header ────────────────────────────────────── */}
         <header className="app-header">
           <div className="header-left">
-            {screen !== SCREEN.ROOMS && (
+            {screen !== SCREEN.TABS && (
               <button className="back-btn" onClick={handleLeaveRoom}>
                 <ArrowLeft size={20} color="#a78bfa" />
               </button>
@@ -453,7 +458,7 @@ export default function App() {
             <motion.div
               className="balance-card"
               whileHover={{ scale: 1.02 }}
-              onClick={() => setIsStoreOpen(true)}
+              onClick={() => setCurrentTab('store')}
             >
               <span className="balance-rocket"><Rocket size={20} color="#f97316" /></span>
               <div className="balance-info">
@@ -478,7 +483,11 @@ export default function App() {
 
         {/* ── Main Content ────────────────────────────────── */}
         <div className="main-content">
-          {screen === SCREEN.ROOMS && (
+          {screen === SCREEN.TABS && currentTab === 'home' && (
+             <Home balance={balance} isVip={isVip} vipEmoji={vipEmoji} />
+          )}
+
+          {screen === SCREEN.TABS && currentTab === 'rooms' && (
             <RoomBrowser
               rooms={rooms}
               onJoinRoom={handleJoinRoom}
@@ -489,6 +498,31 @@ export default function App() {
               myUserId={myUserId}
               showToast={showToast}
               onJoinRandom={handleJoinRandom}
+            />
+          )}
+
+          {screen === SCREEN.TABS && currentTab === 'tasks' && (
+            <DailyTasks
+              onBalanceUpdate={setBalance}
+              showToast={showToast}
+            />
+          )}
+
+          {screen === SCREEN.TABS && currentTab === 'leaderboard' && (
+            <Leaderboard
+              myUserId={myUserId}
+              showToast={showToast}
+            />
+          )}
+
+          {screen === SCREEN.TABS && currentTab === 'profile' && (
+            <Profile
+              username={username}
+              isVip={isVip}
+              vipEmoji={vipEmoji}
+              userId={myUserId}
+              referralLink={referralLink}
+              showToast={showToast}
             />
           )}
 
@@ -533,116 +567,10 @@ export default function App() {
         )}
 
         {/* ── Bottom Navigation ────────────────────────────── */}
-        <nav className="bottom-nav">
-          <button
-            className={`nav-btn ${screen === SCREEN.ROOMS ? 'nav-active' : ''}`}
-            onClick={() => { handleLeaveRoom(); }}
-          >
-            <span className="nav-icon"><Swords size={22} color="#a78bfa" /></span>
-            <span className="nav-label">Xonalar</span>
-          </button>
-          <button className="nav-btn" onClick={() => setIsTasksOpen(true)}>
-            <span className="nav-icon"><ClipboardList size={22} color="#34d399" /></span>
-            <span className="nav-label">Vazifalar</span>
-          </button>
-          <button className="nav-btn" onClick={() => setIsStoreOpen(true)}>
-            <span className="nav-icon"><Store size={22} color="#f97316" /></span>
-            <span className="nav-label">Do'kon</span>
-          </button>
-          <button className="nav-btn" onClick={() => setIsReferralOpen(true)}>
-            <span className="nav-icon"><Link2 size={22} color="#38bdf8" /></span>
-            <span className="nav-label">Taklif</span>
-          </button>
-        </nav>
-      </div>
-
-      {/* ── Modals ───────────────────────────────────── */}
-      <StoreModal
-        isOpen={isStoreOpen}
-        onClose={() => setIsStoreOpen(false)}
-        api={api}
-        showToast={showToast}
-        isVip={isVip}
-        vipEmoji={vipEmoji}
-        onEmojiUpdate={setVipEmoji}
-      />
-
-      <DailyTasks
-        isOpen={isTasksOpen}
-        onClose={() => setIsTasksOpen(false)}
-        onBalanceUpdate={setBalance}
-        showToast={showToast}
-      />
-
-
-
-      {/* ── Referral Modal ─────────────────────────────────── */}
-      <AnimatePresence>
-        {isReferralOpen && (
-          <>
-            <motion.div
-              className="modal-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsReferralOpen(false)}
-            />
-            <motion.div
-              style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 101 }}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            >
-              <div className="referral-modal">
-                <div className="referral-header">
-                  <h3 className="referral-title">🔗 Taklif havolasi</h3>
-                  <button className="referral-close" onClick={() => setIsReferralOpen(false)}>✕</button>
-                </div>
-
-                <div
-                  className="referral-link-card"
-                  onClick={() => {
-                    navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`);
-                    showToast('📋 Havola nusxalandi!', 'success');
-                  }}
-                >
-                  <p className="ref-url">
-                  {referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`}
-                  </p>
-                </div>
-                <div className="ref-actions">
-                  <button
-                    className="ref-btn copy-btn"
-                    onClick={() => {
-                      navigator.clipboard?.writeText(referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`);
-                      showToast('Havola nusxalandi!', 'success');
-                    }}
-                  >
-                    Nusxalash
-                  </button>
-                  <button
-                    className="ref-btn send-btn"
-                    onClick={() => {
-                      const link = referralLink || `https://t.me/rocketbattleebot?start=${myUserId}`;
-                      const text = '🚀 Rocket Battle o\'yiniga qo\'shiling!';
-                      if (window.Telegram?.WebApp?.openTelegramLink) {
-                        window.Telegram.WebApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`);
-                      } else {
-                        window.open(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent(text)}`, '_blank');
-                      }
-                    }}
-                  >
-                    📤 Ulashish
-                  </button>
-                </div>
-
-                <p className="referral-bonus-info">Har bir do'st uchun +10 🚀 bonus!</p>
-              </div>
-            </motion.div>
-          </>
+        {screen === SCREEN.TABS && (
+          <Navbar currentTab={currentTab} setTab={setCurrentTab} />
         )}
-      </AnimatePresence>
+      </div>
 
       {/* ── Toast Notifications ─────────────────────────── */}
       <AnimatePresence>
