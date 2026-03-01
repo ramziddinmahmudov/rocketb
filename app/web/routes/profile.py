@@ -30,11 +30,22 @@ class UserProfile(BaseModel):
     limit_max: int
     cooldown_seconds: int
     daily_rockets_remaining: int = 300
+    
+    # Stats
+    total_battles: int = 0
+    wins: int = 0
+    win_rate: str = "0%"
+    rockets_spent: str = "0"
+    stars_gained: int = 0
+    referrals: int = 0
 
 
 class EmojiUpdateData(BaseModel):
     emoji: str
 
+
+from sqlalchemy import select, func
+from app.database.models import BattleParticipant, Battle, BattleStatus, Transaction, Referral
 
 @router.get("/profile", response_model=UserProfile)
 async def get_profile(
@@ -85,6 +96,41 @@ async def get_profile(
             current = await redis.get_vote_limit(user.id)
             limit_remaining = current if current is not None else limit_max
 
+        # 3. Calculate Stats
+        # Total Battles
+        stmt_tb = select(func.count()).select_from(BattleParticipant).where(BattleParticipant.user_id == user.id)
+        total_battles = await session.scalar(stmt_tb) or 0
+        
+        # Wins (survived finished battles)
+        stmt_w = (
+            select(func.count())
+            .select_from(BattleParticipant)
+            .join(Battle, BattleParticipant.battle_id == Battle.id)
+            .where(
+                BattleParticipant.user_id == user.id,
+                BattleParticipant.is_eliminated == False,
+                Battle.status == BattleStatus.FINISHED
+            )
+        )
+        wins = await session.scalar(stmt_w) or 0
+        
+        # Win Rate
+        win_rate_val = int((wins / total_battles) * 100) if total_battles > 0 else 0
+        win_rate = f"{win_rate_val}%"
+        
+        # Rockets Spent
+        stmt_rs = select(func.sum(Transaction.amount)).where(Transaction.user_id == user.id, Transaction.amount < 0)
+        rockets_spent_val = abs(await session.scalar(stmt_rs) or 0)
+        rockets_spent = f"{rockets_spent_val:,}"
+        
+        # Stars (Stars paid for rockets/vip)
+        stmt_sg = select(func.sum(Transaction.stars_paid)).where(Transaction.user_id == user.id)
+        stars_gained = await session.scalar(stmt_sg) or 0
+        
+        # Referrals
+        stmt_ref = select(func.count()).select_from(Referral).where(Referral.referrer_id == user.id)
+        referrals = await session.scalar(stmt_ref) or 0
+
         return UserProfile(
             user_id=user.id,
             id=user.id,
@@ -97,6 +143,12 @@ async def get_profile(
             limit_max=limit_max,
             cooldown_seconds=cooldown_seconds,
             daily_rockets_remaining=user.daily_rockets_remaining,
+            total_battles=total_battles,
+            wins=wins,
+            win_rate=win_rate,
+            rockets_spent=rockets_spent,
+            stars_gained=stars_gained,
+            referrals=referrals
         )
 
 

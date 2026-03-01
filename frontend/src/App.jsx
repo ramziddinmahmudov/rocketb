@@ -61,6 +61,10 @@ export default function App() {
   const [currentMatches, setCurrentMatches] = useState([]);
   const [currentRoom, setCurrentRoom] = useState(null);
 
+  const [profileStats, setProfileStats] = useState({
+      totalBattles: 0, wins: 0, winRate: '0%', rocketsSpent: '0', starsGained: 0, referrals: 0
+  });
+
   const [isAuthError, setIsAuthError] = useState(false);
   const [isStoreOpen, setIsStoreOpen] = useState(false);
   const [isTasksOpen, setIsTasksOpen] = useState(false);
@@ -137,6 +141,15 @@ export default function App() {
           setCooldown(profileRes.data.cooldown_seconds);
         }
         if (profileRes.data.user_id) setMyUserId(profileRes.data.user_id);
+        
+        setProfileStats({
+          totalBattles: profileRes.data.total_battles,
+          wins: profileRes.data.wins,
+          winRate: profileRes.data.win_rate,
+          rocketsSpent: profileRes.data.rockets_spent,
+          starsGained: profileRes.data.stars_gained,
+          referrals: profileRes.data.referrals,
+        });
 
         // Build referral link
         const tg = window.Telegram?.WebApp;
@@ -484,7 +497,7 @@ export default function App() {
         {/* ── Main Content ────────────────────────────────── */}
         <div className="main-content">
           {screen === SCREEN.TABS && currentTab === 'home' && (
-             <Home balance={balance} isVip={isVip} vipEmoji={vipEmoji} />
+             <Home balance={balance} isVip={isVip} vipEmoji={vipEmoji} profileStats={profileStats} />
           )}
 
           {screen === SCREEN.TABS && currentTab === 'rooms' && (
@@ -523,6 +536,7 @@ export default function App() {
               userId={myUserId}
               referralLink={referralLink}
               showToast={showToast}
+              profileStats={profileStats}
             />
           )}
 
@@ -534,6 +548,7 @@ export default function App() {
               maxPlayers={currentRoom?.max_players || 4}
               battleStatus={battleStatus}
               onLeave={handleLeaveRoom}
+              showToast={showToast}
             />
           )}
 

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Info } from 'lucide-react';
 
 export default function BattleLobby({
   roomCode,
@@ -9,7 +9,8 @@ export default function BattleLobby({
   maxPlayers,
   battleStatus,
   onShareLink,
-  onLeaveRoom
+  onLeaveRoom,
+  showToast
 }) {
   const [copied, setCopied] = useState(false);
   const count = participants?.length || 0;
@@ -23,11 +24,11 @@ export default function BattleLobby({
     if (onShareLink) onShareLink(roomCode);
   };
 
-  // Math for circular positioning
-  const radius = 110; 
+  // Math for circular positioning, shrunk slightly to fit mobile Telegram views
+  const radius = 90; 
   const totalSlots = maxPlayers || 16;
-  const cx = 150; 
-  const cy = 150;
+  const cx = 130; 
+  const cy = 130;
 
   return (
     <div className="flex flex-col h-full bg-[#0a0f1c] text-white">
@@ -40,7 +41,11 @@ export default function BattleLobby({
              <h2 className="text-lg font-bold">Tournament</h2>
              <span className="text-xs text-gray-400">#{roomCode}</span>
          </div>
-         <div className="w-6" /> {/* Spacer */}
+         <button className="text-gray-400 hover:text-white" onClick={() => {
+             if (showToast) showToast("Turnir qoidalari: G'oliblar kiritilgan summani taqsimlab oladi!", "info");
+         }}>
+            <Info size={24} />
+         </button>
       </div>
 
       {/* Top Stats */}
@@ -62,7 +67,7 @@ export default function BattleLobby({
       {/* Circular Arena View */}
       <div className="flex-1 flex flex-col items-center justify-center relative mt-8 mb-4">
          
-         <div className="relative" style={{ width: 300, height: 300 }}>
+         <div className="relative" style={{ width: 260, height: 260 }}>
              {/* Central Core Animation */}
              <motion.div 
                 className="absolute inset-0 m-auto w-32 h-32 rounded-full flex items-center justify-center"
@@ -80,6 +85,11 @@ export default function BattleLobby({
                    animate={{ rotate: -360 }}
                    transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
                    className="absolute w-16 h-16 rounded-full border border-pink-500/40"
+                />
+                <motion.div 
+                   animate={{ rotate: 360 }}
+                   transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
+                   className="absolute w-[180px] h-[180px] rounded-full border-2 border-indigo-500/20 border-dotted"
                 />
                 <div className="absolute w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-[0_0_20px_#8b5cf6]" />
              </motion.div>
