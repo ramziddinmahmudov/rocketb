@@ -62,25 +62,37 @@ export default function Leaderboard({ myUserId, showToast }) {
        </div>
 
        {/* Tab Switcher */}
-       <div className="flex justify-center gap-2 px-8 mb-6">
-          {['Global', 'Regional', 'Last Season'].map(t => (
-             <button
-                key={t}
-                onClick={() => setActiveTab(t)}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all ${activeTab === t ? 'bg-white/10 text-white border-white/20' : 'bg-transparent text-gray-500 border-transparent hover:bg-white/5'}`}
-             >
-                {t}
-             </button>
-          ))}
+       <div className="flex justify-center mb-6">
+           <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 relative z-10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+              {['Global', 'Regional', 'Last Season'].map(t => (
+                 <button
+                    key={t}
+                    onClick={() => setActiveTab(t)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all relative ${activeTab === t ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                 >
+                    {activeTab === t && (
+                        <motion.div layoutId="lbTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+                    )}
+                    {t}
+                 </button>
+              ))}
+           </div>
        </div>
 
        {/* My Current Rank */}
-       <div className="mx-6 mb-6 bg-[#0f172a] border border-white/5 rounded-2xl p-4 text-center">
-          <span className="text-[11px] text-gray-400 uppercase tracking-wider font-medium">My Current Rank:</span>
-          <div className="flex items-center justify-center gap-2 mt-1">
-             <span className="text-3xl font-black text-white">#{myRank || '—'}</span>
+       <div className="mx-6 mb-8 relative rounded-2xl p-4 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-fuchsia-600/20 blur-[40px] rounded-full pointer-events-none" />
+          
+          <span className="text-[11px] text-indigo-300 uppercase tracking-widest font-black drop-shadow-md relative z-10">My Current Rank</span>
+          <div className="flex items-center justify-center gap-2 mt-1 relative z-10">
+             <span className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-purple-200 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
+                 #{myRank || '—'}
+             </span>
              {myRank && (
-                <TrendingUp size={16} className="text-emerald-400" />
+                <div className="bg-emerald-500/20 p-1.5 rounded-full border border-emerald-500/30 shadow-[0_0_10px_rgba(52,211,153,0.4)]">
+                    <TrendingUp size={16} className="text-emerald-400" />
+                </div>
              )}
           </div>
        </div>
@@ -175,13 +187,12 @@ export default function Leaderboard({ myUserId, showToast }) {
        )}
 
        {/* Bottom Share CTA */}
-       <div className="p-4 mt-auto bg-gradient-to-t from-[#0a0f1c] to-transparent pt-6">
+       <div className="p-4 mt-auto bg-gradient-to-t from-[#0a0f1c] to-transparent pt-6 relative z-10">
           <button 
              onClick={handleShare}
-             className="w-full py-4 rounded-xl text-white text-sm font-bold uppercase transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-             style={{ background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}
+             className="w-full py-4 rounded-xl text-white text-sm font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] active:scale-95 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
           >
-             {copied ? 'NUSXALANDI!' : 'SHARE YOUR RANK & PROGRESS'} <Trophy size={16} />
+             {copied ? 'NUSXALANDI!' : 'SHARE YOUR RANK & PROGRESS'} <Trophy size={18} className="drop-shadow-md" />
           </button>
        </div>
 
