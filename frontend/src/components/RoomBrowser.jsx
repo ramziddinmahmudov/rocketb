@@ -55,7 +55,7 @@ export default function RoomBrowser({
       </div>
 
       {/* Tabs */}
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center mb-4">
          <div className="flex w-full gap-2 p-1 bg-[#1e2336]/80 backdrop-blur-md rounded-2xl border border-white/5 relative z-10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
             {tabs.map(tab => (
                <button
@@ -99,7 +99,7 @@ export default function RoomBrowser({
              return (
               <motion.div
                 key={room.id || index}
-                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-3xl p-5 flex flex-col gap-4 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
+                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-2xl p-4 flex flex-col gap-3 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -138,7 +138,7 @@ export default function RoomBrowser({
                       <span className="text-sm font-black text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.5)]">starts in 2m 15s</span>
                    </div>
                    <button
-                     className="px-7 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]"
+                     className="px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(168,85,247,0.6)]"
                      onClick={() => onJoinRoom(room.invite_code)}
                    >
                      ENTER ROOM

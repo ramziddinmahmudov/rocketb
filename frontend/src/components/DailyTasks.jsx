@@ -74,7 +74,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
        </div>
 
        {/* Sub Navigation */}
-       <div className="flex gap-2 mb-6">
+       <div className="flex gap-2 mb-4">
           {['Daily', 'Weekly', 'Completed'].map(t => (
               <button 
                  key={t}
@@ -112,9 +112,9 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
                          )}
 
-                         <div className="flex justify-between items-end mb-3 relative z-10">
+                         <div className="flex justify-between items-end mb-2 relative z-10">
                              <h3 className="font-bold text-sm text-white/90 drop-shadow-md">{task.title}</h3>
-                             <span className={`text-xs font-black ${isCompleted ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'text-gray-400'}`}>
+                             <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'text-gray-400'}`}>
                                  {task.progress}/{task.target_count}
                              </span>
                          </div>
@@ -161,7 +161,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                                      CLAIM
                                  </button>
                              ) : (
-                                 <button className="px-6 py-2 rounded-xl text-xs font-black text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
+                                 <button className="px-5 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
                                      {idx === 2 ? 'PLAY' : 'GO'}
                                  </button>
                              )}

@@ -22,16 +22,16 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
     <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-24 px-4 pt-6 custom-scrollbar">
        
        {/* Header */}
-       <div className="flex justify-between items-center mb-6">
+       <div className="flex justify-between items-center mb-4">
            <div className="flex items-center gap-3">
-               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-transparent p-0.5 bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-indigo-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                   <div className="w-full h-full rounded-full bg-gradient-to-tr from-purple-900 to-indigo-900 flex items-center justify-center text-xl font-black text-white drop-shadow-md">
+               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-transparent p-0.5 bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-indigo-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                   <div className="w-full h-full rounded-full bg-gradient-to-tr from-purple-900 to-indigo-900 flex items-center justify-center text-lg font-black text-white drop-shadow-md">
                        {username?.charAt(0).toUpperCase() || 'P'}
                    </div>
                </div>
-               <div className="flex flex-col">
-                   <h2 className="text-white font-bold text-base leading-tight">{username || 'Username'}</h2>
-                   <span className="text-gray-400 text-xs">@{(username || 'GamerPro').toLowerCase().replace(' ', '')}</span>
+               <div className="flex flex-col gap-0.5">
+                   <h2 className="text-white font-black text-[15px] leading-tight drop-shadow-sm">{username || 'Username'}</h2>
+                   <span className="text-indigo-300 text-[11px] font-bold tracking-wider uppercase">@{(username || 'GamerPro').toLowerCase().replace(' ', '')}</span>
                </div>
            </div>
            
@@ -45,7 +45,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        <motion.div 
          initial={{ opacity: 0, scale: 0.95 }}
          animate={{ opacity: 1, scale: 1 }}
-         className="w-full rounded-3xl p-5 mb-4 relative overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
+         className="w-full rounded-2xl p-4 mb-3 relative overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
        >
            {/* Intense animated gradient glow */}
            <div className="absolute -top-10 -right-10 w-48 h-48 bg-fuchsia-600/30 blur-[50px] rounded-full animate-pulse pointer-events-none" />
@@ -74,13 +74,13 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </motion.div>
 
        {/* Edit Profile Button */}
-       <button className="w-full py-3.5 mb-6 rounded-xl bg-white/5 backdrop-blur-sm text-white text-sm font-black border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] shadow-[0_5px_15px_-5px_rgba(255,255,255,0.1)]">
+       <button className="w-full py-3 mb-4 rounded-xl bg-white/5 backdrop-blur-sm text-white text-xs font-black tracking-widest border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] shadow-[0_5px_15px_-5px_rgba(255,255,255,0.1)]">
            EDIT PROFILE
        </button>
 
        {/* Comprehensive Stats Grid */}
-       <div className="bg-[#1e2336] rounded-2xl p-4 border border-white/5 mb-6">
-           <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-2xl p-4 border border-white/5 mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+           <div className="grid grid-cols-2 gap-y-5 gap-x-4">
                {/* Row 1 */}
                <div className="flex items-start gap-3">
                    <div className="mt-1 opacity-60"><Swords size={18} className="text-indigo-400" /></div>
@@ -154,8 +154,8 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </div>
 
        {/* Leaderboard Summary */}
-       <div className="bg-[#1e2336] rounded-2xl p-4 border border-white/5 mb-6">
-           <h3 className="text-sm font-bold text-white mb-4">Leaderboard Summary</h3>
+       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-2xl p-3 border border-white/5 mb-4 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+           <h3 className="text-xs font-bold text-white mb-3 tracking-widest uppercase ml-1">Leaderboard Summary</h3>
            <div className="flex gap-3">
                <div className="flex-1 bg-black/20 rounded-xl p-3 border border-white/5 flex flex-col items-center justify-center">
                    <span className="text-[11px] text-gray-400 mb-1">Global Rank</span>
