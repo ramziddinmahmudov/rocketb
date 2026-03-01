@@ -24,8 +24,8 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        {/* Header */}
        <div className="flex justify-between items-center mb-6">
            <div className="flex items-center gap-3">
-               <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-500/30 p-0.5 bg-[#0f172a]">
-                   <div className="w-full h-full rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center text-lg font-bold">
+               <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-transparent p-0.5 bg-gradient-to-tr from-purple-600 via-fuchsia-500 to-indigo-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                   <div className="w-full h-full rounded-full bg-gradient-to-tr from-purple-900 to-indigo-900 flex items-center justify-center text-xl font-black text-white drop-shadow-md">
                        {username?.charAt(0).toUpperCase() || 'P'}
                    </div>
                </div>
@@ -43,15 +43,16 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
 
        {/* Rocket Balance Card */}
        <motion.div 
-         initial={{ opacity: 0, y: 10 }}
-         animate={{ opacity: 1, y: 0 }}
-         className="w-full rounded-2xl p-4 mb-4 relative overflow-hidden bg-[#1e2336] border border-white/5"
+         initial={{ opacity: 0, scale: 0.95 }}
+         animate={{ opacity: 1, scale: 1 }}
+         className="w-full rounded-3xl p-5 mb-4 relative overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
        >
-           {/* Subtle gradient glow */}
-           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-2xl rounded-full translate-x-10 -translate-y-10" />
+           {/* Intense animated gradient glow */}
+           <div className="absolute -top-10 -right-10 w-48 h-48 bg-fuchsia-600/30 blur-[50px] rounded-full animate-pulse pointer-events-none" />
+           <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-600/30 blur-[50px] rounded-full animate-pulse delay-1000 pointer-events-none" />
 
            <div className="flex justify-between items-start mb-2 relative z-10">
-               <h3 className="text-gray-300 text-sm font-medium">Rocket Balance Card</h3>
+               <h3 className="text-indigo-200 text-xs font-bold uppercase tracking-widest drop-shadow-md">Rocket Balance</h3>
                <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold text-amber-500 border border-amber-500/30">
                    <Star size={10} className="fill-amber-500" /> VIP
                </div>
@@ -73,8 +74,8 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </motion.div>
 
        {/* Edit Profile Button */}
-       <button className="w-full py-3 mb-6 rounded-xl bg-[#1e2336] text-white/90 text-sm font-bold border border-white/5 hover:bg-white/5 transition-colors active:scale-[0.98]">
-           Edit Profile
+       <button className="w-full py-3.5 mb-6 rounded-xl bg-white/5 backdrop-blur-sm text-white text-sm font-black border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] shadow-[0_5px_15px_-5px_rgba(255,255,255,0.1)]">
+           EDIT PROFILE
        </button>
 
        {/* Comprehensive Stats Grid */}
@@ -175,8 +176,11 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </div>
 
        {/* Show More Stats Button */}
-       <button className="w-full py-4 rounded-xl bg-[#1e2336] text-white/90 text-sm font-bold border border-white/5 hover:bg-white/5 transition-colors active:scale-[0.98]">
-           Show More Stats
+       <button className="w-full py-4 rounded-xl text-white text-sm font-black uppercase tracking-wider border border-transparent hover:border-indigo-500/50 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(99,102,241,0.2)] hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] relative overflow-hidden group">
+           <div className="absolute inset-0 bg-gradient-to-r from-[#1e1b4b] via-[#312e81] to-[#1e1b4b] opacity-80 group-hover:opacity-100 transition-opacity" />
+           <span className="relative z-10 flex items-center justify-center gap-2">
+               MORE STATS <Target size={16} className="group-hover:text-indigo-400 transition-colors" />
+           </span>
        </button>
 
     </div>

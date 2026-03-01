@@ -52,17 +52,23 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
   return (
     <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-24 px-4 pt-4 custom-scrollbar">
        {/* Top Navigation */}
-       <div className="flex gap-4 border-b border-white/10 pb-2 mb-4">
+       <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-4 relative z-10 w-max shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <button 
-             className={`text-sm font-bold transition-colors ${activeTab === 'Daily Missions' ? 'text-white border-b-2 border-indigo-500 pb-2 -mb-[9px]' : 'text-gray-500'}`}
+             className={`px-5 py-2 text-sm font-bold transition-all rounded-xl relative ${activeTab === 'Daily Missions' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
              onClick={() => setActiveTab('Daily Missions')}
           >
+             {activeTab === 'Daily Missions' && (
+                 <motion.div layoutId="navTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+             )}
              Daily Missions
           </button>
           <button 
-             className={`text-sm font-bold transition-colors ${activeTab === 'Ongoing Challenges' ? 'text-white border-b-2 border-indigo-500 pb-2 -mb-[9px]' : 'text-gray-500'}`}
+             className={`px-5 py-2 text-sm font-bold transition-all rounded-xl relative ${activeTab === 'Ongoing Challenges' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
              onClick={() => setActiveTab('Ongoing Challenges')}
           >
+             {activeTab === 'Ongoing Challenges' && (
+                 <motion.div layoutId="navTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+             )}
              Ongoing Challenges
           </button>
        </div>
@@ -103,12 +109,12 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                      >
                          {/* Subtle glowing background if completed */}
                          {isCompleted && !task.claimed && (
-                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent pointer-events-none" />
+                             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
                          )}
 
-                         <div className="flex justify-between items-end mb-2 relative z-10">
-                             <h3 className="font-bold text-sm text-white/90">{task.title}</h3>
-                             <span className={`text-xs font-bold ${isCompleted ? 'text-emerald-400' : 'text-gray-400'}`}>
+                         <div className="flex justify-between items-end mb-3 relative z-10">
+                             <h3 className="font-bold text-sm text-white/90 drop-shadow-md">{task.title}</h3>
+                             <span className={`text-xs font-black ${isCompleted ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'text-gray-400'}`}>
                                  {task.progress}/{task.target_count}
                              </span>
                          </div>
@@ -125,16 +131,19 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
 
                          {/* Rewards & Actions */}
                          <div className="flex justify-between items-center relative z-10">
-                             <div className="flex items-center gap-3">
-                                 <div className="flex items-center gap-1">
-                                     <Rocket size={14} className="text-indigo-400" />
-                                     <span className="text-xs font-bold text-gray-200">+{task.rocket_reward} Rockets</span>
+                             <div className="flex items-center gap-3 bg-black/20 px-3 py-1.5 rounded-xl border border-white/5">
+                                 <div className="flex items-center gap-1.5">
+                                     <Rocket size={14} className="text-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" />
+                                     <span className="text-[11px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">+{task.rocket_reward} Rockets</span>
                                  </div>
                                  {idx % 2 === 1 && (
-                                     <div className="flex items-center gap-1">
-                                         <Star size={14} className="text-amber-400 fill-amber-400" />
-                                         <span className="text-xs font-bold text-gray-200">+5</span>
-                                     </div>
+                                     <>
+                                         <div className="w-[1px] h-3 bg-white/10" />
+                                         <div className="flex items-center gap-1">
+                                             <Star size={12} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]" />
+                                             <span className="text-[11px] font-black text-amber-300">+5</span>
+                                         </div>
+                                     </>
                                  )}
                              </div>
 
@@ -146,14 +155,14 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                                  <button 
                                      onClick={() => handleClaim(task.id)}
                                      disabled={claiming === task.id}
-                                     className="flex items-center gap-1 px-4 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-all active:scale-95"
+                                     className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-[0_0_15px_rgba(52,211,153,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.7)] transition-all active:scale-95"
                                  >
-                                     {claiming === task.id ? <Loader size={12} className="animate-spin" /> : <Gift size={12} />}
-                                     Claim ✓
+                                     {claiming === task.id ? <Loader size={14} className="animate-spin" /> : <Gift size={14} />}
+                                     CLAIM
                                  </button>
                              ) : (
-                                 <button className="px-5 py-1.5 rounded-lg text-xs font-bold text-white transition-all active:scale-95 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-500">
-                                     {idx === 2 ? 'Play' : 'Go'}
+                                 <button className="px-6 py-2 rounded-xl text-xs font-black text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
+                                     {idx === 2 ? 'PLAY' : 'GO'}
                                  </button>
                              )}
                          </div>
