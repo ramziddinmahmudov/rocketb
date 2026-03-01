@@ -50,9 +50,9 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-24 px-4 pt-4 custom-scrollbar">
+    <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-28 px-6 pt-8 custom-scrollbar">
        {/* Top Navigation */}
-       <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-4 relative z-10 w-max shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+       <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-6 relative z-10 w-max shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <button 
              className={`px-5 py-2 text-sm font-bold transition-all rounded-xl relative ${activeTab === 'Daily Missions' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
              onClick={() => setActiveTab('Daily Missions')}
@@ -74,12 +74,12 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
        </div>
 
        {/* Sub Navigation */}
-       <div className="flex gap-2 mb-4">
+       <div className="flex gap-3 mb-6">
           {['Daily', 'Weekly', 'Completed'].map(t => (
               <button 
                  key={t}
                  onClick={() => setSubTab(t)}
-                 className={`px-4 py-1.5 rounded-xl text-xs font-semibold border ${subTab === t ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-transparent text-gray-500 border-transparent hover:bg-white/5'}`}
+                 className={`px-5 py-2 rounded-xl text-xs font-semibold border ${subTab === t ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-transparent text-gray-500 border-transparent hover:bg-white/5'}`}
               >
                   {t}
               </button>
@@ -87,7 +87,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
        </div>
 
        {/* Tasks List */}
-       <div className="flex flex-col gap-3">
+       <div className="flex flex-col gap-5">
           {loading ? (
              <div className="flex justify-center py-8">
                 <Loader className="animate-spin text-indigo-500" size={24} />
@@ -105,7 +105,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="bg-[#0f172a] rounded-2xl p-4 border border-white/5 relative overflow-hidden"
+                        className="bg-[#0f172a] rounded-3xl p-6 border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
                      >
                          {/* Subtle glowing background if completed */}
                          {isCompleted && !task.claimed && (
@@ -131,17 +131,17 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
 
                          {/* Rewards & Actions */}
                          <div className="flex justify-between items-center relative z-10">
-                             <div className="flex items-center gap-3 bg-black/20 px-3 py-1.5 rounded-xl border border-white/5">
+                             <div className="flex items-center gap-3 bg-black/20 px-4 py-2 rounded-xl border border-white/5">
                                  <div className="flex items-center gap-1.5">
-                                     <Rocket size={14} className="text-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" />
-                                     <span className="text-[11px] font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">+{task.rocket_reward} Rockets</span>
+                                     <Rocket size={16} className="text-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" />
+                                     <span className="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">+{task.rocket_reward} Rockets</span>
                                  </div>
                                  {idx % 2 === 1 && (
                                      <>
-                                         <div className="w-[1px] h-3 bg-white/10" />
+                                         <div className="w-[1px] h-4 bg-white/10" />
                                          <div className="flex items-center gap-1">
-                                             <Star size={12} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]" />
-                                             <span className="text-[11px] font-black text-amber-300">+5</span>
+                                             <Star size={14} className="text-amber-400 fill-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.8)]" />
+                                             <span className="text-xs font-black text-amber-300">+5</span>
                                          </div>
                                      </>
                                  )}
@@ -155,13 +155,13 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                                  <button 
                                      onClick={() => handleClaim(task.id)}
                                      disabled={claiming === task.id}
-                                     className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-[0_0_15px_rgba(52,211,153,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.7)] transition-all active:scale-95"
+                                     className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-[0_0_15px_rgba(52,211,153,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.7)] transition-all active:scale-95"
                                  >
-                                     {claiming === task.id ? <Loader size={14} className="animate-spin" /> : <Gift size={14} />}
+                                     {claiming === task.id ? <Loader size={16} className="animate-spin" /> : <Gift size={16} />}
                                      CLAIM
                                  </button>
                              ) : (
-                                 <button className="px-5 py-2 rounded-xl text-[10px] font-black tracking-widest uppercase text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
+                                 <button className="px-6 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
                                      {idx === 2 ? 'PLAY' : 'GO'}
                                  </button>
                              )}
@@ -177,11 +177,11 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-[#0f172a] rounded-2xl p-4 border border-white/5 relative overflow-hidden"
+                  className="bg-[#0f172a] rounded-3xl p-6 border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
               >
                   <div className="flex justify-between items-center mb-1">
                       <h3 className="font-bold text-sm text-white/90">Reach Rank #100 Global</h3>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500 font-bold border border-amber-500/30">New</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 font-bold border border-amber-500/30">New</span>
                   </div>
                   <p className="text-xs text-gray-500 mb-4 text-center">Current Rank #412</p>
 
