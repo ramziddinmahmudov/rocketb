@@ -54,7 +54,7 @@ export default function Leaderboard({ myUserId, showToast }) {
   const podiumSizes = [56, 72, 56];
 
   return (
-    <div className="px-5 pt-6 pb-28 flex flex-col gap-6 w-full h-full overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col gap-6" style={{ boxSizing: 'border-box' }}>
        
        {/* Header */}
        <div className="text-center pt-6 pb-2">
@@ -80,7 +80,10 @@ export default function Leaderboard({ myUserId, showToast }) {
        </div>
 
        {/* My Current Rank */}
-       <div className="mb-2 relative rounded-3xl p-5 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
+       <div 
+         className="mb-2 relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]"
+         style={{ padding: '20px', textAlign: 'center', boxSizing: 'border-box' }}
+       >
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-fuchsia-600/20 blur-[40px] rounded-full pointer-events-none" />
           
