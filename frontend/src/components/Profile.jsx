@@ -19,7 +19,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-28 px-6 pt-8 custom-scrollbar">
+    <div className="flex flex-col gap-6 w-full text-white pb-6">
        
        {/* Header */}
        <div className="flex justify-between items-center mb-6">

@@ -50,7 +50,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0f1c] text-white overflow-y-auto pb-28 px-6 pt-8 custom-scrollbar">
+    <div className="flex flex-col gap-6 w-full text-white pt-4 pb-6">
        {/* Top Navigation */}
        <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-6 relative z-10 w-max shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <button 
