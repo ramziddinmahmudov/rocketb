@@ -1,16 +1,15 @@
 import { motion } from 'framer-motion';
 import { User, Copy, Bell, Settings, Rocket, Crown, Star, Swords, Trophy, Target, Users, TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function Profile({ username, isVip, vipEmoji, userId, referralLink, showToast }) {
-  // Mock Data aligned with screenshot
-  const stats = {
-      totalBattles: 197,
-      wins: 5,
-      winRate: '56%',
-      rocketsSpent: '2,450',
-      starsGained: 120,
-      referrals: 1,
-      vipStatus: 'Active, ends in 3 days'
+export default function Profile({ username, isVip, vipEmoji, userId, referralLink, showToast, profileStats }) {
+  const stats = profileStats || {
+      totalBattles: 0,
+      wins: 0,
+      winRate: '0%',
+      rocketsSpent: '0',
+      starsGained: 0,
+      referrals: 0,
+      vipStatus: isVip ? 'Active' : 'Not VIP'
   };
 
   const handleCopyLink = () => {

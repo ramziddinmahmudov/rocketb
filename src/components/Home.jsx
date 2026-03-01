@@ -1,12 +1,12 @@
 import { motion } from 'framer-motion';
 import { Rocket, Shield, Crown } from 'lucide-react';
 
-export default function Home({ balance, isVip, vipEmoji }) {
-  // Mock data for now
+export default function Home({ balance, isVip, vipEmoji, profileStats }) {
+  // Use real data where possible
   const quickStats = {
-    wins: 89,
-    streak: 5,
-    rank: 412
+    wins: profileStats?.wins || 0,
+    streak: 0,
+    rank: 0
   };
 
   return (
