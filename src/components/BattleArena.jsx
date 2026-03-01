@@ -167,8 +167,7 @@ export default function BattleArena({
           </p>
           <button 
              onClick={handleShareVote}
-             className="w-full py-4 rounded-xl text-white text-sm font-bold uppercase transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-             style={{ background: 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}
+             className="w-full py-4 rounded-2xl text-white text-[13px] font-black tracking-widest uppercase transition-all shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_4px_30px_rgba(168,85,247,0.6)] active:scale-[0.98] flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30"
           >
               SHARE YOUR BRACKET LINK <Share2 size={16} />
           </button>
