@@ -19,7 +19,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
 
       {/* Rocket Balance Card */}
       <motion.div 
-        className="rounded-3xl p-6 relative overflow-hidden flex flex-col gap-3 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
+        className="rounded-3xl py-6 px-12 mx-5 relative overflow-hidden flex flex-col gap-3 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
