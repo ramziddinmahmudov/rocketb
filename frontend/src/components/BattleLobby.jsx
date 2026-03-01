@@ -136,17 +136,16 @@ export default function BattleLobby({
       </div>
 
       {/* Bottom Action Buttons */}
-      <div className="p-4 grid grid-cols-3 gap-2 pb-6">
-          <button className="flex-1 py-3 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold tracking-wider hover:bg-white/10 transition-colors uppercase" disabled>
+      <div className="p-4 grid grid-cols-3 gap-3 pb-6">
+          <button className="flex-1 py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 text-[10px] font-black tracking-widest hover:bg-white/10 transition-all uppercase shadow-[0_4px_15px_rgba(0,0,0,0.1)]" disabled>
               Enter Match
           </button>
-          <button className="flex-1 py-3 rounded-xl bg-white/5 text-white/40 text-[10px] font-bold tracking-wider hover:bg-white/10 transition-colors uppercase">
+          <button className="flex-1 py-3.5 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white/40 text-[10px] font-black tracking-widest hover:bg-white/10 transition-all uppercase shadow-[0_4px_15px_rgba(0,0,0,0.1)]">
               Watch Live
           </button>
           <button 
              onClick={handleCopy}
-             className="flex-1 py-3 rounded-xl text-white text-[10px] font-bold tracking-wider uppercase transition-all shadow-lg active:scale-95 flex items-center justify-center gap-1"
-             style={{ background: 'linear-gradient(90deg, #3b82f6 0%, #6366f1 100%)', boxShadow: '0 4px 15px rgba(59, 130, 246, 0.4)' }}
+             className="flex-1 py-3.5 rounded-2xl text-white text-[10px] font-black tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)]"
           >
               {copied ? 'Copied!' : 'Share'}
           </button>
