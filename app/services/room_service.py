@@ -125,7 +125,7 @@ async def join_room(
     if battle.status != BattleStatus.WAITING:
         raise ValueError("Battle has already started")
 
-    # Check if already joined
+    # Check if already joined THIS battle
     result = await session.execute(
         select(BattleParticipant).where(
             BattleParticipant.battle_id == battle.id,
@@ -135,6 +135,20 @@ async def join_room(
     existing = result.scalar_one_or_none()
     if existing is not None:
         return room, battle, True  # already joined
+
+    # Check if joined ANY OTHER waiting or active battle
+    other_active_battle = await session.execute(
+        select(Battle)
+        .join(BattleParticipant, Battle.id == BattleParticipant.battle_id)
+        .where(
+            BattleParticipant.user_id == user_id,
+            Battle.status.in_([BattleStatus.WAITING, BattleStatus.ACTIVE])
+        )
+    )
+    if other_active_battle.scalar_one_or_none() is None:
+         pass # Free to join
+    else:
+        raise ValueError("Siz allaqachon boshqa jangdasiz. Iltimos oldin o'sha jangni yakunlang.")
 
     # Count current participants
     count_result = await session.execute(
@@ -191,7 +205,7 @@ async def list_active_rooms(session: AsyncSession) -> list[BattleRoom]:
         .join(Battle, BattleRoom.id == Battle.room_id)
         .where(
             BattleRoom.is_active == True,
-            Battle.status.in_([BattleStatus.WAITING, BattleStatus.ACTIVE])
+            Battle.status == BattleStatus.WAITING
         )
         .order_by(BattleRoom.created_at.desc())
         .limit(50)

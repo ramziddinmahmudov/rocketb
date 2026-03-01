@@ -78,6 +78,10 @@ export const api = {
   // Payment / Invoice
   createInvoice: (type, items) =>
     client.post('/api/payment/create-invoice', { type, items }),
+
+  // Leaderboard
+  getLeaderboard: (limit = 50) =>
+    client.get('/api/leaderboard', { params: { limit } }),
 };
 
 export default client;

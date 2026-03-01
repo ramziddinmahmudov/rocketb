@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 
-export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vipEmoji, onEmojiUpdate }) {
+export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpdate }) {
   const [isLoading, setIsLoading] = useState(false);
   const [emojiInput, setEmojiInput] = useState(vipEmoji || '');
 
@@ -25,7 +25,6 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
             window.Telegram.WebApp.openInvoice(invoice_link, (status) => {
                 if (status === 'paid') {
                     showToast('Payment successful! Rockets incoming 🚀', 'success');
-                    onClose();
                     setTimeout(() => window.location.reload(), 1500); 
                 } else if (status === 'cancelled') {
                     showToast('Payment cancelled', 'info');
@@ -68,35 +67,8 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 bg-black/80 z-50 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-
-          {/* Modal */}
-          <motion.div
-            className="fixed inset-0 top-[5vh] z-50 flex flex-col pointer-events-none p-6 sm:p-8"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden pointer-events-auto h-full flex flex-col relative max-w-md mx-auto w-full mb-6">
-              
-              {/* Close Button */}
-              <button 
-                onClick={onClose}
-                className="absolute top-4 right-4 text-gray-400 hover:text-white p-2"
-              >
-                ✕
-              </button>
+    <div className="p-4 h-full overflow-y-auto pb-24 custom-scrollbar">
+      <div className="bg-[#0f172a] border border-white/10 rounded-3xl p-6 shadow-2xl overflow-hidden relative max-w-md mx-auto w-full mt-2">
 
               <div className="text-center mb-6">
                 <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-1" style={{ fontFamily: 'Outfit, sans-serif' }}>
@@ -188,10 +160,7 @@ export default function StoreModal({ isOpen, onClose, api, showToast, isVip, vip
                 Payments processed securely by Telegram
               </div>
 
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }

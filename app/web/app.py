@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.web.routes import battle, battle_ws, profile, vote, payment, room, daily_tasks, gift
+from app.web.routes import battle, battle_ws, profile, vote, payment, room, daily_tasks, gift, leaderboard
 
 
 def create_app() -> FastAPI:
@@ -34,6 +34,7 @@ def create_app() -> FastAPI:
     app.include_router(room.router)
     app.include_router(daily_tasks.router)
     app.include_router(gift.router)
+    app.include_router(leaderboard.router)
 
     @app.get("/health")
     async def health() -> dict[str, str]:
