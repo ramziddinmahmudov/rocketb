@@ -48,7 +48,7 @@ export default function RoomBrowser({
   });
 
   return (
-    <div className="flex flex-col gap-6 w-full text-white pt-2 pb-6">
+    <div className="px-5 pt-6 pb-28 flex flex-col gap-6 w-full h-full overflow-y-auto custom-scrollbar">
       {/* Header */}
       <div className="text-center mt-2 mb-4">
          <h2 className="text-lg font-bold text-white/90">Xonalar Sahifasi</h2>
@@ -99,7 +99,7 @@ export default function RoomBrowser({
              return (
               <motion.div
                 key={room.id || index}
-                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-3xl p-6 flex flex-col gap-5 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
+                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-3xl p-5 flex flex-col gap-5 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
