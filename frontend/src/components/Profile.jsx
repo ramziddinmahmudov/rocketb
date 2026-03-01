@@ -19,7 +19,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full text-white pb-6">
+    <div className="px-5 pt-8 pb-28 flex flex-col gap-6 w-full h-full overflow-y-auto custom-scrollbar">
        
        {/* Header */}
        <div className="flex justify-between items-center mb-6">
@@ -45,7 +45,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        <motion.div 
          initial={{ opacity: 0, scale: 0.95 }}
          animate={{ opacity: 1, scale: 1 }}
-         className="w-full rounded-3xl p-6 mb-5 relative overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
+         className="w-full rounded-3xl p-5 mb-1 relative overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
        >
            {/* Intense animated gradient glow */}
            <div className="absolute -top-10 -right-10 w-48 h-48 bg-fuchsia-600/30 blur-[50px] rounded-full animate-pulse pointer-events-none" />
@@ -79,7 +79,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </button>
 
        {/* Comprehensive Stats Grid */}
-       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 mb-6 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl p-5 border border-white/5 mb-1 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
            <div className="grid grid-cols-2 gap-y-6 gap-x-6">
                {/* Row 1 */}
                <div className="flex items-start gap-3">
@@ -154,7 +154,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </div>
 
        {/* Leaderboard Summary */}
-       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl p-5 border border-white/5 mb-6 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+       <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl p-5 border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
            <h3 className="text-sm font-bold text-white mb-4 tracking-widest uppercase ml-1">Leaderboard Summary</h3>
            <div className="flex gap-4">
                <div className="flex-1 bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center">

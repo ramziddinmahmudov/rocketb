@@ -50,7 +50,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full text-white pt-4 pb-6">
+    <div className="px-5 pt-6 pb-28 flex flex-col gap-6 w-full h-full overflow-y-auto custom-scrollbar">
        {/* Top Navigation */}
        <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-6 relative z-10 w-max shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <button 
@@ -105,7 +105,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="bg-[#0f172a] rounded-3xl p-6 border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                        className="bg-[#0f172a] rounded-3xl p-5 border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
                      >
                          {/* Subtle glowing background if completed */}
                          {isCompleted && !task.claimed && (

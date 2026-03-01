@@ -10,7 +10,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="px-5 pt-6 pb-28 flex flex-col gap-6 w-full h-full overflow-y-auto custom-scrollbar">
       
       {/* Platform Title */}
       <div className="text-center mt-2">
@@ -19,7 +19,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
 
       {/* Rocket Balance Card */}
       <motion.div 
-        className="rounded-3xl py-6 px-8 relative overflow-hidden flex flex-col gap-3 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
+        className="rounded-3xl p-5 relative overflow-hidden flex flex-col gap-3 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -50,7 +50,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
       <div className="flex flex-col gap-3">
         <h3 className="font-bold text-base text-white/90 px-2 ">Active Tournament Card</h3>
         <motion.div 
-          className="rounded-3xl p-6 border border-fuchsia-500/30 relative overflow-hidden shadow-[0_15px_40px_-15px_rgba(168,85,247,0.5)]"
+          className="rounded-3xl p-5 border border-fuchsia-500/30 relative overflow-hidden shadow-[0_15px_40px_-15px_rgba(168,85,247,0.5)]"
           style={{ background: 'linear-gradient(135deg, rgba(30,27,75,0.9) 0%, rgba(134,25,143,0.5) 100%)' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
