@@ -149,20 +149,20 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                              </div>
 
                              {task.claimed ? (
-                                 <button className="px-4 py-1.5 rounded-lg text-xs font-bold bg-white/5 text-gray-500 border border-white/10" disabled>
+                                 <button className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-white/5 text-gray-500 border border-white/10" disabled>
                                      Olingan
                                  </button>
                              ) : isCompleted ? (
                                  <button 
                                      onClick={() => handleClaim(task.id)}
                                      disabled={claiming === task.id}
-                                     className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-emerald-500 to-emerald-400 text-white shadow-[0_0_15px_rgba(52,211,153,0.5)] hover:shadow-[0_0_25px_rgba(52,211,153,0.7)] transition-all active:scale-95"
+                                     className="flex items-center gap-1.5 px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest bg-gradient-to-r from-emerald-500 to-teal-400 text-white shadow-[0_4px_15px_rgba(52,211,153,0.3)] hover:shadow-[0_4px_25px_rgba(52,211,153,0.5)] transition-all active:scale-95 border border-emerald-400/30"
                                  >
                                      {claiming === task.id ? <Loader size={16} className="animate-spin" /> : <Gift size={16} />}
                                      CLAIM
                                  </button>
                              ) : (
-                                 <button className="px-6 py-2.5 rounded-xl text-xs font-black tracking-widest uppercase text-white hover:text-white transition-all active:scale-95 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.6)] bg-gradient-to-r from-indigo-500 to-purple-500">
+                                 <button className="px-6 py-2.5 rounded-2xl text-[11px] font-black tracking-widest uppercase text-white hover:text-white transition-all active:scale-95 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30">
                                      {idx === 2 ? 'PLAY' : 'GO'}
                                  </button>
                              )}
@@ -192,7 +192,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                           <span className="text-[10px] text-gray-500">Rewards</span>
                           <span className="text-xs font-bold text-gray-200">Exclusive VIP Badge</span>
                       </div>
-                      <button className="px-6 py-2 rounded-xl text-xs font-bold text-white transition-all active:scale-95 shadow-lg bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center gap-1">
+                      <button className="px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-all active:scale-95 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30 flex items-center gap-1">
                           Share
                       </button>
                   </div>

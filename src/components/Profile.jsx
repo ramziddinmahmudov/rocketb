@@ -73,7 +73,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </motion.div>
 
        {/* Edit Profile Button */}
-       <button className="w-full py-4 mb-6 rounded-xl bg-white/5 backdrop-blur-sm text-white text-sm font-black tracking-widest border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all active:scale-[0.98] shadow-[0_5px_15px_-5px_rgba(255,255,255,0.1)]">
+       <button className="w-full py-4 mb-6 rounded-2xl bg-white/5 backdrop-blur-md text-white text-[13px] font-black tracking-widest uppercase border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2">
            EDIT PROFILE
        </button>
 
@@ -175,11 +175,8 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
        </div>
 
        {/* Show More Stats Button */}
-       <button className="w-full py-4 rounded-xl text-white text-sm font-black uppercase tracking-wider border border-transparent hover:border-indigo-500/50 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(99,102,241,0.2)] hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] relative overflow-hidden group">
-           <div className="absolute inset-0 bg-gradient-to-r from-[#1e1b4b] via-[#312e81] to-[#1e1b4b] opacity-80 group-hover:opacity-100 transition-opacity" />
-           <span className="relative z-10 flex items-center justify-center gap-2">
-               MORE STATS <Target size={16} className="group-hover:text-indigo-400 transition-colors" />
-           </span>
+       <button className="w-full py-4 rounded-2xl text-white text-[13px] font-black uppercase tracking-widest shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_30px_rgba(99,102,241,0.5)] transition-all active:scale-[0.98] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30 flex items-center justify-center gap-2">
+           MORE STATS <Target size={16} />
        </button>
 
     </div>

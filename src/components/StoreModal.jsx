@@ -93,7 +93,7 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                     <button
                         onClick={() => handlePurchase('vip')}
                         disabled={isLoading}
-                        className="w-full mt-3 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-black shadow-lg hover:brightness-110 active:scale-95 transition-all text-sm"
+                        className="w-full mt-3 py-3 rounded-2xl text-[13px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-[0_4px_15px_rgba(245,158,11,0.4)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all"
                     >
                         {isLoading ? 'Processing...' : 'Upgrade for 1000 ⭐'}
                     </button>
@@ -120,7 +120,7 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                             <button
                                 onClick={handleUpdateEmoji}
                                 disabled={isLoading || emojiInput === (vipEmoji || '')}
-                                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-bold text-white transition-colors"
+                                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl font-black text-[11px] uppercase tracking-widest text-white transition-all active:scale-95 shadow-[0_4px_15px_rgba(168,85,247,0.3)]"
                             >
                                 Save
                             </button>
@@ -148,7 +148,7 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                         <button
                             onClick={() => handlePurchase('rocket', pkg.stars)}
                             disabled={isLoading}
-                            className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl font-semibold text-sm transition-colors flex items-center gap-1"
+                            className="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-1 shadow-[0_4px_10px_rgba(0,0,0,0.1)]"
                         >
                             <span>{pkg.stars}</span> <span className="text-yellow-400">⭐</span>
                         </button>
