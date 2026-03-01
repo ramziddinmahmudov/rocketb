@@ -10,7 +10,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
   };
 
   return (
-    <div className="home-container px-6 pt-6 pb-28 flex flex-col gap-8 h-full overflow-y-auto custom-scrollbar">
+    <div className="mx-5 px-6 pt-6 pb-28 flex flex-col gap-8 h-full overflow-y-auto custom-scrollbar">
       
       {/* Platform Title */}
       <div className="text-center mt-2">
