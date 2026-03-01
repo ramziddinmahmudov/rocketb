@@ -80,7 +80,7 @@ export default function Leaderboard({ myUserId, showToast }) {
        </div>
 
        {/* My Current Rank */}
-       <div className="mx-6 mb-8 relative rounded-2xl p-4 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
+       <div className="mx-6 mb-8 relative rounded-3xl p-6 text-center overflow-hidden bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_5px_30px_-10px_rgba(99,102,241,0.5)]">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-fuchsia-600/20 blur-[40px] rounded-full pointer-events-none" />
           
@@ -148,7 +148,7 @@ export default function Leaderboard({ myUserId, showToast }) {
              )}
 
              {/* Leaderboard List */}
-             <div className="flex flex-col gap-2 px-4">
+             <div className="flex flex-col gap-3 px-6">
                 {(top3.length < 3 ? entries : rest).map((entry, idx) => {
                    const rank = top3.length < 3 ? idx + 1 : idx + 4;
                    const isMe = entry.user_id === myUserId;
@@ -159,7 +159,7 @@ export default function Leaderboard({ myUserId, showToast }) {
                          initial={{ opacity: 0, x: -20 }}
                          animate={{ opacity: 1, x: 0 }}
                          transition={{ delay: idx * 0.03 }}
-                         className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${isMe ? 'bg-indigo-500/10 border border-indigo-500/20' : 'bg-[#0f172a] border border-white/5'}`}
+                         className={`flex items-center gap-4 py-4 px-5 rounded-2xl transition-all ${isMe ? 'bg-indigo-500/10 border border-indigo-500/20' : 'bg-[#0f172a] border border-white/5'}`}
                       >
                          <span className={`text-sm font-bold w-6 text-center ${isMe ? 'text-indigo-400' : 'text-gray-500'}`}>
                             #{rank}

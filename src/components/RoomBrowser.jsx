@@ -48,7 +48,7 @@ export default function RoomBrowser({
   });
 
   return (
-    <div className="room-browser flex flex-col h-full overflow-y-auto pb-24 px-4 pt-2 custom-scrollbar">
+    <div className="room-browser flex flex-col h-full overflow-y-auto pb-28 px-6 pt-6 custom-scrollbar">
       {/* Header */}
       <div className="text-center mt-2 mb-4">
          <h2 className="text-lg font-bold text-white/90">Xonalar Sahifasi</h2>
@@ -75,7 +75,7 @@ export default function RoomBrowser({
       </div>
 
       {/* Room List grid */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         {isLoading && rooms.length === 0 ? (
           <div className="rb-empty">
             <span className="rb-empty-icon"><Clock size={28} color="#a78bfa" /></span>
@@ -99,7 +99,7 @@ export default function RoomBrowser({
              return (
               <motion.div
                 key={room.id || index}
-                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-2xl p-4 flex flex-col gap-3 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
+                className="bg-gradient-to-br from-[#1e1b4b]/60 via-[#0f172a]/90 to-[#0f172a] backdrop-blur-md border border-indigo-500/20 rounded-3xl p-6 flex flex-col gap-5 shadow-[0_8px_30px_-10px_rgba(99,102,241,0.2)] relative overflow-hidden group hover:border-indigo-400/50 transition-colors"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -116,7 +116,7 @@ export default function RoomBrowser({
                 </div>
 
                 {/* Middle Row: Stats Grid */}
-                <div className="grid grid-cols-3 gap-3 bg-black/30 p-3 rounded-2xl border border-white/5 relative z-10">
+                <div className="grid grid-cols-3 gap-4 bg-black/30 p-4 rounded-2xl border border-white/5 relative z-10">
                    <div className="flex flex-col gap-1 items-center justify-center">
                       <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Players</span>
                       <span className="text-sm font-black text-indigo-200 drop-shadow-sm">{room.player_count || 0}/{room.max_players || 16}</span>

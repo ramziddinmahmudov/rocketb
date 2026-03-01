@@ -10,7 +10,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
   };
 
   return (
-    <div className="home-container p-4 pb-24 flex flex-col gap-6 h-full overflow-y-auto custom-scrollbar">
+    <div className="home-container px-6 pt-6 pb-28 flex flex-col gap-8 h-full overflow-y-auto custom-scrollbar">
       
       {/* Platform Title */}
       <div className="text-center mt-2">
@@ -19,7 +19,7 @@ export default function Home({ balance, isVip, vipEmoji }) {
 
       {/* Rocket Balance Card */}
       <motion.div 
-        className="rounded-2xl p-4 relative overflow-hidden flex flex-col gap-1 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
+        className="rounded-3xl p-6 relative overflow-hidden flex flex-col gap-3 bg-gradient-to-br from-[#1e1b4b]/80 via-[#312e81]/60 to-[#0f172a]/90 backdrop-blur-xl border border-indigo-500/30 shadow-[0_10px_40px_-10px_rgba(99,102,241,0.5)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -47,10 +47,10 @@ export default function Home({ balance, isVip, vipEmoji }) {
       </motion.div>
 
       {/* Active Tournament Card */}
-      <div className="flex flex-col gap-1 pt-2">
-        <h3 className="font-bold text-sm text-white/90 px-1">Active Tournament Card</h3>
+      <div className="flex flex-col gap-3">
+        <h3 className="font-bold text-base text-white/90 px-2">Active Tournament Card</h3>
         <motion.div 
-          className="rounded-2xl p-4 border border-fuchsia-500/30 relative overflow-hidden shadow-[0_15px_40px_-15px_rgba(168,85,247,0.5)]"
+          className="rounded-3xl p-6 border border-fuchsia-500/30 relative overflow-hidden shadow-[0_15px_40px_-15px_rgba(168,85,247,0.5)]"
           style={{ background: 'linear-gradient(135deg, rgba(30,27,75,0.9) 0%, rgba(134,25,143,0.5) 100%)' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -93,10 +93,10 @@ export default function Home({ balance, isVip, vipEmoji }) {
       </div>
 
       {/* Quick Stats */}
-      <div className="flex flex-col gap-1 pt-1">
-         <h3 className="font-bold text-sm text-white/90 px-1">Quick Stats</h3>
+      <div className="flex flex-col gap-3">
+         <h3 className="font-bold text-base text-white/90 px-2">Quick Stats</h3>
          <motion.div 
-           className="rounded-2xl p-4 grid grid-cols-3 gap-2 bg-[#1e2336]/60 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.3)] divide-x divide-white/5"
+           className="rounded-3xl p-5 grid grid-cols-3 gap-4 bg-[#1e2336]/60 backdrop-blur-md border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.3)] divide-x divide-white/5"
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ delay: 0.2 }}
