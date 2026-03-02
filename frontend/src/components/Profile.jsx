@@ -158,8 +158,8 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
                <div className="flex-1 bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center">
                    <span className="text-[11px] text-gray-400 mb-1">Global Rank</span>
                    <div className="flex items-center gap-1.5">
-                       <span className="text-lg font-bold text-white">#412</span>
-                       <span className="flex items-center text-[10px] text-emerald-400 font-bold"><TrendingUp size={12} /> 12</span>
+                       <span className="text-lg font-bold text-white">#{stats.rank || '---'}</span>
+                       {stats.rank && <span className="flex items-center text-[10px] text-emerald-400 font-bold"><TrendingUp size={12} /> 1</span>}
                    </div>
                </div>
 

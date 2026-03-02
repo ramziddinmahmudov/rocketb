@@ -6,7 +6,7 @@ export default function Home({ balance, isVip, vipEmoji, profileStats }) {
   const quickStats = {
     wins: profileStats?.wins || 0,
     streak: 0,
-    rank: 0
+    rank: profileStats?.rank || '---'
   };
 
   return (
@@ -79,11 +79,10 @@ export default function Home({ balance, isVip, vipEmoji, profileStats }) {
 
               {/* Right slot */}
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-fuchsia-500/60 shadow-[0_0_20px_rgba(192,38,211,0.4)] relative">
-                    <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Aleksey" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-fuchsia-900/50 to-transparent mix-blend-overlay" />
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-fuchsia-500/30 shadow-[0_0_20px_rgba(192,38,211,0.2)] bg-black/40 flex items-center justify-center text-xl font-bold text-gray-400">
+                    ?
                 </div>
-                <span className="text-[10px] font-bold text-fuchsia-200 uppercase tracking-widest drop-shadow-sm">Aleksey</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest drop-shadow-sm">???</span>
               </div>
            </div>
            

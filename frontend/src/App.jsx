@@ -141,7 +141,18 @@ export default function App() {
           setCooldown(profileRes.data.cooldown_seconds);
         }
         if (profileRes.data.user_id) setMyUserId(profileRes.data.user_id);
-        
+        // Fetch leaderboard to get user's global rank
+        let userRank = null;
+        try {
+            const lbRes = await api.getLeaderboard(100);
+            if (lbRes.data && lbRes.data.global) {
+                const myRankObj = lbRes.data.global.find(r => r.user_id === profileRes.data.user_id);
+                if (myRankObj) {
+                    userRank = myRankObj.rank;
+                }
+            }
+        } catch(e) { console.error("Failed to load leaderboard rank for profile"); }
+
         setProfileStats({
           totalBattles: profileRes.data.total_battles,
           wins: profileRes.data.wins,
@@ -149,6 +160,7 @@ export default function App() {
           rocketsSpent: profileRes.data.rockets_spent,
           starsGained: profileRes.data.stars_gained,
           referrals: profileRes.data.referrals,
+          rank: userRank
         });
 
         // Build referral link
