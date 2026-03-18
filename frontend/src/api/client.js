@@ -29,7 +29,8 @@ client.interceptors.response.use(
 
 // ── Helper: get current user telegram_id ──────────────
 const getTelegramId = () => {
-  return window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+  // Use real ID from Telegram if available, fallback to mock ID 123456789 for testing in a normal browser
+  return window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 123456789;
 };
 
 // ── API Methods ───────────────────────────────────────

@@ -10,7 +10,7 @@
  */
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { RefreshCw, Loader, Crown } from 'lucide-react';
+import { RefreshCw, Loader, Crown, Clock } from 'lucide-react';
 import { api } from '../api/client';
 
 export default function RoomBrowser({
