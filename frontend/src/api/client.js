@@ -1,25 +1,20 @@
 /**
- * Axios client with Telegram WebApp auth interceptor.
+ * API Client — Real backend calls via Axios.
+ * Telegram initData is sent via header for authentication.
  */
 import axios from 'axios';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '';
-
+// ── Axios instance ────────────────────────────────────
 const client = axios.create({
-  baseURL: API_BASE,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: '',
+  timeout: 15000,
 });
 
-// ── Auth Interceptor ──────────────────────────────────
+// ── Request interceptor: attach Telegram initData ─────
 client.interceptors.request.use((config) => {
   const tg = window.Telegram?.WebApp;
   if (tg?.initData) {
     config.headers['X-Telegram-Init-Data'] = tg.initData;
-  } else {
-    console.warn('[API] No Telegram initData found.');
   }
   return config;
 });
@@ -33,55 +28,96 @@ client.interceptors.response.use(
   }
 );
 
+// ── Helper: get current user telegram_id ──────────────
+const getTelegramId = () => {
+  return window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+};
+
 // ── API Methods ───────────────────────────────────────
 export const api = {
   // Expose the raw axios client for direct calls
   client,
 
-  // Profile
-  getProfile: () => client.get('/api/profile'),
-  updateVipEmoji: (emoji) => client.post('/api/profile/emoji', { emoji }),
+  // ── Users / Profile ─────────────────────────────────
+  getProfile: () => {
+    const tgId = getTelegramId();
+    return client.get(`/users/${tgId}`);
+  },
+  getBalance: () => {
+    const tgId = getTelegramId();
+    return client.get(`/users/${tgId}/balance`);
+  },
+  getBattleHistory: () => {
+    const tgId = getTelegramId();
+    return client.get(`/users/${tgId}/battles`);
+  },
+  updateVipEmoji: (emoji) =>
+    client.post('/users/emoji', { emoji }),
 
-  // Battle
-  joinBattle: () => client.post('/api/battle/join'),
-  getBattle: (battleId) => client.get(`/api/battle/${battleId}`),
-  advanceRound: (battleId) => client.post(`/api/battle/${battleId}/advance`),
+  // ── Battles ─────────────────────────────────────────
+  getActiveBattles: () =>
+    client.get('/battles'),
+  getLobby: () =>
+    client.get('/battles/lobby'),
+  joinBattle: () => {
+    const tgId = getTelegramId();
+    return client.post('/battles/lobby/join', { telegram_id: tgId });
+  },
+  getBattle: (battleId) =>
+    client.get(`/battles/${battleId}`),
+  vote: (battleId, amount, extra = {}) => {
+    const tgId = getTelegramId();
+    return client.post(`/battles/${battleId}/vote`, {
+      voter_id: tgId,
+      amount,
+      target_id: extra.target_id || null,
+      ...extra,
+    });
+  },
+  getVotes: (battleId) =>
+    client.get(`/battles/${battleId}/votes`),
 
-  // Voting
-  vote: (battleId, amount) =>
-    client.post('/api/vote', { battle_id: battleId, amount }),
-
-  // Rooms
+  // ── Rooms (if backend supports — kept for compatibility) ──
   createRoom: (name = 'Battle Room') =>
-    client.post('/api/room/create', { name }),
+    client.post('/rooms/create', { name }),
   joinRoom: (inviteCode) =>
-    client.post(`/api/room/join/${inviteCode}`),
+    client.post(`/rooms/join/${inviteCode}`),
   getRoom: (roomId) =>
-    client.get(`/api/room/${roomId}`),
+    client.get(`/rooms/${roomId}`),
   listRooms: () =>
-    client.get('/api/rooms/active'),
+    client.get('/rooms/active'),
   deleteRoom: (roomId) =>
-    client.delete(`/api/room/${roomId}`),
+    client.delete(`/rooms/${roomId}`),
 
-  // Daily Tasks
+  // ── Daily Tasks ─────────────────────────────────────
   getDailyTasks: () =>
-    client.get('/api/daily-tasks'),
+    client.get('/daily-tasks'),
   claimTask: (taskId) =>
-    client.post(`/api/daily-tasks/${taskId}/claim`),
+    client.post(`/daily-tasks/${taskId}/claim`),
 
-  // Gifts
+  // ── Gifts ───────────────────────────────────────────
   sendGift: (receiverId, amount) =>
-    client.post('/api/gift', { receiver_id: receiverId, amount }),
+    client.post('/gift', { receiver_id: receiverId, amount }),
   getGiftLimit: (receiverId) =>
-    client.get(`/api/gift/limit/${receiverId}`),
+    client.get(`/gift/limit/${receiverId}`),
 
-  // Payment / Invoice
+  // ── Shop ────────────────────────────────────────────
+  getPackages: () =>
+    client.get('/shop/packages'),
+  getVipInfo: () =>
+    client.get('/shop/vip-info'),
+  buyVipRockets: (data = {}) => {
+    const tgId = getTelegramId();
+    return client.post('/shop/buy-vip-rockets', { telegram_id: tgId, ...data });
+  },
+
+  // ── Payments ────────────────────────────────────────
   createInvoice: (type, items) =>
-    client.post('/api/payment/create-invoice', { type, items }),
+    client.post('/payments/create-invoice', { type, items }),
 
-  // Leaderboard
+  // ── Leaderboard ─────────────────────────────────────
   getLeaderboard: (limit = 50) =>
-    client.get('/api/leaderboard', { params: { limit } }),
+    client.get('/leaderboard', { params: { limit } }),
 };
 
 export default client;

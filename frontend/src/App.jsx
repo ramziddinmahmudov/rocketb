@@ -460,24 +460,25 @@ export default function App() {
       {/* Content */}
       <div className="app-content">
         {/* ── Header ────────────────────────────────────── */}
-        <header className="app-header">
-          <div className="header-left">
-            {screen !== SCREEN.TABS && (
-              <button className="back-btn" onClick={handleLeaveRoom}>
-                <ArrowLeft size={20} color="#a78bfa" />
-              </button>
-            )}
-            <motion.div className="avatar-circle" whileHover={{ scale: 1.1 }}>
-              {username.charAt(0).toUpperCase()}
-            </motion.div>
-            <div>
-              <div className="header-username-row flex items-center gap-1">
-                <p className="header-username">{username}</p>
-                {isVip && vipEmoji && <span className="text-xl ml-1">{vipEmoji}</span>}
+        {!(screen === SCREEN.TABS && currentTab === 'profile') && (
+          <header className="app-header">
+            <div className="header-left">
+              {screen !== SCREEN.TABS && (
+                <button className="back-btn" onClick={handleLeaveRoom}>
+                  <ArrowLeft size={20} color="#a78bfa" />
+                </button>
+              )}
+              <motion.div className="avatar-circle" whileHover={{ scale: 1.1 }}>
+                {username.charAt(0).toUpperCase()}
+              </motion.div>
+              <div>
+                <div className="header-username-row flex items-center gap-1">
+                  <p className="header-username">{username}</p>
+                  {isVip && vipEmoji && <span className="text-xl ml-1">{vipEmoji}</span>}
+                </div>
+                {isVip && !vipEmoji && <span className="vip-badge-small mt-1">👑 VIP</span>}
               </div>
-              {isVip && !vipEmoji && <span className="vip-badge-small mt-1">👑 VIP</span>}
             </div>
-          </div>
 
           <div className="header-right">
             <motion.div
@@ -496,7 +497,7 @@ export default function App() {
                     exit={{ opacity: 0, y: 5 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {balance.toLocaleString()}
+                    {(balance ?? 0).toLocaleString()}
                   </motion.span>
                 </AnimatePresence>
                 <span className="balance-label">raketalar</span>
@@ -505,6 +506,7 @@ export default function App() {
             </motion.div>
           </div>
         </header>
+        )}
 
         {/* ── Main Content ────────────────────────────────── */}
         <div className="main-content">
@@ -543,6 +545,7 @@ export default function App() {
           {screen === SCREEN.TABS && currentTab === 'profile' && (
             <Profile
               username={username}
+              balance={balance}
               isVip={isVip}
               vipEmoji={vipEmoji}
               userId={myUserId}

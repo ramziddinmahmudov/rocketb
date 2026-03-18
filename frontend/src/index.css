@@ -411,25 +411,35 @@ body {
 /* ── Bottom Navigation ─────────────────────────────── */
 .bottom-nav {
   display: flex;
-  justify-content: space-around;
-  padding: 8px 16px 16px;
+  justify-content: space-between;
+  /* Spread items evenly */
+  align-items: center;
+  padding: 8px 8px 16px;
+  /* Reduced side padding so items have more room */
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(5, 10, 24, 0.8);
   backdrop-filter: blur(16px);
+  width: 100%;
 }
 
 .nav-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 8px 16px;
+  padding: 8px 4px;
+  /* Reduced individual button padding to fit all 5 items */
   border: none;
   background: none;
   color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   transition: all 0.2s;
   border-radius: 12px;
+  flex: 1;
+  /* Allow each button to take equal width and shrink fluidly */
+  max-width: 20%;
+  /* Ensure max 5 items fit symmetrically */
 }
 
 .nav-btn:hover {

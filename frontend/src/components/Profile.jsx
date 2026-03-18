@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { User, Copy, Bell, Settings, Rocket, Crown, Star, Swords, Trophy, Target, Users, TrendingUp, TrendingDown } from 'lucide-react';
 
-export default function Profile({ username, isVip, vipEmoji, userId, referralLink, showToast, profileStats }) {
+export default function Profile({ username, balance, isVip, vipEmoji, userId, referralLink, showToast, profileStats }) {
   const stats = profileStats || {
       totalBattles: 0,
       wins: 0,
@@ -58,7 +58,7 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
 
            <div className="flex items-center gap-2 mb-4 relative z-10">
                <Rocket size={20} className="text-indigo-400" />
-               <span className="text-2xl font-bold text-white">2,450</span>
+               <span className="text-2xl font-bold text-white">{balance?.toLocaleString() || '0'}</span>
            </div>
 
            <div className="flex items-center gap-4 relative z-10 border-t border-white/5 pt-3">
@@ -173,11 +173,6 @@ export default function Profile({ username, isVip, vipEmoji, userId, referralLin
            </div>
        </div>
 
-       {/* Show More Stats Button */}
-       <button className="w-full py-4 rounded-2xl text-white text-[13px] font-black uppercase tracking-widest shadow-[0_4px_20px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_30px_rgba(99,102,241,0.5)] transition-all active:scale-[0.98] bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30 flex items-center justify-center gap-2">
-           MORE STATS <Target size={16} />
-       </button>
-
-    </div>
+     </div>
   );
 }
