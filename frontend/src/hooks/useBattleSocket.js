@@ -22,7 +22,7 @@ export default function useBattleSocket(battleId) {
       ? window.location.host 
       : 'rocket-bot-production.up.railway.app';
     const initData = window.Telegram?.WebApp?.initData || '';
-    const url = `${protocol}//${host}/api/v1/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
+    const url = `${protocol}//${host}/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
 
     console.log('[WS] Connecting to', url);
 
