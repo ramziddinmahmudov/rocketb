@@ -11,8 +11,8 @@ export default function Navbar({ currentTab, setTab }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#050A18]/90 backdrop-blur-xl border-t border-white/5 pb-safe pb-2 pt-2">
-      <div className="flex justify-between items-center px-4 ">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#050A18]/90 backdrop-blur-xl border-t border-white/5 pb-6 pt-3">
+      <div className="flex justify-between items-center px-6">
          {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             const Icon = tab.icon;
