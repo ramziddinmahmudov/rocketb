@@ -17,12 +17,17 @@ export default function useBattleSocket(battleId) {
     if (!battleId) return;
 
     // Build WebSocket URL
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? window.location.host 
-      : 'rocket-bot-production.up.railway.app';
+    const defaultWsUrl = 'wss://rocket-bot-production.up.railway.app/api/v1';
+    const baseUrl = import.meta.env.VITE_WS_URL || defaultWsUrl;
     const initData = window.Telegram?.WebApp?.initData || '';
-    const url = `${protocol}//${host}/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
+    
+    // Support local testing / proxy
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const finalBaseUrl = isLocal && !import.meta.env.VITE_WS_URL 
+        ? `ws://${window.location.host}` 
+        : baseUrl;
+
+    const url = `${finalBaseUrl}/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
 
     console.log('[WS] Connecting to', url);
 
