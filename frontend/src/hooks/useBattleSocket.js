@@ -18,9 +18,11 @@ export default function useBattleSocket(battleId) {
 
     // Build WebSocket URL
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
+    const host = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? window.location.host 
+      : 'rocket-bot-production.up.railway.app';
     const initData = window.Telegram?.WebApp?.initData || '';
-    const url = `${protocol}//${host}/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
+    const url = `${protocol}//${host}/api/v1/ws/battle/${battleId}?initData=${encodeURIComponent(initData)}`;
 
     console.log('[WS] Connecting to', url);
 

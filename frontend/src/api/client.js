@@ -4,9 +4,8 @@
  */
 import axios from 'axios';
 
-// ── Axios instance ────────────────────────────────────
 const client = axios.create({
-  baseURL: '',
+  baseURL: import.meta.env.VITE_API_URL || 'https://rocket-bot-production.up.railway.app/api/v1',
   timeout: 15000,
 });
 
