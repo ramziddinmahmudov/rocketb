@@ -64,7 +64,7 @@ export default function Leaderboard({ myUserId, showToast }) {
        {/* Tab Switcher */}
        <div className="flex justify-center mb-6">
            <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 relative z-10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-              {['Global', 'Regional', 'Last Season'].map(t => (
+              {['Global'].map(t => (
                  <button
                     key={t}
                     onClick={() => setActiveTab(t)}
