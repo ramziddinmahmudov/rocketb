@@ -193,7 +193,7 @@ export default function Leaderboard({ myUserId, showToast }) {
        <div className="p-4 mt-auto bg-gradient-to-t from-[#0a0f1c] to-transparent pt-6 relative z-10">
           <button 
              onClick={handleShare}
-             className="w-[80%] mx-auto py-4 rounded-3xl text-white text-sm font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] active:scale-95 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
+             className="w-[80%] max-w-[320px] mx-auto py-4 px-6 rounded-3xl text-white text-sm font-black uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)] active:scale-95 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500"
           >
              {copied ? 'NUSXALANDI!' : 'SHARE YOUR RANK & PROGRESS'} <Trophy size={18} className="drop-shadow-md" />
           </button>

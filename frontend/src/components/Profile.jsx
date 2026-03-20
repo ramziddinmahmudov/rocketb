@@ -72,7 +72,7 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
        </motion.div>
 
        {/* Edit Profile Button */}
-       <button className="w-[80%] mx-auto py-4 mb-6 rounded-3xl bg-white/5 backdrop-blur-md text-white text-[14px] font-black tracking-widest uppercase border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2">
+       <button className="w-[80%] max-w-[320px] mx-auto py-4 px-6 mb-6 rounded-3xl bg-white/5 backdrop-blur-md text-white text-[14px] font-black tracking-widest uppercase border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2">
            EDIT PROFILE
        </button>
 
