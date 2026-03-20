@@ -11,8 +11,9 @@ export default function Navbar({ currentTab, setTab }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#050A18]/90 backdrop-blur-xl border-t border-white/5 pt-8 px-6" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="flex justify-between items-center px-6">
+    <div className="fixed bottom-4 left-4 right-4 z-40" style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <nav className="bg-[#050A18]/90 backdrop-blur-xl border border-white/10 rounded-3xl py-4 px-2 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+        <div className="flex justify-between items-center px-4">
          {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
             const Icon = tab.icon;
@@ -44,6 +45,7 @@ export default function Navbar({ currentTab, setTab }) {
             );
          })}
       </div>
-    </nav>
+      </nav>
+    </div>
   );
 }
