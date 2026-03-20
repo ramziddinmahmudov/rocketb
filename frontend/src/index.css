@@ -414,7 +414,7 @@ body {
   justify-content: space-between;
   /* Spread items evenly */
   align-items: center;
-  padding: 8px 8px 16px;
+  padding: 16px 8px 16px;
   /* Reduced side padding so items have more room */
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(5, 10, 24, 0.8);
