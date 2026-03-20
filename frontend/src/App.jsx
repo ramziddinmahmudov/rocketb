@@ -417,6 +417,16 @@ export default function App() {
       </AnimatePresence>
     );
   }
+  const handleWatchLive = () => {
+    if (battleId && battleStatus === 'active') {
+      setScreen(SCREEN.ARENA);
+    } else if (battleId && battleStatus === 'waiting') {
+      setScreen(SCREEN.LOBBY);
+    } else {
+      showToast("Xozircha faol turnir yo'q", 'info');
+    }
+  };
+
 
   if (isAuthError) {
     return (
@@ -515,7 +525,7 @@ export default function App() {
         {/* ── Main Content ────────────────────────────────── */}
         <div className="main-content">
           {screen === SCREEN.TABS && currentTab === 'home' && (
-             <Home balance={balance} isVip={isVip} vipEmoji={vipEmoji} profileStats={profileStats} />
+             <Home balance={balance} isVip={isVip} vipEmoji={vipEmoji} profileStats={profileStats} onWatchLive={handleWatchLive} />
           )}
 
           {screen === SCREEN.TABS && currentTab === 'rooms' && (
