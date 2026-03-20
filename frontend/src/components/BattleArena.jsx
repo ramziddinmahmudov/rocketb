@@ -168,9 +168,9 @@ export default function BattleArena({
           <div className="w-full flex justify-center mt-2">
              <button 
                 onClick={handleShareVote}
-                className="w-[70%] max-w-[280px] py-5 px-6 rounded-3xl text-white text-[14px] font-black tracking-widest uppercase transition-all shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_4px_30px_rgba(168,85,247,0.6)] active:scale-[0.98] flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30"
+                className="w-[70%] max-w-[280px] py-5 px-6 rounded-3xl text-white text-[14px] font-black tracking-widest uppercase transition-all shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_4px_30px_rgba(168,85,247,0.6)] active:scale-[0.98] flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 border border-indigo-500/30 whitespace-nowrap"
              >
-                 SHARE YOUR BRACKET LINK <Share2 size={16} />
+                 SHARE BRACKET <Share2 size={16} />
              </button>
           </div>
       </div>
