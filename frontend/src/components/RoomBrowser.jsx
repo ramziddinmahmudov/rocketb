@@ -139,7 +139,7 @@ export default function RoomBrowser({
                       <span className="text-sm font-black text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.5)]">starts in 2m 15s</span>
                    </div>
                    <button
-                     className="px-6 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] border border-indigo-500/30"
+                     className="px-8 py-4 rounded-3xl text-[12px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] border border-indigo-500/30"
                      onClick={() => onJoinRoom(room.invite_code)}
                    >
                      ENTER ROOM
@@ -152,11 +152,11 @@ export default function RoomBrowser({
       </div>
 
       <button
-        className="mt-6 mx-auto flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95 text-[11px]"
+        className="mt-6 mx-auto flex items-center gap-2 px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95 text-[12px]"
         onClick={onRefresh}
         disabled={isLoading}
       >
-        {isLoading ? <><Loader size={14} className="animate-spin" /> Yangilanmoqda...</> : <><RefreshCw size={14} /> Yangilash</>}
+        {isLoading ? <><Loader size={16} className="animate-spin" /> Yangilanmoqda...</> : <><RefreshCw size={16} /> Yangilash</>}
       </button>
 
     </div>

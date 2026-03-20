@@ -90,13 +90,15 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                             <p className="text-xs text-amber-200/70">max 300 votes • 1h cooldown</p>
                         </div>
                     </div>
-                    <button
-                        onClick={() => handlePurchase('vip')}
-                        disabled={isLoading}
-                        className="w-full mt-3 py-3 rounded-2xl text-[13px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-[0_4px_15px_rgba(245,158,11,0.4)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all"
-                    >
-                        {isLoading ? 'Processing...' : 'Upgrade for 1000 ⭐'}
-                    </button>
+                    <div className="flex justify-center mt-3">
+                        <button
+                            onClick={() => handlePurchase('vip')}
+                            disabled={isLoading}
+                            className="px-10 py-4 rounded-3xl text-[14px] font-black uppercase tracking-widest bg-gradient-to-r from-amber-500 to-yellow-500 text-black shadow-[0_4px_15px_rgba(245,158,11,0.4)] hover:shadow-[0_4px_25px_rgba(245,158,11,0.6)] hover:brightness-110 active:scale-95 transition-all"
+                        >
+                            {isLoading ? 'Processing...' : 'Upgrade for 1000 ⭐'}
+                        </button>
+                    </div>
                   </div>
               )}
 
@@ -120,7 +122,7 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                             <button
                                 onClick={handleUpdateEmoji}
                                 disabled={isLoading || emojiInput === (vipEmoji || '')}
-                                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl font-black text-[11px] uppercase tracking-widest text-white transition-all active:scale-95 shadow-[0_4px_15px_rgba(168,85,247,0.3)]"
+                                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-3xl font-black text-[12px] uppercase tracking-widest text-white transition-all active:scale-95 shadow-[0_4px_15px_rgba(168,85,247,0.3)]"
                             >
                                 Save
                             </button>
@@ -148,7 +150,7 @@ export default function StoreModal({ api, showToast, isVip, vipEmoji, onEmojiUpd
                         <button
                             onClick={() => handlePurchase('rocket', pkg.stars)}
                             disabled={isLoading}
-                            className="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl font-black text-[12px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-1 shadow-[0_4px_10px_rgba(0,0,0,0.1)]"
+                            className="px-8 py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 rounded-3xl font-black text-[13px] uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-1 shadow-[0_4px_10px_rgba(0,0,0,0.1)]"
                         >
                             <span>{pkg.stars}</span> <span className="text-yellow-400">⭐</span>
                         </button>
