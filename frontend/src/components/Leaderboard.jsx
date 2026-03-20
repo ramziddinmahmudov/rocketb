@@ -71,7 +71,7 @@ export default function Leaderboard({ myUserId, showToast }) {
                     className={`px-10 py-2.5 rounded-xl text-xs font-bold transition-all relative ${activeTab === t ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
                  >
                     {activeTab === t && (
-                        <motion.div layoutId="lbTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+                        <motion.div layoutId="lbTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)] px-4 py-1.5" />
                     )}
                     {t}
                  </button>
