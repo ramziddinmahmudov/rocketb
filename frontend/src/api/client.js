@@ -5,7 +5,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://rocket-bot-production.up.railway.app/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
   timeout: 15000,
 });
 

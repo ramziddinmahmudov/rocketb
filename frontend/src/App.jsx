@@ -120,8 +120,12 @@ export default function App() {
     if (tg) {
       tg.ready();
       tg.expand();
-      tg.setHeaderColor('#050A18');
-      tg.setBackgroundColor('#050A18');
+      
+      // header and background colors are supported from Telegram WebApp version 6.1
+      if (tg.isVersionAtLeast && tg.isVersionAtLeast('6.1')) {
+        tg.setHeaderColor?.('#050A18');
+        tg.setBackgroundColor?.('#050A18');
+      }
 
       const user = tg.initDataUnsafe?.user;
       if (user?.first_name) setUsername(user.first_name);
@@ -200,7 +204,7 @@ export default function App() {
 
       } catch (err) {
         console.error('Init failed:', err);
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.response?.status === 404) {
           setIsAuthError(true);
           showToast('Autentifikatsiya xatosi. Telegramda oching.', 'error');
         } else {

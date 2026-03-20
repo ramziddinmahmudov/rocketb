@@ -12,12 +12,14 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://rocket-bot-production.up.railway.app',
         changeOrigin: true,
+        ws: true,
       },
       '/ws': {
-        target: 'ws://localhost:8000',
+        target: 'wss://rocket-bot-production.up.railway.app',
         ws: true,
+        changeOrigin: true,
       },
     },
   },
