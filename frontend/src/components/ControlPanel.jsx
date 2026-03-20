@@ -188,7 +188,7 @@ export default function ControlPanel({ onFire, balance, isLoading, cooldown, lim
           onClick={handleFire}
           disabled={isDisabled}
           className={`
-            fire-btn w-[80%] max-w-[320px] mx-auto flex items-center justify-center px-6 py-5 rounded-[32px]
+            fire-btn w-[70%] max-w-[280px] flex items-center justify-center px-6 py-5 rounded-[32px]
             text-white font-black text-[18px] tracking-wider uppercase
             disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none
             ${isShaking ? 'animate-shake' : ''}

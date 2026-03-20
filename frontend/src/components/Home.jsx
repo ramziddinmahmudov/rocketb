@@ -86,9 +86,11 @@ export default function Home({ balance, isVip, vipEmoji, profileStats }) {
               </div>
            </div>
            
-           <button className="relative w-[80%] max-w-[320px] mx-auto flex items-center justify-center py-4 px-6 rounded-3xl font-black text-white text-[14px] tracking-widest uppercase shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_4px_30px_rgba(168,85,247,0.6)] transition-all active:scale-[0.98] bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 z-10">
-               Enter Match
-           </button>
+           <div className="w-full flex justify-center mt-2">
+             <button className="relative w-[70%] max-w-[280px] flex items-center justify-center py-4 px-6 rounded-3xl font-black text-white text-[14px] tracking-widest uppercase shadow-[0_4px_20px_rgba(168,85,247,0.4)] hover:shadow-[0_4px_30px_rgba(168,85,247,0.6)] transition-all active:scale-[0.98] bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 z-10">
+                 Enter Match
+             </button>
+           </div>
         </motion.div>
       </div>
 

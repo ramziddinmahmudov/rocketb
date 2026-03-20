@@ -72,9 +72,11 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
        </motion.div>
 
        {/* Edit Profile Button */}
-       <button className="w-[80%] max-w-[320px] mx-auto py-4 px-6 mb-6 rounded-3xl bg-white/5 backdrop-blur-md text-white text-[14px] font-black tracking-widest uppercase border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2">
-           EDIT PROFILE
-       </button>
+       <div className="w-full flex justify-center mb-6 mt-2">
+         <button className="w-[70%] max-w-[280px] py-4 px-6 rounded-3xl bg-white/5 backdrop-blur-md text-white text-[14px] font-black tracking-widest uppercase border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98] shadow-[0_4px_15px_rgba(0,0,0,0.2)] flex items-center justify-center gap-2">
+             EDIT PROFILE
+         </button>
+       </div>
 
        {/* Comprehensive Stats Grid */}
        <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl border border-white/5 mb-1 shadow-[0_4px_20px_rgba(0,0,0,0.2)]" style={{ padding: '20px', boxSizing: 'border-box' }}>
