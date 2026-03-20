@@ -11,7 +11,7 @@ export default function Navbar({ currentTab, setTab }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#050A18]/90 backdrop-blur-xl border-t border-white/5 pt-4 px-6" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#050A18]/90 backdrop-blur-xl border-t border-white/5 pt-8 px-6" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
       <div className="flex justify-between items-center px-6">
          {tabs.map((tab) => {
             const isActive = currentTab === tab.id;
