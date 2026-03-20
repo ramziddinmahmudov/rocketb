@@ -105,15 +105,14 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="bg-[#0f172a] rounded-3xl border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-                        style={{ padding: '20px', boxSizing: 'border-box' }}
+                        className="bg-[#0f172a] rounded-3xl border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)] p-6 py-7"
                      >
                          {/* Subtle glowing background if completed */}
                          {isCompleted && !task.claimed && (
                              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
                          )}
 
-                         <div className="flex justify-between items-end mb-2 relative z-10">
+                         <div className="flex justify-between items-end mb-4 relative z-10">
                              <h3 className="font-bold text-sm text-white/90 drop-shadow-md">{task.title}</h3>
                              <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'text-gray-400'}`}>
                                  {task.progress}/{task.target_count}
@@ -121,7 +120,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                          </div>
 
                          {/* Progress Bar */}
-                         <div className="h-1.5 w-full bg-[#1e293b] rounded-full overflow-hidden mb-4 relative z-10">
+                         <div className="h-1.5 w-full bg-[#1e293b] rounded-full overflow-hidden mb-6 relative z-10">
                              <motion.div 
                                 className={`h-full rounded-full ${isCompleted ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' : 'bg-gradient-to-r from-indigo-500 to-purple-500'}`}
                                 initial={{ width: 0 }}
@@ -178,14 +177,13 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="bg-[#0f172a] rounded-3xl border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
-                  style={{ padding: '20px', boxSizing: 'border-box' }}
+                  className="bg-[#0f172a] rounded-3xl border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)] p-6 py-7"
               >
-                  <div className="flex justify-between items-center mb-1">
+                  <div className="flex justify-between items-center mb-3">
                       <h3 className="font-bold text-sm text-white/90">Reach Rank #100 Global</h3>
                       <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 font-bold border border-amber-500/30">New</span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-4 text-center">Current Rank #412</p>
+                  <p className="text-xs text-gray-500 mb-6 text-center">Current Rank #412</p>
 
                   <div className="flex justify-between items-center">
                       <div className="flex flex-col">
