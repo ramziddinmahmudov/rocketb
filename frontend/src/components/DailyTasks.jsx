@@ -50,11 +50,11 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
   };
 
   return (
-    <div className="flex flex-col gap-6" style={{ boxSizing: 'border-box' }}>
+    <div className="flex flex-col gap-6 px-4 pb-6" style={{ boxSizing: 'border-box' }}>
        {/* Top Navigation */}
-       <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-6 relative z-10 w-max max-w-full overflow-x-auto hide-scrollbar shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
+       <div className="flex w-full gap-2 p-1.5 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 mb-6 relative z-10 overflow-x-auto hide-scrollbar shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
           <button 
-             className={`px-6 py-2.5 text-[13px] whitespace-nowrap font-bold transition-all rounded-xl flex-shrink-0 relative ${activeTab === 'Daily Missions' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+             className={`flex-1 flex justify-center items-center px-4 py-3 text-[13px] md:text-[14px] whitespace-nowrap font-bold transition-all rounded-xl relative tracking-wide ${activeTab === 'Daily Missions' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
              onClick={() => setActiveTab('Daily Missions')}
           >
              {activeTab === 'Daily Missions' && (
@@ -63,7 +63,7 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
              Daily Missions
           </button>
           <button 
-             className={`px-6 py-2.5 text-[13px] whitespace-nowrap font-bold transition-all rounded-xl flex-shrink-0 relative ${activeTab === 'Ongoing Challenges' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+             className={`flex-1 flex justify-center items-center px-4 py-3 text-[13px] md:text-[14px] whitespace-nowrap font-bold transition-all rounded-xl relative tracking-wide ${activeTab === 'Ongoing Challenges' ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
              onClick={() => setActiveTab('Ongoing Challenges')}
           >
              {activeTab === 'Ongoing Challenges' && (

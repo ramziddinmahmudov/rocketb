@@ -80,7 +80,7 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
 
        {/* Comprehensive Stats Grid */}
        <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl border border-white/5 mb-1 shadow-[0_4px_20px_rgba(0,0,0,0.2)]" style={{ padding: '20px', boxSizing: 'border-box' }}>
-           <div className="grid grid-cols-2 gap-y-6 gap-x-6">
+           <div className="grid grid-cols-2 gap-y-6 gap-x-4">
                {/* Row 1 */}
                <div className="flex items-start gap-3">
                    <div className="mt-1 opacity-60"><Swords size={18} className="text-indigo-400" /></div>
@@ -90,37 +90,28 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
                    </div>
                </div>
                
-               <div className="flex justify-between">
-                   <div className="flex items-start gap-3">
-                       <div className="mt-1 opacity-60"><Trophy size={18} className="text-purple-400" /></div>
-                       <div className="flex flex-col">
-                           <span className="text-[11px] text-gray-400 font-medium">Wins</span>
-                           <span className="text-base font-bold text-white">{stats.wins}</span>
-                       </div>
-                   </div>
-                   <div className="flex items-start gap-3 justify-end text-right">
-                       <div className="mt-1 opacity-60"><Target size={18} className="text-indigo-400" /></div>
-                       <div className="flex flex-col">
-                           <span className="text-[11px] text-gray-400 font-medium whitespace-nowrap">Win Rate (%)</span>
-                           <span className="text-base font-bold text-white text-left">{stats.winRate}</span>
-                       </div>
+               <div className="flex items-start gap-3">
+                   <div className="mt-1 opacity-60"><Trophy size={18} className="text-purple-400" /></div>
+                   <div className="flex flex-col">
+                       <span className="text-[11px] text-gray-400 font-medium">Wins</span>
+                       <span className="text-base font-bold text-white">{stats.wins}</span>
                    </div>
                </div>
 
                {/* Row 2 */}
                <div className="flex items-start gap-3">
-                   <div className="mt-1 opacity-60"><Rocket size={18} className="text-indigo-400" /></div>
+                   <div className="mt-1 opacity-60"><Target size={18} className="text-emerald-400" /></div>
                    <div className="flex flex-col">
-                       <span className="text-[11px] text-gray-400 font-medium">Total Rockets Spent</span>
-                       <span className="text-base font-bold text-white">{stats.rocketsSpent}</span>
+                       <span className="text-[11px] text-gray-400 font-medium">Win Rate (%)</span>
+                       <span className="text-base font-bold text-white">{stats.winRate}</span>
                    </div>
                </div>
-               
+
                <div className="flex items-start gap-3">
-                   <div className="mt-1 opacity-60"><Star size={18} className="text-purple-400 fill-purple-400" /></div>
+                   <div className="mt-1 opacity-60"><Rocket size={18} className="text-pink-400" /></div>
                    <div className="flex flex-col">
-                       <span className="text-[11px] text-gray-400 font-medium">Total Stars Gaind</span>
-                       <span className="text-base font-bold text-white">{stats.starsGained}</span>
+                       <span className="text-[11px] text-gray-400 font-medium">Rockets Spent</span>
+                       <span className="text-base font-bold text-white">{stats.rocketsSpent}</span>
                    </div>
                </div>
 
@@ -128,28 +119,27 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
                <div className="flex items-start gap-3">
                    <div className="mt-1 opacity-60"><Star size={18} className="text-amber-500 fill-amber-500" /></div>
                    <div className="flex flex-col">
-                       <span className="text-[11px] text-gray-400 font-medium">Total Stars Gained</span>
+                       <span className="text-[11px] text-gray-400 font-medium">Stars Gained</span>
                        <span className="text-base font-bold text-white">{stats.starsGained}</span>
                    </div>
                </div>
                
                <div className="flex items-start gap-3">
-                   <div className="mt-1 opacity-60"><Users size={18} className="text-indigo-400" /></div>
+                   <div className="mt-1 opacity-60"><Users size={18} className="text-cyan-400" /></div>
                    <div className="flex flex-col">
-                       <span className="text-[11px] text-gray-400 font-medium">Referral Count</span>
+                       <span className="text-[11px] text-gray-400 font-medium">Referrals</span>
                        <span className="text-base font-bold text-white">{stats.referrals}</span>
                    </div>
                </div>
 
                {/* Row 4 (Full Width) */}
-               <div className="col-span-2 flex items-start gap-3 pt-2 border-t border-white/5">
+               <div className="col-span-2 flex items-start gap-3 pt-4 border-t border-white/5 mt-2">
                    <div className="mt-1 opacity-60"><Crown size={18} className="text-amber-500" /></div>
                    <div className="flex flex-col w-full">
                        <span className="text-[11px] text-gray-400 font-medium">VIP Status</span>
                        <span className="text-sm font-bold text-white">{stats.vipStatus}</span>
                    </div>
                </div>
-
            </div>
        </div>
 

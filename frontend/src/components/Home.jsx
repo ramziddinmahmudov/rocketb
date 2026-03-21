@@ -1,7 +1,21 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Rocket, Shield, Crown } from 'lucide-react';
 
 export default function Home({ balance, isVip, vipEmoji, profileStats, onWatchLive }) {
+  const [timeLeft, setTimeLeft] = useState(92); // 1m 32s
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
   // Use real data where possible
   const quickStats = {
     wins: profileStats?.wins || 0,
@@ -71,9 +85,11 @@ export default function Home({ balance, isVip, vipEmoji, profileStats, onWatchLi
               </div>
               
               {/* Center */}
-              <div className="flex flex-col items-center z-10 bg-black/30 px-4 py-2 rounded-xl border border-white/5">
+              <div className="flex flex-col items-center justify-center z-10 bg-black/40 px-6 py-3 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)] min-w-[120px] gap-0.5">
                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Countdown</span>
-                 <span className="text-xl font-black text-pink-500 drop-shadow-[0_0_8px_rgba(236,72,153,0.8)] tracking-wider">1m 32s</span>
+                 <span className="text-2xl font-black text-pink-500 drop-shadow-[0_0_10px_rgba(236,72,153,0.8)] tracking-wider">
+                     {minutes}m {seconds.toString().padStart(2, '0')}s
+                 </span>
                  <span className="text-[9px] text-gray-400 mt-1 uppercase tracking-widest font-bold">Opponent</span>
               </div>
 

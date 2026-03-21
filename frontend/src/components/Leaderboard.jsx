@@ -8,12 +8,11 @@ export default function Leaderboard({ myUserId, showToast }) {
   const [myRank, setMyRank] = useState(null);
   const [myScore, setMyScore] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('Global');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [activeTab]);
+  }, []);
 
   const fetchLeaderboard = async () => {
     setLoading(true);
@@ -54,30 +53,14 @@ export default function Leaderboard({ myUserId, showToast }) {
   const podiumSizes = [56, 72, 56];
 
   return (
-    <div className="flex flex-col gap-6" style={{ boxSizing: 'border-box' }}>
+    <div className="flex flex-col gap-6 px-4 pb-6" style={{ boxSizing: 'border-box' }}>
        
        {/* Header */}
        <div className="text-center pt-6 pb-2">
           <h1 className="text-xl font-bold uppercase tracking-[0.15em]">Leaderboard</h1>
        </div>
 
-       {/* Tab Switcher */}
-       <div className="flex justify-center mb-6">
-           <div className="flex gap-2 p-1 bg-[#1e2336]/60 backdrop-blur-md rounded-2xl border border-white/5 relative z-10 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-              {['Global'].map(t => (
-                 <button
-                    key={t}
-                    onClick={() => setActiveTab(t)}
-                    className={`px-10 py-2.5 rounded-xl w-[9px] h-[30px] text-xs font-bold transition-all relative ${activeTab === t ? 'text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-                 >
-                    {activeTab === t && (
-                        <motion.div layoutId="lbTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl -z-10 shadow-[0_0_15px_rgba(99,102,241,0.5)] px-4 py-1.5" />
-                    )}
-                    {t}
-                 </button>
-              ))}
-           </div>
-       </div>
+
 
        {/* My Current Rank */}
        <div 
@@ -190,7 +173,7 @@ export default function Leaderboard({ myUserId, showToast }) {
        )}
 
        {/* Bottom Share CTA */}
-       <div className="p-4 mt-auto bg-gradient-to-t from-[#0a0f1c] to-transparent pt-6 relative z-10">
+       <div className="p-4 mt-auto pt-6 relative z-10">
           <div className="w-full flex justify-center py-2">
             <button 
                onClick={handleShare}
