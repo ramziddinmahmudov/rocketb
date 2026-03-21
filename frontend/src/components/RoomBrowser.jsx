@@ -76,11 +76,11 @@ export default function RoomBrowser({
 
                 {/* Top Row: Name */}
                 <div className="flex justify-between items-center mb-1 relative z-10">
-                   <h3 className="font-black text-white text-xl drop-shadow-md tracking-tight">{room.name || '#RB-' + (201 + index)}</h3>
+                   <h3 className="font-black text-white text-xl drop-shadow-md tracking-tight">{room.name}</h3>
                 </div>
 
                 {/* Middle Row: Stats Grid */}
-                <div className="grid grid-cols-2 gap-4 bg-black/30 p-4 rounded-2xl border border-white/5 relative z-10">
+                <div className="grid grid-cols-2 gap-4 bg-black/30 px-4 py-8 rounded-2xl border border-white/5 relative z-10">
                    <div className="flex flex-col gap-1 items-center justify-center">
                       <span className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">Players</span>
                       <span className="text-sm font-black text-indigo-200 drop-shadow-sm">{room.player_count || 0}/{room.max_players || 16}</span>
@@ -94,7 +94,7 @@ export default function RoomBrowser({
                 {/* Bottom Row: Action */}
                 <div className="flex w-full mt-2 relative z-10">
                    <button
-                     className="w-full px-8 py-4 rounded-3xl text-[12px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] border border-indigo-500/30"
+                     className="w-full px-8 py-8 rounded-3xl text-[12px] font-black uppercase tracking-widest text-white transition-all active:scale-95 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 shadow-[0_4px_15px_rgba(99,102,241,0.3)] hover:shadow-[0_4px_25px_rgba(99,102,241,0.5)] border border-indigo-500/30 w-[50%] mx-auto"
                      onClick={() => onJoinRoom(room.invite_code)}
                    >
                      ENTER ROOM
@@ -107,7 +107,7 @@ export default function RoomBrowser({
       </div>
 
       <button
-        className="mt-6 mx-auto flex items-center gap-2 px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95 text-[12px]"
+        className="mt-6 mx-auto flex items-center gap-2 px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-gray-400 font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all active:scale-95 text-[12px] w-[50%] "
         onClick={onRefresh}
         disabled={isLoading}
       >
