@@ -51,9 +51,11 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
 
            <div className="flex justify-between items-start mb-2 relative z-10">
                <h3 className="text-indigo-200 text-xs font-bold uppercase tracking-widest drop-shadow-md">Rocket Balance</h3>
-               <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold text-amber-500 border border-amber-500/30">
-                   <Star size={10} className="fill-amber-500" /> VIP
-               </div>
+               {isVip && (
+                   <div className="flex items-center gap-1 bg-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold text-amber-500 border border-amber-500/30">
+                       <Star size={10} className="fill-amber-500" /> VIP
+                   </div>
+               )}
            </div>
 
            <div className="flex items-center gap-2 mb-4 relative z-10">
@@ -62,12 +64,23 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
            </div>
 
            <div className="flex items-center gap-4 relative z-10 border-t border-white/5 pt-3">
-               <div className="flex items-center gap-1.5 text-xs text-amber-500">
-                   <Crown size={14} /> VIP trial access
-               </div>
-               <div className="flex items-center gap-1.5 text-xs text-amber-400">
-                   <Star size={14} className="fill-amber-400" /> +120 Stars
-               </div>
+               {isVip ? (
+                   <>
+                       <div className="flex items-center gap-1.5 text-xs text-amber-500 font-bold">
+                           <Crown size={14} /> VIP Active
+                       </div>
+                       <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold">
+                           <Star size={14} className="fill-amber-400" /> +120 Stars
+                       </div>
+                   </>
+               ) : (
+                   <div className="flex justify-between w-full items-center">
+                       <span className="text-[11px] text-gray-400 font-medium">Ko'proq yulduzlar uchun</span>
+                       <button className="text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-lg font-black uppercase tracking-widest shadow-[0_0_15px_rgba(245,158,11,0.3)] active:scale-95 transition-all">
+                           GET VIP
+                       </button>
+                   </div>
+               )}
            </div>
        </motion.div>
 
@@ -132,20 +145,12 @@ export default function Profile({ username, balance, isVip, vipEmoji, userId, re
                    </div>
                </div>
 
-               {/* Row 4 (Full Width) */}
-               <div className="col-span-2 flex items-start gap-3 pt-4 border-t border-white/5 mt-2">
-                   <div className="mt-1 opacity-60"><Crown size={18} className="text-amber-500" /></div>
-                   <div className="flex flex-col w-full">
-                       <span className="text-[11px] text-gray-400 font-medium">VIP Status</span>
-                       <span className="text-sm font-bold text-white">{stats.vipStatus}</span>
-                   </div>
-               </div>
            </div>
        </div>
 
        {/* Leaderboard Summary */}
        <div className="bg-[#1e2336]/60 backdrop-blur-md rounded-3xl border border-white/5 shadow-[0_4px_20px_rgba(0,0,0,0.2)]" style={{ padding: '20px', boxSizing: 'border-box' }}>
-           <h3 className="text-sm font-bold text-white mb-4 tracking-widest uppercase ml-1">Leaderboard Summary</h3>
+           <h3 className="text-sm font-bold text-white mb-12 tracking-widest uppercase ml-1">Leaderboard Summary</h3>
            <div className="flex gap-4">
                <div className="flex-1 bg-black/20 rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center">
                    <span className="text-[11px] text-gray-400 mb-1">Global Rank</span>

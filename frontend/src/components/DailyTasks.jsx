@@ -105,15 +105,15 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="bg-[#0f172a] rounded-3xl border border-white/5 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)] p-6 py-7"
+                        className="bg-[#1e2336]/80 backdrop-blur-md rounded-2xl border border-white/10 relative overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.2)] px-4 py-4 sm:px-6 sm:py-5"
                      >
                          {/* Subtle glowing background if completed */}
                          {isCompleted && !task.claimed && (
                              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent pointer-events-none" />
                          )}
 
-                         <div className="flex justify-between items-end mb-4 relative z-10">
-                             <h3 className="font-bold text-sm text-white/90 drop-shadow-md">{task.title}</h3>
+                         <div className="flex justify-between items-center mb-3 relative z-10">
+                             <h3 className="font-bold text-[15px] text-white/90 drop-shadow-md truncate pr-2">{task.title}</h3>
                              <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]' : 'text-gray-400'}`}>
                                  {task.progress}/{task.target_count}
                              </span>
@@ -130,8 +130,8 @@ export default function DailyTasks({ onBalanceUpdate, showToast }) {
                          </div>
 
                          {/* Rewards & Actions */}
-                         <div className="flex justify-between items-center relative z-10">
-                             <div className="flex items-center gap-3 bg-black/20 px-4 py-2 rounded-xl border border-white/5">
+                         <div className="flex justify-between items-center relative z-10 mt-1">
+                             <div className="flex items-center gap-2 bg-black/30 px-3 py-1.5 rounded-xl border border-white/5">
                                  <div className="flex items-center gap-1.5">
                                      <Rocket size={16} className="text-indigo-400 drop-shadow-[0_0_5px_rgba(99,102,241,0.8)]" />
                                      <span className="text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">+{task.rocket_reward} Rockets</span>
