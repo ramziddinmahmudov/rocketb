@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Clock, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check } from 'lucide-react';
 
+// Format large numbers: 1000 → 1K, 1200 → 1.2K, 15300 → 15.3K
+const formatNum = (n) => {
+  if (n === null || n === undefined) return '0';
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+};
+
 const IS_DEV = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
 // Vercel kabi platformalar uchun Environment Variable orqali backendni ko'rsatamiz
@@ -28,6 +36,13 @@ function App() {
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [activeMatches, setActiveMatches] = useState([]);
   const [challengeRequest, setChallengeRequest] = useState(null);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (message, type = 'info') => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  };
   
   // Battle State
   const [inBattle, setInBattle] = useState(false);
@@ -126,6 +141,7 @@ function App() {
       } 
       else if (data.type === "challenge_received") {
         setChallengeRequest(data);
+        addToast(`⚔️ ${data.challenger_name} sent you a challenge!`, 'warning');
       }
       else if (data.type === "match_found") {
         setBattleState(prev => {
@@ -146,7 +162,7 @@ function App() {
         setIsSpectating(false);
       }
       else if (data.type === "challenge_declined") {
-        alert(`${data.target_name} declined your challenge.`);
+        addToast(`❌ ${data.target_name} declined your challenge.`, 'error');
         setBattleState(prev => {
           if (prev.phase === 'searching') {
             return { ...prev, phase: 'idle', opponentName: 'Waiting...' };
@@ -186,6 +202,9 @@ function App() {
           opponentScore: data.opponent_score || prev.opponentScore,
           isWin: data.is_win
         }));
+        if (data.is_win === true) addToast('🏆 You won the battle!', 'success');
+        else if (data.is_win === false) addToast('💀 You lost the battle.', 'error');
+        else addToast('🤝 It\'s a draw!', 'info');
       }
     };
 
@@ -311,7 +330,7 @@ function App() {
         <h1>Rocket Battle</h1>
         <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
           <Rocket size={18} color="#fff" />
-          <span style={{ fontSize: '16px' }}>{user.rockets_balance}</span>
+          <span style={{ fontSize: '16px' }}>{formatNum(user.rockets_balance)}</span>
         </div>
       </div>
 
@@ -351,6 +370,21 @@ function App() {
         <div className="profile-circle-btn" onClick={() => setActiveTab('profile')}>
           <User size={24} color={activeTab === 'profile' ? 'var(--accent-blue)' : 'var(--text-main)'} />
         </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <div style={{ position: 'fixed', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 99999, display: 'flex', flexDirection: 'column', gap: '8px', width: '90%', maxWidth: '380px', pointerEvents: 'none' }}>
+        {toasts.map(t => (
+          <div key={t.id} style={{
+            padding: '12px 18px', borderRadius: '14px', fontSize: '14px', fontWeight: '600',
+            color: '#fff', pointerEvents: 'auto', textAlign: 'center',
+            animation: 'toast-slide 0.3s ease-out',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            backgroundColor: t.type === 'success' ? '#30d158' : t.type === 'error' ? '#ff453a' : t.type === 'warning' ? '#ff9f0a' : 'var(--accent-blue)'
+          }}>
+            {t.message}
+          </div>
+        ))}
       </div>
     </>
   );
@@ -560,7 +594,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRocke
           <h1>ROCKET BATTLE</h1>
           <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
             <Rocket size={18} color="#fff" />
-            <span style={{ fontSize: '16px' }}>{localRockets}</span>
+            <span style={{ fontSize: '16px' }}>{formatNum(localRockets)}</span>
           </div>
         </div>
         
@@ -641,7 +675,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRocke
         </div>
         <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
           <Rocket size={18} color="#fff" />
-          <span style={{ fontSize: '16px' }}>{localRockets}</span>
+          <span style={{ fontSize: '16px' }}>{formatNum(localRockets)}</span>
         </div>
       </div>
       
@@ -868,7 +902,7 @@ const LeaderboardScreen = ({ token, user, onUserClick }) => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>{l.wins} 🏆</div>
                 <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px', color: 'var(--accent-blue)' }}>
-                  <Rocket size={12} style={{marginRight: '4px'}}/> {l.rockets_balance}
+                  <Rocket size={12} style={{marginRight: '4px'}}/> {formatNum(l.rockets_balance)}
                 </div>
               </div>
             </div>
