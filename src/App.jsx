@@ -498,9 +498,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRocke
   const [timeLeft, setTimeLeft] = useState("03:00");
   
   const handleLeave = () => {
-    if (ws?.readyState === WebSocket.OPEN && matchId && !isSpectating) {
-      ws.send(JSON.stringify({ type: "leave_match", match_id: matchId }));
-    }
+    // Just exit the battle screen — match continues on server
     onEnd();
   };
 

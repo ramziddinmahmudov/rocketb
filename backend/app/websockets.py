@@ -81,15 +81,8 @@ async def end_match(match_id: str):
         async with AsyncSessionLocal() as db:
             from .models import User
             from sqlalchemy.future import select
-            
-            # Update user stats and deduct rockets
-            for uid, spent in match.get("spent_rockets", {}).items():
-                res = await db.execute(select(User).filter(User.id == uid))
-                u = res.scalars().first()
-                if u:
-                    u.rockets_balance = max(0, u.rockets_balance - spent)
                     
-            # Update match stats for players
+            # Update match stats for players (rockets already deducted in real-time during taps)
             for uid in (p1, p2):
                 res = await db.execute(select(User).filter(User.id == uid))
                 u = res.scalars().first()
@@ -182,10 +175,6 @@ async def battle_websocket(websocket: WebSocket, token: str):
                         "target_name": connections[user_id]["info"]["name"]
                     })
 
-            elif action == "leave_match":
-                match_id = data.get("match_id")
-                if match_id and match_id in active_matches:
-                    await end_match(match_id)
 
             elif action == "tap" or action == "spectator_tap":
                 match_id = data.get("match_id")
@@ -199,7 +188,20 @@ async def battle_websocket(websocket: WebSocket, token: str):
                         match["scores"][target_player] += amount
                         match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + amount
                         
-                        # Broadcast score update to players and everyone for global state
+                        # Deduct rockets from DB immediately
+                        try:
+                            async with AsyncSessionLocal() as db:
+                                from .models import User
+                                from sqlalchemy.future import select
+                                res = await db.execute(select(User).filter(User.id == user_id))
+                                u = res.scalars().first()
+                                if u:
+                                    u.rockets_balance = max(0, u.rockets_balance - amount)
+                                    await db.commit()
+                        except Exception as e:
+                            print("Error deducting rockets:", e)
+                        
+                        # Broadcast score update to players
                         p1, p2 = match["players"]
                         for uid in (p1, p2):
                             if uid in connections:
@@ -210,11 +212,6 @@ async def battle_websocket(websocket: WebSocket, token: str):
                         await broadcast_state()
             
     except WebSocketDisconnect:
-        # If user was in an active match, end it properly
-        for mid, m in list(active_matches.items()):
-            if user_id in m["players"]:
-                await end_match(mid)
-                break
         if user_id in connections:
             del connections[user_id]
         if user_id in waiting_queue:
