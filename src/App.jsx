@@ -924,6 +924,22 @@ const TasksScreen = ({ token, onClaimed }) => {
                 }}>Join</button>
                 <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Check</button>
               </div>
+            ) : t.task_type === 'invite_friends' ? (
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="secondary-btn" style={{ flex: 1 }} onClick={() => {
+                  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'RocketBattleBot';
+                  const tgApp = window.Telegram?.WebApp;
+                  const uid = tgApp?.initDataUnsafe?.user?.id || '0';
+                  const url = `https://t.me/${botUsername}/app?startapp=ref_${uid}`;
+                  const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Join Rocket Battle and let's play!")}`;
+                  if (tgApp) {
+                    tgApp.openTelegramLink(shareUrl);
+                  } else {
+                    window.open(shareUrl, '_blank');
+                  }
+                }}>Invite</button>
+                <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Check</button>
+              </div>
             ) : (
               <button className="primary-btn" onClick={() => handleClaim(t.id)}>Claim Reward</button>
             )}

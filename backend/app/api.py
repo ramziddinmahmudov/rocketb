@@ -33,6 +33,19 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
             is_admin=(tg_user["id"] in ADMIN_IDS)
         )
         db.add(user)
+        
+        start_param = tg_user.get("start_param")
+        if start_param and start_param.startswith("ref_"):
+            try:
+                referrer_id = int(start_param.split("_")[1])
+                if referrer_id != user.id:
+                    ref_res = await db.execute(select(User).filter(User.id == referrer_id))
+                    referrer = ref_res.scalars().first()
+                    if referrer:
+                        referrer.referrals_count += 1
+            except Exception as e:
+                pass
+
         await db.commit()
         await db.refresh(user)
         
@@ -174,6 +187,10 @@ async def claim_task(task_id: int, user_id: int = Depends(get_current_user_id), 
         raise HTTPException(status_code=400, detail="Already claimed")
         
     # Validation logic
+    if task.task_type == "invite_friends":
+        if user.referrals_count < (task.target_count or 1):
+            raise HTTPException(status_code=400, detail=f"You need to invite at least {task.target_count} friends. You have invited {user.referrals_count}.")
+
     if task.task_type == "join_channel" and task.channel_id:
         bot_token = os.getenv("BOT_TOKEN")
         if not bot_token:

@@ -47,6 +47,8 @@ def validate_telegram_data(init_data: str) -> dict:
             raise ValueError("Invalid hash")
             
         user_data = json.loads(parsed_data.get("user", "{}"))
+        if "start_param" in parsed_data:
+            user_data["start_param"] = parsed_data["start_param"]
         return user_data
     except Exception as e:
         raise HTTPException(

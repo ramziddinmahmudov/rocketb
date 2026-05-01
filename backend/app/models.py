@@ -11,6 +11,7 @@ class User(Base):
     rockets_balance = Column(Integer, default=20)
     total_played = Column(Integer, default=0)
     wins = Column(Integer, default=0)
+    referrals_count = Column(Integer, default=0)
     is_admin = Column(Boolean, default=False)
 
 class Task(Base):
