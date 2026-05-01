@@ -20,6 +20,13 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         
+        # Migrate: add missing columns to existing tables
+        import sqlalchemy
+        try:
+            await conn.execute(sqlalchemy.text("ALTER TABLE users ADD COLUMN referrals_count INTEGER DEFAULT 0"))
+        except Exception:
+            pass  # Column already exists
+        
     # Seed initial tasks if none exist
     AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with AsyncSessionLocal() as db:
