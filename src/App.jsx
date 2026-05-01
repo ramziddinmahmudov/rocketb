@@ -595,7 +595,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px' }}>
       <div className="top-bar">
-        <h1>{isSpectating ? 'SPECTATING' : 'ROCKET BATTLE'}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button onClick={onEnd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-card-secondary)', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
+            <X size={20} />
+          </button>
+          <h1 style={{ fontSize: '18px' }}>{isSpectating ? 'SPECTATING' : 'BATTLE'}</h1>
+        </div>
         <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
           <Rocket size={18} color="#fff" />
           <span style={{ fontSize: '16px' }}>{localRockets}</span>
@@ -697,7 +702,6 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
              ))}
            </div>
         </div>
-        {isSpectating && <button className="secondary-btn" onClick={onEnd}>Leave Spectator</button>}
       </div>
     </div>
   );
