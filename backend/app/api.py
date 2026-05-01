@@ -107,6 +107,22 @@ async def toggle_follow(target_id: int, db: AsyncSession = Depends(get_db), curr
     await db.commit()
     return {"status": "success", "action": action}
 
+@router.get("/users/{target_id}/followers")
+async def get_followers_list(target_id: int, db: AsyncSession = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
+    result = await db.execute(
+        select(User).join(Follower, Follower.follower_id == User.id).filter(Follower.following_id == target_id)
+    )
+    users = result.scalars().all()
+    return [{"id": u.id, "first_name": u.first_name, "rockets_balance": u.rockets_balance, "wins": u.wins} for u in users]
+
+@router.get("/users/{target_id}/following")
+async def get_following_list(target_id: int, db: AsyncSession = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
+    result = await db.execute(
+        select(User).join(Follower, Follower.following_id == User.id).filter(Follower.follower_id == target_id)
+    )
+    users = result.scalars().all()
+    return [{"id": u.id, "first_name": u.first_name, "rockets_balance": u.rockets_balance, "wins": u.wins} for u in users]
+
 @router.get("/users/{target_id}/matches")
 async def get_user_matches(target_id: int, db: AsyncSession = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
     result = await db.execute(

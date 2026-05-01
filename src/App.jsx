@@ -1008,6 +1008,8 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [followListType, setFollowListType] = useState(null); // 'followers' | 'following' | null
+  const [followList, setFollowList] = useState([]);
   
   useEffect(() => {
      fetch(`${API_BASE}/users/${user.id}/profile`, { headers: { 'Authorization': `Bearer ${token}` }})
@@ -1096,6 +1098,34 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
     );
   }
 
+  if (followListType) {
+    return (
+      <div className="screen-container" style={{ paddingBottom: '140px' }}>
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => { setFollowListType(null); setFollowList([]); }}>← Back</button>
+        <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
+          <Users size={20} color="var(--accent-blue)" />
+          {followListType === 'followers' ? 'Followers' : 'Following'} ({followList.length})
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No users yet</span>}
+          {followList.map(u => (
+            <div key={u.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="avatar-circle" style={{ width: '40px', height: '40px' }}><User size={18} /></div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '600' }}>{u.first_name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    🚀 {formatNum(u.rockets_balance)} · 🏆 {u.wins}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="screen-container">
        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '30px 20px' }}>
@@ -1109,11 +1139,19 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
        </div>
 
        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-         <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
+         <div className="card" style={{ textAlign: 'center', padding: '15px', cursor: 'pointer' }} onClick={() => {
+           setFollowListType('followers');
+           fetch(`${API_BASE}/users/${user.id}/followers`, { headers: { 'Authorization': `Bearer ${token}` }})
+             .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
+         }}>
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Followers</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{profile?.followers || 0}</div>
          </div>
-         <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
+         <div className="card" style={{ textAlign: 'center', padding: '15px', cursor: 'pointer' }} onClick={() => {
+           setFollowListType('following');
+           fetch(`${API_BASE}/users/${user.id}/following`, { headers: { 'Authorization': `Bearer ${token}` }})
+             .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
+         }}>
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Following</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{profile?.following || 0}</div>
          </div>
