@@ -201,14 +201,16 @@ async def battle_websocket(websocket: WebSocket, token: str):
                         except Exception as e:
                             print("Error deducting rockets:", e)
                         
-                        # Broadcast score update to players
-                        p1, p2 = match["players"]
-                        for uid in (p1, p2):
-                            if uid in connections:
-                                await connections[uid]["ws"].send_json({
-                                    "type": "score_update",
-                                    "scores": match["scores"]
-                                })
+                        # Broadcast score update to ALL (players + spectators)
+                        score_msg = {
+                            "type": "score_update",
+                            "scores": match["scores"]
+                        }
+                        for uid in connections:
+                            try:
+                                await connections[uid]["ws"].send_json(score_msg)
+                            except:
+                                pass
                         await broadcast_state()
             
     except WebSocketDisconnect:
