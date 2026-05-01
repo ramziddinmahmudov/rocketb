@@ -76,6 +76,8 @@ function App() {
     }
     return null;
   });
+  const supportDataRef = useRef(supportData);
+  useEffect(() => { supportDataRef.current = supportData; }, [supportData]);
 
   // Auth
   useEffect(() => {
@@ -131,11 +133,11 @@ function App() {
         setOnlineUsers(data.online_users.filter(u => u.id !== user.id));
         setActiveMatches(data.active_matches);
         
-        if (supportData) {
-          const m = data.active_matches.find(x => x.id === supportData.matchId);
+        if (supportDataRef.current) {
+          const m = data.active_matches.find(x => x.id === supportDataRef.current.matchId);
           if (m) {
-            handleSpectate(m, supportData.supportId);
-            setSupportData(null); // clear after joining
+            handleSpectate(m, supportDataRef.current.supportId);
+            setSupportData(null);
           }
         }
       } 
@@ -260,7 +262,8 @@ function App() {
       myName: match.p1,
       opponentName: match.p2,
       isWin: null,
-      targetSupportId: targetSupportId
+      targetSupportId: targetSupportId,
+      timeRemaining: match.time_remaining || 180
     });
     setInBattle(true);
     setIsSpectating(true);
@@ -277,7 +280,8 @@ function App() {
       opponentId: isP1 ? match.p2_id : match.p1_id,
       myName: isP1 ? match.p1 : match.p2,
       opponentName: isP1 ? match.p2 : match.p1,
-      isWin: null
+      isWin: null,
+      timeRemaining: match.time_remaining || 180
     });
     setInBattle(true);
     setIsSpectating(false);
@@ -540,7 +544,10 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRocke
 
   useEffect(() => {
     if (phase === 'playing') {
-      let seconds = 180;
+      let seconds = battleState.timeRemaining || 180;
+      const m0 = Math.floor(seconds / 60);
+      const s0 = seconds % 60;
+      setTimeLeft(`0${m0}:${s0.toString().padStart(2, '0')}`);
       timerRef.current = setInterval(() => {
         seconds--;
         if (seconds <= 0) clearInterval(timerRef.current);

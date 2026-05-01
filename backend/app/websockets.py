@@ -27,7 +27,13 @@ def get_user_from_token(token: str) -> int:
 
 async def broadcast_state():
     online_users = [{"id": uid, "name": data["info"]["name"]} for uid, data in connections.items() if "name" in data["info"]]
-    matches_info = [{"id": mid, "p1_id": m["players"][0], "p2_id": m["players"][1], "p1": m["names"].get(m["players"][0], "P1"), "p2": m["names"].get(m["players"][1], "P2"), "s1": m["scores"][m["players"][0]], "s2": m["scores"][m["players"][1]]} for mid, m in active_matches.items()]
+    matches_info = [{
+        "id": mid, 
+        "p1_id": m["players"][0], "p2_id": m["players"][1], 
+        "p1": m["names"].get(m["players"][0], "P1"), "p2": m["names"].get(m["players"][1], "P2"), 
+        "s1": m["scores"][m["players"][0]], "s2": m["scores"][m["players"][1]],
+        "time_remaining": max(0, 180 - int(time.time() - m.get("start_time", time.time())))
+    } for mid, m in active_matches.items()]
     
     msg = json.dumps({"type": "global_state", "online_users": online_users, "active_matches": matches_info})
     for uid, data in connections.items():
