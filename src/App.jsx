@@ -104,7 +104,6 @@ function App() {
         setChallengeRequest(data);
       }
       else if (data.type === "match_found") {
-        // Only enter battle if user explicitly started searching (via Find Match or Challenge)
         setBattleState(prev => {
           // Ignore match_found if not in searching phase
           if (prev.phase !== 'searching') {
@@ -119,9 +118,18 @@ function App() {
             opponentName: data.opponent_name || 'Opponent'
           };
         });
-        // Only set inBattle if we were actually searching
         setInBattle(prev => prev);
         setIsSpectating(false);
+      }
+      else if (data.type === "challenge_declined") {
+        alert(`${data.target_name} declined your challenge.`);
+        setBattleState(prev => {
+          if (prev.phase === 'searching') {
+            return { ...prev, phase: 'idle', opponentName: 'Waiting...' };
+          }
+          return prev;
+        });
+        setInBattle(false);
       }
       else if (data.type === "score_update") {
         setBattleState(prev => {
@@ -184,11 +192,17 @@ function App() {
   const acceptChallenge = () => {
     if (ws.current?.readyState === WebSocket.OPEN && challengeRequest) {
       ws.current.send(JSON.stringify({ type: "accept_challenge", challenger_id: challengeRequest.challenger_id }));
+      setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: challengeRequest.challenger_name, isWin: null });
+      setInBattle(true);
+      setIsSpectating(false);
       setChallengeRequest(null);
     }
   };
 
   const declineChallenge = () => {
+    if (ws.current?.readyState === WebSocket.OPEN && challengeRequest) {
+      ws.current.send(JSON.stringify({ type: "decline_challenge", challenger_id: challengeRequest.challenger_id }));
+    }
     setChallengeRequest(null);
   };
 
@@ -198,14 +212,31 @@ function App() {
       matchId: match.id,
       myScore: match.s1,
       opponentScore: match.s2,
-      myPlayerId: match.players?.[0] || 'p1', // We will fix this in backend global_state later if needed
-      opponentId: match.players?.[1] || 'p2',
+      myPlayerId: match.p1_id || 'p1',
+      opponentId: match.p2_id || 'p2',
       myName: match.p1,
       opponentName: match.p2,
       isWin: null
     });
     setInBattle(true);
     setIsSpectating(true);
+  };
+
+  const handleRejoin = (match) => {
+    const isP1 = match.p1_id === user.id;
+    setBattleState({
+      phase: 'playing',
+      matchId: match.id,
+      myScore: isP1 ? match.s1 : match.s2,
+      opponentScore: isP1 ? match.s2 : match.s1,
+      myPlayerId: isP1 ? match.p1_id : match.p2_id,
+      opponentId: isP1 ? match.p2_id : match.p1_id,
+      myName: isP1 ? match.p1 : match.p2,
+      opponentName: isP1 ? match.p2 : match.p1,
+      isWin: null
+    });
+    setInBattle(true);
+    setIsSpectating(false);
   };
 
   if (loading) {
@@ -234,12 +265,12 @@ function App() {
     }
     switch(activeTab) {
       case 'home': 
-        return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onUserClick={setViewingUserId} />;
+        return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
       case 'tasks': return <TasksScreen token={token} onClaimed={fetchUser} />;
       case 'shop': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
       case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} />;
       case 'admin': return <AdminScreen token={token} />;
-      default: return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onUserClick={setViewingUserId} />;
+      default: return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
     }
   };
 
@@ -296,7 +327,7 @@ function App() {
 }
 
 // 1. Home Screen
-const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallenge, onSpectate, onUserClick }) => {
+const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallenge, onSpectate, onRejoin, onUserClick }) => {
   const [searchPlayer, setSearchPlayer] = useState('');
   const [searchMatch, setSearchMatch] = useState('');
   const [subScreen, setSubScreen] = useState(null);
@@ -331,15 +362,22 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
         <input className="custom-input" placeholder="Search matches..." value={searchMatch} onChange={e => setSearchMatch(e.target.value)} style={{ marginBottom: '15px' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No matches found</span>}
-          {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).map(m => (
-            <div key={m.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '13px', fontWeight: '600' }}>{m.p1} <span style={{ color: 'var(--accent-blue)' }}>vs</span> {m.p2}</span>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Score: {m.s1} - {m.s2}</span>
+          {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).map(m => {
+            const isMyMatch = m.p1_id === user.id || m.p2_id === user.id;
+            return (
+              <div key={m.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '600' }}>{m.p1} <span style={{ color: 'var(--accent-blue)' }}>vs</span> {m.p2}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Score: {m.s1} - {m.s2}</span>
+                </div>
+                {isMyMatch ? (
+                  <button className="primary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onRejoin(m)}>Rejoin</button>
+                ) : (
+                  <button className="secondary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onSpectate(m)}>Spectate</button>
+                )}
               </div>
-              <button className="secondary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onSpectate(m)}>Spectate</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );

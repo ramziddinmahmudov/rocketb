@@ -27,7 +27,7 @@ def get_user_from_token(token: str) -> int:
 
 async def broadcast_state():
     online_users = [{"id": uid, "name": data["info"]["name"]} for uid, data in connections.items() if "name" in data["info"]]
-    matches_info = [{"id": mid, "p1": m["names"].get(m["players"][0], "P1"), "p2": m["names"].get(m["players"][1], "P2"), "s1": m["scores"][m["players"][0]], "s2": m["scores"][m["players"][1]]} for mid, m in active_matches.items()]
+    matches_info = [{"id": mid, "p1_id": m["players"][0], "p2_id": m["players"][1], "p1": m["names"].get(m["players"][0], "P1"), "p2": m["names"].get(m["players"][1], "P2"), "s1": m["scores"][m["players"][0]], "s2": m["scores"][m["players"][1]]} for mid, m in active_matches.items()]
     
     msg = json.dumps({"type": "global_state", "online_users": online_users, "active_matches": matches_info})
     for uid, data in connections.items():
@@ -46,6 +46,7 @@ async def start_match(user1_id: int, user2_id: int):
         "players": [user1_id, user2_id],
         "scores": {user1_id: 0, user2_id: 0},
         "names": {user1_id: name1, user2_id: name2},
+        "spent_rockets": {},
         "start_time": time.time()
     }
     
@@ -76,6 +77,25 @@ async def end_match_after_timeout(match_id: str, timeout: int):
         # Save to DB
         try:
             async with AsyncSessionLocal() as db:
+                from .models import User
+                from sqlalchemy.future import select
+                
+                # Update user stats and deduct rockets
+                for uid, spent in match.get("spent_rockets", {}).items():
+                    res = await db.execute(select(User).filter(User.id == uid))
+                    u = res.scalars().first()
+                    if u:
+                        u.rockets_balance = max(0, u.rockets_balance - spent)
+                        
+                # Update match stats for players
+                for uid in (p1, p2):
+                    res = await db.execute(select(User).filter(User.id == uid))
+                    u = res.scalars().first()
+                    if u:
+                        u.total_played += 1
+                        if uid == winner_id:
+                            u.wins += 1
+
                 history = MatchHistory(
                     player1_id=p1,
                     player2_id=p2,
@@ -145,6 +165,14 @@ async def battle_websocket(websocket: WebSocket, token: str):
                     if user_id in waiting_queue: waiting_queue.remove(user_id)
                     await start_match(challenger_id, user_id)
 
+            elif action == "decline_challenge":
+                challenger_id = int(data.get("challenger_id"))
+                if challenger_id in connections:
+                    await connections[challenger_id]["ws"].send_json({
+                        "type": "challenge_declined",
+                        "target_name": connections[user_id]["info"]["name"]
+                    })
+
             elif action == "tap" or action == "spectator_tap":
                 match_id = data.get("match_id")
                 target_player = data.get("target_player", user_id) # default to self if 'tap'
@@ -153,6 +181,7 @@ async def battle_websocket(websocket: WebSocket, token: str):
                     match = active_matches[match_id]
                     if target_player in match["players"]:
                         match["scores"][target_player] += 1
+                        match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + 1
                         
                         # Broadcast score update to players and everyone for global state
                         p1, p2 = match["players"]
