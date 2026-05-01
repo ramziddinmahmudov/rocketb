@@ -46,6 +46,22 @@ function App() {
     if (tg) tg.expand();
   }, []);
 
+  // Deep Link Support Parsing
+  const [supportData, setSupportData] = useState(() => {
+    const sp = tg?.initDataUnsafe?.start_param;
+    // format expected: support_{uid}_{match_id} e.g. support_1234_match_5678_9101_12345
+    if (sp && sp.startsWith('support_')) {
+      const parts = sp.split('_');
+      if (parts.length >= 4) {
+        return {
+          supportId: parseInt(parts[1]),
+          matchId: parts.slice(2).join('_')
+        };
+      }
+    }
+    return null;
+  });
+
   // Auth
   useEffect(() => {
     const auth = async () => {
@@ -99,6 +115,14 @@ function App() {
       if (data.type === "global_state") {
         setOnlineUsers(data.online_users.filter(u => u.id !== user.id));
         setActiveMatches(data.active_matches);
+        
+        if (supportData) {
+          const m = data.active_matches.find(x => x.id === supportData.matchId);
+          if (m) {
+            handleSpectate(m, supportData.supportId);
+            setSupportData(null); // clear after joining
+          }
+        }
       } 
       else if (data.type === "challenge_received") {
         setChallengeRequest(data);
@@ -206,7 +230,7 @@ function App() {
     setChallengeRequest(null);
   };
 
-  const handleSpectate = (match) => {
+  const handleSpectate = (match, targetSupportId = null) => {
     setBattleState({
       phase: 'playing',
       matchId: match.id,
@@ -216,7 +240,8 @@ function App() {
       opponentId: match.p2_id || 'p2',
       myName: match.p1,
       opponentName: match.p2,
-      isWin: null
+      isWin: null,
+      targetSupportId: targetSupportId
     });
     setInBattle(true);
     setIsSpectating(true);
@@ -462,7 +487,7 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
 
 // 2. Battle Screen
 const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
-  const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId } = battleState;
+  const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId, targetSupportId } = battleState;
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
   const [timeLeft, setTimeLeft] = useState("03:00");
@@ -672,27 +697,32 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
            </div>
 
            <div style={{ flex: 1, display: 'flex', gap: '15px', position: 'relative' }}>
+             
              {/* Left Action Area */}
-             <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                 <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
-                 <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+             {(!isSpectating || !targetSupportId || targetSupportId === myPlayerId) && (
+               <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
+                   <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+                 </div>
+                 <button className="primary-btn" style={{ padding: '14px', fontSize: '14px' }} onClick={(e) => handleTap(e, true)}>
+                   {isSpectating ? 'Support Player' : 'Attack'} <Rocket size={14} />
+                 </button>
                </div>
-               <button className="primary-btn" style={{ padding: '14px', fontSize: '14px' }} onClick={(e) => handleTap(e, true)}>
-                 {isSpectating ? 'Assist' : 'Attack'} <Rocket size={14} />
-               </button>
-             </div>
+             )}
 
              {/* Right Action Area */}
-             <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5 }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                 <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
-                 <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
+             {(!isSpectating || !targetSupportId || targetSupportId === opponentId) && (
+               <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5 }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                   <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
+                   <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
+                 </div>
+                 <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)' }} onClick={(e) => handleTap(e, false)} disabled={!isSpectating}>
+                   {isSpectating ? 'Support Player' : 'Attack'} <Rocket size={14} />
+                 </button>
                </div>
-               <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)' }} onClick={(e) => handleTap(e, false)} disabled={!isSpectating}>
-                 {isSpectating ? 'Assist' : 'Attack'} <Rocket size={14} />
-               </button>
-             </div>
+             )}
 
              {/* Rockets Animation Layer */}
              {rocketsAnim.map(r => (
@@ -701,7 +731,25 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
                </div>
              ))}
            </div>
+           </div>
         </div>
+        
+        {!isSpectating && (
+          <button className="secondary-btn" onClick={() => {
+            const botUsername = import.meta.env.VITE_BOT_USERNAME || 'RocketBattleBot'; // Optional fallback
+            const url = `https://t.me/${botUsername}/app?startapp=support_${user.id}_${matchId}`;
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Do'stim, menga yordam ber! Rocket Battle'da yutishim kerak!")}`;
+            if (window.Telegram?.WebApp) {
+              window.Telegram.WebApp.openTelegramLink(shareUrl);
+            } else {
+              window.open(shareUrl, '_blank');
+            }
+          }} style={{ marginTop: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              <Users size={18} /> Share Battle for Support
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );
