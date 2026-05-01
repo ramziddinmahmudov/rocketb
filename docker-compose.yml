@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: rocket_battle_backend
+    restart: always
+    volumes:
+      - ./backend/rocket_battle.db:/app/rocket_battle.db
+      - ./backend/.env:/app/.env
+    # We do not need to expose ports because nginx proxy will handle it
+    # But if needed for debugging, we could map 8000:8000
+    expose:
+      - "8000"
+
+  frontend:
+    build:
+      context: .
+    container_name: rocket_battle_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
