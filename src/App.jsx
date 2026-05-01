@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Clock, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check } from 'lucide-react';
 
 const IS_DEV = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const HOST = IS_DEV ? 'http://localhost:8000' : window.location.origin;
-const WS_HOST = IS_DEV ? 'ws://localhost:8000' : (window.location.protocol === 'https:' ? 'wss:' : 'ws:') + '//' + window.location.host;
+
+// Vercel kabi platformalar uchun Environment Variable orqali backendni ko'rsatamiz
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (IS_DEV ? 'http://localhost:8000' : window.location.origin);
+const HOST = BACKEND_URL.replace(/\/$/, ""); // oxiridagi slashni olib tashlash
+const WS_HOST = HOST.replace(/^http/, 'ws');
 
 const API_BASE = `${HOST}/api`;
 const WS_BASE = `${WS_HOST}/ws`;
