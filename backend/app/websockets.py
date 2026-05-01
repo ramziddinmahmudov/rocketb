@@ -176,12 +176,14 @@ async def battle_websocket(websocket: WebSocket, token: str):
             elif action == "tap" or action == "spectator_tap":
                 match_id = data.get("match_id")
                 target_player = data.get("target_player", user_id) # default to self if 'tap'
+                amount = int(data.get("amount", 1))
+                if amount <= 0: amount = 1
                 
                 if match_id and match_id in active_matches:
                     match = active_matches[match_id]
                     if target_player in match["players"]:
-                        match["scores"][target_player] += 1
-                        match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + 1
+                        match["scores"][target_player] += amount
+                        match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + amount
                         
                         # Broadcast score update to players and everyone for global state
                         p1, p2 = match["players"]

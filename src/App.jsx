@@ -485,26 +485,32 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
     return () => clearInterval(timerRef.current);
   }, [phase]);
 
+  const [rocketAmount, setRocketAmount] = useState(1);
+
   const handleTap = (e, isLeft) => {
-    if (phase !== 'playing' || localRockets <= 0) return;
+    if (phase !== 'playing' || localRockets <= 0 || rocketAmount > localRockets) return;
     
-    // Spectator can't tap if they have no rockets, actually handled above.
-    setLocalRockets(r => r - 1);
+    setLocalRockets(r => r - rocketAmount);
     
-    const id = Date.now() + Math.random();
-    const x = e.clientX || window.innerWidth / 2;
-    const y = e.clientY || window.innerHeight / 2;
-    setRocketsAnim(prev => [...prev, { id, x, y }]);
-    setTimeout(() => setRocketsAnim(prev => prev.filter(r => r.id !== id)), 500);
+    // Create multiple rockets for animation if amount > 1
+    const newAnims = [];
+    const count = Math.min(rocketAmount, 10); // cap visual rockets at 10 to prevent lag
+    for(let i=0; i<count; i++) {
+        const id = Date.now() + Math.random() + i;
+        const x = (e.clientX || window.innerWidth / 2) + (Math.random() * 40 - 20);
+        const y = (e.clientY || window.innerHeight / 2) + (Math.random() * 40 - 20);
+        newAnims.push({ id, x, y });
+    }
+    
+    setRocketsAnim(prev => [...prev, ...newAnims]);
+    setTimeout(() => setRocketsAnim(prev => prev.filter(r => !newAnims.find(n => n.id === r.id))), 500);
 
     if (ws?.readyState === WebSocket.OPEN) {
       if (isSpectating) {
-        // Send spectator tap to specific player
         const targetPlayer = isLeft ? myPlayerId : opponentId;
-        ws.send(JSON.stringify({ type: "spectator_tap", match_id: matchId, target_player: targetPlayer }));
+        ws.send(JSON.stringify({ type: "spectator_tap", match_id: matchId, target_player: targetPlayer, amount: rocketAmount }));
       } else {
-        // Normal tap for self
-        ws.send(JSON.stringify({ type: "tap", match_id: matchId }));
+        ws.send(JSON.stringify({ type: "tap", match_id: matchId, amount: rocketAmount }));
       }
     }
   };
@@ -641,6 +647,25 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
              </div>
            </div>
            
+           {/* Slider for selecting rocket amount */}
+           <div style={{ backgroundColor: 'var(--bg-card-secondary)', borderRadius: '15px', padding: '12px 16px', marginBottom: '5px' }}>
+             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+               <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Amount to send:</span>
+               <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', padding: '4px 10px', fontSize: '14px', fontWeight: 'bold' }}>
+                 <Rocket size={12} style={{marginRight: '4px'}}/> {rocketAmount}
+               </div>
+             </div>
+             <input 
+               type="range" 
+               min="1" 
+               max={localRockets > 0 ? localRockets : 1} 
+               value={localRockets === 0 ? 0 : rocketAmount} 
+               onChange={(e) => setRocketAmount(Number(e.target.value))}
+               disabled={localRockets <= 0}
+               style={{ width: '100%', accentColor: 'var(--accent-blue)' }}
+             />
+           </div>
+
            <div style={{ flex: 1, display: 'flex', gap: '15px', position: 'relative' }}>
              {/* Left Action Area */}
              <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
