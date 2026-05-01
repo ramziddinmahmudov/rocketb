@@ -275,6 +275,11 @@ function App() {
         ws={ws.current}
         battleState={battleState}
         isSpectating={isSpectating}
+        onSpendRockets={(amount) => {
+          if (!isSpectating) {
+            setUser(prev => ({ ...prev, rockets_balance: Math.max(0, prev.rockets_balance - amount) }));
+          }
+        }}
         onEnd={() => { 
           setInBattle(false); 
           setIsSpectating(false);
@@ -486,12 +491,19 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
 };
 
 // 2. Battle Screen
-const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
+const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRockets }) => {
   const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId, targetSupportId } = battleState;
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
   const [timeLeft, setTimeLeft] = useState("03:00");
   
+  const handleLeave = () => {
+    if (ws?.readyState === WebSocket.OPEN && matchId && !isSpectating) {
+      ws.send(JSON.stringify({ type: "leave_match", match_id: matchId }));
+    }
+    onEnd();
+  };
+
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -516,6 +528,9 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
     if (phase !== 'playing' || localRockets <= 0 || rocketAmount > localRockets) return;
     
     setLocalRockets(r => r - rocketAmount);
+    if (onSpendRockets) {
+      onSpendRockets(rocketAmount);
+    }
     
     // Create multiple rockets for animation if amount > 1
     const newAnims = [];
@@ -611,7 +626,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
                </div>
             </div>
           </div>
-          <button className="primary-btn" onClick={onEnd}>BACK TO HOME</button>
+          <button className="primary-btn" onClick={handleLeave}>BACK TO HOME</button>
         </div>
       </div>
     );
@@ -621,7 +636,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px' }}>
       <div className="top-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <button onClick={onEnd} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-card-secondary)', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
+          <button onClick={handleLeave} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-card-secondary)', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
             <X size={20} />
           </button>
           <h1 style={{ fontSize: '18px' }}>{isSpectating ? 'SPECTATING' : 'BATTLE'}</h1>
@@ -730,7 +745,6 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd }) => {
                  <Rocket size={30} color="var(--accent-blue)" />
                </div>
              ))}
-           </div>
            </div>
         </div>
         

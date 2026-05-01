@@ -65,60 +65,69 @@ async def start_match(user1_id: int, user2_id: int):
     await broadcast_state()
     asyncio.create_task(end_match_after_timeout(match_id, 180))
 
-async def end_match_after_timeout(match_id: str, timeout: int):
-    await asyncio.sleep(timeout)
-    if match_id in active_matches:
-        match = active_matches[match_id]
-        p1, p2 = match["players"]
-        s1, s2 = match["scores"][p1], match["scores"][p2]
-        
-        winner_id = p1 if s1 > s2 else (p2 if s2 > s1 else None)
-        
-        # Save to DB
-        try:
-            async with AsyncSessionLocal() as db:
-                from .models import User
-                from sqlalchemy.future import select
-                
-                # Update user stats and deduct rockets
-                for uid, spent in match.get("spent_rockets", {}).items():
-                    res = await db.execute(select(User).filter(User.id == uid))
-                    u = res.scalars().first()
-                    if u:
-                        u.rockets_balance = max(0, u.rockets_balance - spent)
-                        
-                # Update match stats for players
-                for uid in (p1, p2):
-                    res = await db.execute(select(User).filter(User.id == uid))
-                    u = res.scalars().first()
-                    if u:
-                        u.total_played += 1
-                        if uid == winner_id:
-                            u.wins += 1
+async def end_match(match_id: str):
+    """End a match: save stats to DB, notify players, clean up."""
+    if match_id not in active_matches:
+        return
+    
+    match = active_matches[match_id]
+    p1, p2 = match["players"]
+    s1, s2 = match["scores"][p1], match["scores"][p2]
+    
+    winner_id = p1 if s1 > s2 else (p2 if s2 > s1 else None)
+    
+    # Save to DB
+    try:
+        async with AsyncSessionLocal() as db:
+            from .models import User
+            from sqlalchemy.future import select
+            
+            # Update user stats and deduct rockets
+            for uid, spent in match.get("spent_rockets", {}).items():
+                res = await db.execute(select(User).filter(User.id == uid))
+                u = res.scalars().first()
+                if u:
+                    u.rockets_balance = max(0, u.rockets_balance - spent)
+                    
+            # Update match stats for players
+            for uid in (p1, p2):
+                res = await db.execute(select(User).filter(User.id == uid))
+                u = res.scalars().first()
+                if u:
+                    u.total_played += 1
+                    if uid == winner_id:
+                        u.wins += 1
 
-                history = MatchHistory(
-                    player1_id=p1,
-                    player2_id=p2,
-                    player1_score=s1,
-                    player2_score=s2,
-                    winner_id=winner_id
-                )
-                db.add(history)
-                await db.commit()
-        except Exception as e:
-            print("Error saving match history:", e)
-        
-        for uid in (p1, p2):
-            if uid in connections:
-                is_win = None if winner_id is None else (uid == winner_id)
+            history = MatchHistory(
+                player1_id=p1,
+                player2_id=p2,
+                player1_score=s1,
+                player2_score=s2,
+                winner_id=winner_id
+            )
+            db.add(history)
+            await db.commit()
+    except Exception as e:
+        print("Error saving match history:", e)
+    
+    for uid in (p1, p2):
+        if uid in connections:
+            is_win = None if winner_id is None else (uid == winner_id)
+            try:
                 await connections[uid]["ws"].send_json({
                     "type": "match_end",
                     "my_score": match["scores"][uid],
                     "opponent_score": match["scores"][p2 if uid == p1 else p1],
                     "is_win": is_win
                 })
-        del active_matches[match_id]
-        await broadcast_state()
+            except:
+                pass
+    del active_matches[match_id]
+    await broadcast_state()
+
+async def end_match_after_timeout(match_id: str, timeout: int):
+    await asyncio.sleep(timeout)
+    await end_match(match_id)
 
 @router.websocket("/ws/battle")
 async def battle_websocket(websocket: WebSocket, token: str):
@@ -173,6 +182,11 @@ async def battle_websocket(websocket: WebSocket, token: str):
                         "target_name": connections[user_id]["info"]["name"]
                     })
 
+            elif action == "leave_match":
+                match_id = data.get("match_id")
+                if match_id and match_id in active_matches:
+                    await end_match(match_id)
+
             elif action == "tap" or action == "spectator_tap":
                 match_id = data.get("match_id")
                 target_player = data.get("target_player", user_id) # default to self if 'tap'
@@ -193,14 +207,14 @@ async def battle_websocket(websocket: WebSocket, token: str):
                                     "type": "score_update",
                                     "scores": match["scores"]
                                 })
-                        
-                        # Throttled broadcast state can be handled here if needed, 
-                        # but for now we just let it be, or send a specific spectator update.
-                        # We'll broadcast global state so spectators see real-time updates.
-                        # (In production, use a throttle or separate spectator channel)
                         await broadcast_state()
             
     except WebSocketDisconnect:
+        # If user was in an active match, end it properly
+        for mid, m in list(active_matches.items()):
+            if user_id in m["players"]:
+                await end_match(mid)
+                break
         if user_id in connections:
             del connections[user_id]
         if user_id in waiting_queue:

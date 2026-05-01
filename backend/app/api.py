@@ -194,10 +194,7 @@ async def claim_task(task_id: int, user_id: int = Depends(get_current_user_id), 
     if task.task_type == "join_channel" and task.channel_id:
         bot_token = os.getenv("BOT_TOKEN")
         if not bot_token:
-            # For local testing if no bot token is provided, just simulate success
-            # To make it strict, you can remove this fallback
-            print("WARNING: No BOT_TOKEN found. Simulating channel join success.")
-            pass
+            raise HTTPException(status_code=500, detail="Server configuration error: BOT_TOKEN not set")
         else:
             try:
                 # Telegram API call to verify membership
