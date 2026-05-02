@@ -4,6 +4,8 @@ import jwt
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import Dict, List, Any
 import time
+import os
+import httpx
 
 from .auth import SECRET_KEY
 from .database import AsyncSessionLocal
@@ -186,7 +188,37 @@ async def end_match(match_id: str):
     await broadcast_state()
 
 async def end_match_after_timeout(match_id: str, timeout: int):
-    await asyncio.sleep(timeout)
+    interval = 60
+    elapsed = 0
+    bot_token = os.getenv("BOT_TOKEN")
+    
+    while elapsed < timeout:
+        await asyncio.sleep(min(interval, timeout - elapsed))
+        elapsed += interval
+        
+        if match_id not in active_matches:
+            break
+            
+        if elapsed < timeout:
+            match = active_matches[match_id]
+            p1, p2 = match["players"]
+            s1, s2 = match["scores"][p1], match["scores"][p2]
+            
+            losing_player = None
+            if s1 < s2:
+                losing_player = p1
+            elif s2 < s1:
+                losing_player = p2
+                
+            if losing_player and losing_player > 0 and bot_token:
+                try:
+                    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                    msg = "⚠️ Siz yutqazyapsiz! Tezroq o'yinga qaytib, raqibga hujum qiling!"
+                    async with httpx.AsyncClient() as client:
+                        await client.post(url, json={"chat_id": losing_player, "text": msg})
+                except Exception as e:
+                    print("Failed to send losing notification:", e)
+                    
     await end_match(match_id)
 
 async def handle_matchmaking(uid: int):

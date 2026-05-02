@@ -560,8 +560,20 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
   const [timeLeft, setTimeLeft] = useState("03:00");
+  const [toastMessage, setToastMessage] = useState(null);
   const logContainerRef = useRef(null);
   
+  useEffect(() => {
+    if (phase !== 'playing') return;
+    const interval = setInterval(() => {
+      if (myScore < opponentScore && !isSpectating) {
+        setToastMessage("Siz yutqazyapsiz! Tezroq harakat qiling!");
+        setTimeout(() => setToastMessage(null), 4000);
+      }
+    }, 60000); // Check every 60 seconds
+    return () => clearInterval(interval);
+  }, [phase, myScore, opponentScore, isSpectating]);
+
   const handleLeave = () => {
     // Just exit the battle screen — match continues on server
     onEnd();
@@ -759,7 +771,19 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px', position: 'relative' }}>
+      
+      {toastMessage && (
+        <div style={{
+          position: 'absolute', top: '70px', left: '50%', transform: 'translateX(-50%)',
+          backgroundColor: '#ff3b30', color: '#fff', padding: '12px 20px', borderRadius: '25px',
+          fontWeight: 'bold', zIndex: 9999, boxShadow: '0 4px 12px rgba(255,59,48,0.4)',
+          animation: 'fade-in 0.3s ease-out', display: 'flex', alignItems: 'center', gap: '8px',
+          whiteSpace: 'nowrap'
+        }}>
+          ⚠️ {toastMessage}
+        </div>
+      )}
       <div className="top-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <button onClick={handleLeave} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-card-secondary)', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
@@ -775,37 +799,41 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
       
       <div className="screen-container" style={{ paddingBottom: '20px', gap: '20px' }}>
         {/* Main VS Card */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '30px 20px', gap: '20px', position: 'relative' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-            
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '25px 20px', gap: '15px', position: 'relative' }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             {/* Player 1 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, zIndex: 2 }}>
-              <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: '#000', border: '2px solid var(--border-color)' }}>
-                <User size={40} color="#fff" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
+              <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: 'var(--accent-blue)', border: '2px solid var(--border-color)' }}>
+                <User size={30} color="#fff" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '15px', textAlign: 'center' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+              <span style={{ fontWeight: '700', fontSize: '14px', textAlign: 'center', color: 'var(--accent-blue)' }}>{isSpectating ? battleState.myName : user.first_name}</span>
             </div>
 
-            {/* VS Center */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 0.8, marginTop: '10px', zIndex: 2 }}>
-              <div className="vs-text" style={{ marginBottom: '12px' }}>VS</div>
-              <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px', whiteSpace: 'nowrap' }}>
-                {myScore} : {opponentScore}
-              </div>
+            {/* VS Center Icon */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+              <div className="vs-text" style={{ fontSize: '24px' }}>VS</div>
             </div>
 
             {/* Player 2 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, zIndex: 2 }}>
-              <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '2px solid var(--border-color)' }}>
-                <User size={40} color="var(--text-muted)" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
+              <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: '#ff3b30', border: '2px solid var(--border-color)' }}>
+                <User size={30} color="#fff" />
               </div>
-              <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-muted)', textAlign: 'center' }}>{opponentName}</span>
+              <span style={{ fontWeight: '700', fontSize: '14px', textAlign: 'center', color: '#ff3b30' }}>{opponentName}</span>
             </div>
-            
           </div>
 
-          {/* Vertical Separator Line */}
-          <div style={{ position: 'absolute', top: '120px', bottom: '30px', left: '50%', width: '1px', backgroundColor: 'var(--border-color)', transform: 'translateX(-50%)', zIndex: 1 }}></div>
+          {/* Tug-of-War Progress Bar */}
+          <div style={{ width: '100%', height: '28px', backgroundColor: '#ff3b30', borderRadius: '14px', overflow: 'hidden', display: 'flex', position: 'relative', marginTop: '5px', zIndex: 2, border: '2px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ width: `${(myScore + opponentScore) === 0 ? 50 : (myScore / (myScore + opponentScore)) * 100}%`, height: '100%', backgroundColor: 'var(--accent-blue)', transition: 'width 0.3s ease' }}></div>
+            
+            <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#fff', fontSize: '14px', fontWeight: 'bold', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{myScore}</div>
+            <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#fff', fontSize: '14px', fontWeight: 'bold', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{opponentScore}</div>
+            
+            {/* Center indicator */}
+            <div style={{ position: 'absolute', left: '50%', top: '-2px', bottom: '-2px', width: '3px', backgroundColor: '#fff', transform: 'translateX(-50%)', zIndex: 3, boxShadow: '0 0 5px rgba(0,0,0,0.5)' }}></div>
+          </div>
         </div>
 
         {/* Action Panel (Voting Style) */}
