@@ -301,22 +301,26 @@ async def battle_websocket(websocket: WebSocket, token: str):
                 if match_id and match_id in active_matches:
                     match = active_matches[match_id]
                     if target_player in match["players"]:
-                        match["scores"][target_player] += amount
-                        match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + amount
                         
-                        # Deduct rockets from DB immediately
+                        # Check balance before allowing tap
                         try:
                             async with AsyncSessionLocal() as db:
                                 from .models import User
                                 from sqlalchemy.future import select
                                 res = await db.execute(select(User).filter(User.id == user_id))
                                 u = res.scalars().first()
-                                if u:
-                                    u.rockets_balance = max(0, u.rockets_balance - amount)
-                                    u.rockets_used = (u.rockets_used or 0) + amount
-                                    await db.commit()
+                                if not u or u.rockets_balance < amount:
+                                    await websocket.send_json({"type": "error", "message": "Not enough rockets"})
+                                    continue
+                                u.rockets_balance -= amount
+                                u.rockets_used = (u.rockets_used or 0) + amount
+                                await db.commit()
                         except Exception as e:
                             print("Error deducting rockets:", e)
+                            continue
+                        
+                        match["scores"][target_player] += amount
+                        match["spent_rockets"][user_id] = match["spent_rockets"].get(user_id, 0) + amount
                         
                         # Broadcast score update to ALL (players + spectators)
                         score_msg = {

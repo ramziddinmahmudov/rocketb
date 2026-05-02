@@ -922,7 +922,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
         {/* Live Attack Feed */}
         {attackLogs.length > 0 && (
-          <div className="card" style={{ maxHeight: '150px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '0px', padding: '12px 16px' }}>
+          <div className="card" style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0px', padding: '12px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <h4 style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Zap size={14} color="#ff9f0a" /> Live Feed
@@ -958,7 +958,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         
         {!isSpectating && (
           <button className="secondary-btn" onClick={() => {
-            const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot'; // Optional fallback
+            const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebot';
             const url = `https://t.me/${botUsername}/app?startapp=support_${user.id}_${matchId}`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Do'stim, menga yordam ber! Rocket Battle'da yutishim kerak!")}`;
             if (window.Telegram?.WebApp) {
@@ -1280,7 +1280,7 @@ const TasksScreen = ({ token, onClaimed }) => {
             ) : t.task_type === 'invite_friends' ? (
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="secondary-btn" style={{ flex: 1 }} onClick={() => {
-                  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot';
+                  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebot';
                   const tgApp = window.Telegram?.WebApp;
                   const uid = tgApp?.initDataUnsafe?.user?.id || '0';
                   const url = `https://t.me/${botUsername}/app?startapp=ref_${uid}`;
