@@ -84,12 +84,22 @@ async def start_match(user1_id: int, user2_id: int):
 async def bot_worker(match_id: str, bot_id: int, target_player: int):
     import random
     while match_id in active_matches:
-        await asyncio.sleep(random.uniform(0.6, 1.2))
+        await asyncio.sleep(random.uniform(0.3, 0.7))
         if match_id not in active_matches:
             break
             
         match = active_matches[match_id]
-        amount = random.randint(1, 3)
+        bot_score = match["scores"].get(bot_id, 0)
+        player_score = match["scores"].get(target_player, 0)
+        
+        # Bot adapts: if losing, sends more rockets to catch up
+        if player_score > bot_score + 20:
+            amount = random.randint(5, 10)  # Aggressive mode
+        elif player_score > bot_score:
+            amount = random.randint(3, 7)   # Catch-up mode
+        else:
+            amount = random.randint(2, 5)   # Normal mode (still strong)
+        
         match["scores"][bot_id] += amount
         
         # Broadcast score update

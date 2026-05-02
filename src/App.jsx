@@ -807,11 +807,16 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
           
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             {/* Player 1 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
-              <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: 'var(--accent-blue)', border: '2px solid var(--border-color)' }}>
-                <User size={30} color="#fff" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2 }}>
+              <div style={{ position: 'relative' }}>
+                <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: 'var(--accent-blue)', border: '2px solid var(--border-color)' }}>
+                  <User size={30} color="#fff" />
+                </div>
+                <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#ff9f0a', color: '#000', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                  Lv.{user?.level || 1}
+                </div>
               </div>
-              <span style={{ fontWeight: '700', fontSize: '14px', textAlign: 'center', color: 'var(--accent-blue)' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+              <span style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', color: 'var(--accent-blue)', marginTop: '4px' }}>{isSpectating ? battleState.myName : user.first_name}</span>
             </div>
 
             {/* VS Center Icon */}
@@ -820,11 +825,17 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             </div>
 
             {/* Player 2 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', zIndex: 2 }}>
-              <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: '#ff3b30', border: '2px solid var(--border-color)' }}>
-                <User size={30} color="#fff" />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', zIndex: 2 }}>
+              <div style={{ position: 'relative' }}>
+                <div className="avatar-circle" style={{ width: '60px', height: '60px', backgroundColor: '#ff3b30', border: '2px solid var(--border-color)' }}>
+                  <User size={30} color="#fff" />
+                </div>
+                <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#ff9f0a', color: '#000', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                  Lv.?
+                </div>
               </div>
-              <span style={{ fontWeight: '700', fontSize: '14px', textAlign: 'center', color: '#ff3b30' }}>{opponentName}</span>
+              <span style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', color: '#ff3b30', marginTop: '4px' }}>{opponentName}</span>
+            </div>
             </div>
           </div>
 
@@ -924,38 +935,42 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
            </div>
         </div>
 
-        {/* Live Attack Feed */}
+        {/* Battle Chat Feed */}
         {attackLogs.length > 0 && (
-          <div className="card" style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0px', padding: '12px 16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h4 style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Zap size={14} color="#ff9f0a" /> Live Feed
+          <div className="card" style={{ maxHeight: '180px', display: 'flex', flexDirection: 'column', padding: '10px 14px', gap: '0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+              <h4 style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Zap size={13} color="#ff9f0a" /> Battle Chat
               </h4>
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} attacks</span>
             </div>
-            <div ref={logContainerRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {attackLogs.slice(0, 20).map((log) => (
-                <div key={log.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '5px 8px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--bg-card-secondary)',
-                  fontSize: '12px',
-                  animation: 'toast-slide 0.3s ease-out'
-                }}>
-                  <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)'} style={{ flexShrink: 0 }} />
-                  <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
-                    {log.attackerName}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>→</span>
-                  <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
-                    {log.targetName}
-                  </span>
-                  <span style={{ marginLeft: 'auto', fontWeight: '700', color: '#30d158', whiteSpace: 'nowrap' }}>+{log.amount}</span>
-                </div>
-              ))}
+            <div ref={logContainerRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              {attackLogs.slice(0, 30).map((log) => {
+                const isMyAttack = log.attackerName === (isSpectating ? battleState.myName : user.first_name);
+                return (
+                  <div key={log.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    backgroundColor: isMyAttack ? 'rgba(119,168,255,0.1)' : 'rgba(255,59,48,0.08)',
+                    fontSize: '11px',
+                    borderLeft: `3px solid ${log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'}`,
+                    animation: 'toast-slide 0.2s ease-out'
+                  }}>
+                    <Rocket size={9} color={log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'} style={{ flexShrink: 0 }} />
+                    <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px' }}>
+                      {log.attackerName}
+                    </span>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>→</span>
+                    <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px', fontSize: '11px' }}>
+                      {log.targetName}
+                    </span>
+                    <span style={{ marginLeft: 'auto', fontWeight: '800', color: '#30d158', whiteSpace: 'nowrap', fontSize: '12px' }}>+{log.amount} 🚀</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
