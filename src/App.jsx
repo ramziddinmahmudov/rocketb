@@ -589,10 +589,10 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   }, [phase]);
 
   const [rocketAmount, setRocketAmount] = useState(1);
+  const [selectedTarget, setSelectedTarget] = useState(null); // 'left' | 'right' | null
 
   const handleTap = (e, isLeft) => {
     if (phase !== 'playing') return;
-    // Removed balance limit per request: "xozrcha raketa bosishda limit qoyme turamz"
     
     setLocalRockets(r => r - rocketAmount);
     if (onSpendRockets) {
@@ -620,6 +620,9 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         ws.send(JSON.stringify({ type: "tap", match_id: matchId, amount: rocketAmount }));
       }
     }
+    
+    // Muvaffaqiyatli yuborgach sliderni yopamiz
+    setSelectedTarget(null);
   };
 
   if (phase === 'searching') {
@@ -815,49 +818,68 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
              </div>
            </div>
            
-           {/* Slider for selecting rocket amount */}
-           <div style={{ backgroundColor: 'var(--bg-card-secondary)', borderRadius: '15px', padding: '12px 16px', marginBottom: '5px' }}>
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-               <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Amount to send:</span>
-               <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', padding: '4px 10px', fontSize: '14px', fontWeight: 'bold' }}>
-                 <Rocket size={12} style={{marginRight: '4px'}}/> {rocketAmount}
-               </div>
-             </div>
-             <input 
-               type="range" 
-               min="1" 
-               max={localRockets > 0 ? localRockets : 100} 
-               value={rocketAmount} 
-               onChange={(e) => setRocketAmount(Number(e.target.value))}
-               style={{ width: '100%', accentColor: 'var(--accent-blue)' }}
-             />
-           </div>
-
-           <div style={{ flex: 1, display: 'flex', gap: '15px', position: 'relative' }}>
+           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '15px', position: 'relative' }}>
              
-             {/* Left Action Area */}
-             {(!isSpectating || !targetSupportId || targetSupportId === myPlayerId) && (
-               <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
-                   <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+             {selectedTarget ? (
+               <div className="screen-fade-in" style={{ backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                     <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
+                     <span style={{ fontSize: '15px', fontWeight: '700' }}>
+                       {selectedTarget === 'left' ? (isSpectating ? battleState.myName : user.first_name) : opponentName}
+                     </span>
+                   </div>
+                   <button className="secondary-btn btn-small" onClick={() => setSelectedTarget(null)}>Cancel</button>
                  </div>
-                 <button className="primary-btn" style={{ padding: '14px', fontSize: '14px' }} onClick={(e) => handleTap(e, true)}>
-                   {isSpectating ? 'Support Player' : 'Attack'} <Rocket size={14} />
+                 
+                 <div style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '15px', padding: '15px' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                     <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Amount to send:</span>
+                     <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', padding: '6px 12px', fontSize: '16px', fontWeight: 'bold' }}>
+                       <Rocket size={14} style={{marginRight: '6px'}}/> {rocketAmount}
+                     </div>
+                   </div>
+                   <input 
+                     type="range" 
+                     min="1" 
+                     max={localRockets > 0 ? localRockets : 100} 
+                     value={rocketAmount} 
+                     onChange={(e) => setRocketAmount(Number(e.target.value))}
+                     style={{ width: '100%', accentColor: 'var(--accent-blue)', height: '8px' }}
+                   />
+                 </div>
+                 
+                 <button className="primary-btn" style={{ padding: '16px', fontSize: '16px', fontWeight: 'bold' }} onClick={(e) => handleTap(e, selectedTarget === 'left')}>
+                   Confirm & Send <Rocket size={16} style={{ marginLeft: '8px' }} />
                  </button>
                </div>
-             )}
+             ) : (
+               <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
+                 {/* Left Action Area */}
+                 {(!isSpectating || !targetSupportId || targetSupportId === myPlayerId) && (
+                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                       <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
+                       <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
+                     </div>
+                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px' }} onClick={() => setSelectedTarget('left')}>
+                       {isSpectating ? 'Support Player' : 'Attack'}
+                     </button>
+                   </div>
+                 )}
 
-             {/* Right Action Area */}
-             {(!isSpectating || !targetSupportId || targetSupportId === opponentId) && (
-               <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5 }}>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                   <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
-                   <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
-                 </div>
-                 <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)' }} onClick={(e) => handleTap(e, false)} disabled={!isSpectating}>
-                   {isSpectating ? 'Support Player' : 'Attack'} <Rocket size={14} />
-                 </button>
+                 {/* Right Action Area */}
+                 {(!isSpectating || !targetSupportId || targetSupportId === opponentId) && (
+                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5 }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                       <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
+                       <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
+                     </div>
+                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)' }} onClick={() => setSelectedTarget('right')} disabled={!isSpectating}>
+                       {isSpectating ? 'Support Player' : 'Attack'}
+                     </button>
+                   </div>
+                 )}
                </div>
              )}
 
