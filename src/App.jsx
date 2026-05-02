@@ -306,7 +306,7 @@ function App() {
     setIsSpectating(false);
   };
 
-  if (loading) {
+  if (loading || !user) {
     return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><div className="pill-badge">Loading...</div></div>;
   }
 
@@ -1354,7 +1354,7 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
         <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => { setFollowListType(null); setFollowList([]); }}>← Back</button>
         <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
           <Users size={20} color="var(--accent-blue)" />
-          {followListType === 'followers' ? 'Followers' : 'Following'} ({followList.length})
+          {followListType === 'followers' ? 'Followers' : (followListType === 'following' ? 'Following' : 'Referred Friends')} ({followList.length})
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No users yet</span>}
@@ -1413,6 +1413,33 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Coins</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user?.coins || 0}</div>
          </div>
+         
+         {/* Referrals Section */}
+         <div className="card" style={{ textAlign: 'center', padding: '15px', cursor: 'pointer', gridColumn: 'span 2', backgroundColor: 'rgba(119, 168, 255, 0.05)' }} onClick={() => {
+           setFollowListType('referrals');
+           fetch(`${API_BASE}/users/me/referrals`, { headers: { 'Authorization': `Bearer ${token}` }})
+             .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
+         }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Referred Friends</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>{user?.referrals_count || 0}</div>
+         </div>
+         
+         <button className="primary-btn" style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }} onClick={() => {
+             const botUsername = "YOUR_BOT_USERNAME"; // <-- BOT USERNAME SHU YERGA YOZILADI
+             const inviteUrl = `https://t.me/${botUsername}?start=ref_${user.id}`;
+             const text = `🚀 Join Rocket Battle and let's play together!`;
+             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteUrl)}&text=${encodeURIComponent(text)}`;
+             
+             if (window.Telegram?.WebApp) {
+                 window.Telegram.WebApp.openTelegramLink(shareUrl);
+             } else {
+                 window.open(shareUrl, '_blank');
+             }
+         }}>
+            <Users size={20} />
+            Invite Friend (+50 Rockets)
+         </button>
+         
          <div className="card" style={{ textAlign: 'center', padding: '15px', gridColumn: 'span 2' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>XP to Next Level</div>
             <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-main)', borderRadius: '4px', overflow: 'hidden', marginTop: '5px' }}>

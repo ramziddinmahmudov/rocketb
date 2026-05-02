@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
     level: int
     xp: int
     coins: int
+    referred_by: Optional[int] = None
 
     class Config:
         from_attributes = True

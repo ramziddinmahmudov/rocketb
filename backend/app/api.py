@@ -40,11 +40,12 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
             try:
                 referrer_id = int(start_param.split("_")[1])
                 if referrer_id != user.id:
+                    user.referred_by = referrer_id
                     ref_res = await db.execute(select(User).filter(User.id == referrer_id))
                     referrer = ref_res.scalars().first()
                     if referrer:
                         referrer.referrals_count += 1
-                        referrer.rockets_balance += 10 # 10 rockets per referral
+                        referrer.rockets_balance += 50 # 50 rockets per referral
             except Exception as e:
                 pass
 
@@ -69,6 +70,11 @@ async def get_me(user_id: int = Depends(get_current_user_id), db: AsyncSession =
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+@router.get("/users/me/referrals", response_model=list[UserResponse])
+async def get_my_referrals(user_id: int = Depends(get_current_user_id), db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(User).filter(User.referred_by == user_id).order_by(desc(User.id)))
+    return result.scalars().all()
 
 @router.get("/users/{target_id}/profile")
 async def get_user_profile(target_id: int, db: AsyncSession = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):

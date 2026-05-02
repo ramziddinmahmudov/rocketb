@@ -17,6 +17,7 @@ class User(Base):
     level = Column(Integer, default=1)
     xp = Column(Integer, default=0)
     coins = Column(Integer, default=0)
+    referred_by = Column(BigInteger, ForeignKey("users.id"), nullable=True)
 
 class Task(Base):
     __tablename__ = "tasks"
