@@ -28,6 +28,14 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: .
+    container_name: rocket_battle_frontend
+    restart: always
+    expose:
+      - "80"
+
   caddy:
     image: caddy:2-alpine
     container_name: rocket_battle_caddy
@@ -41,6 +49,7 @@ services:
       - caddy_config:/config
     depends_on:
       - backend
+      - frontend
 
 volumes:
   postgres_data:

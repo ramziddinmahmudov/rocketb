@@ -4,4 +4,7 @@ rocketbattle.duckdns.org {
 
     # Backend WebSocket proxy
     reverse_proxy /ws/* backend:8000
+
+    # Frontend (React app served by nginx)
+    reverse_proxy /* frontend:80
 }
