@@ -13,6 +13,7 @@ class User(Base):
     wins = Column(Integer, default=0)
     referrals_count = Column(Integer, default=0)
     is_admin = Column(Boolean, default=False)
+    last_login_date = Column(String, nullable=True)
 
 class Task(Base):
     __tablename__ = "tasks"

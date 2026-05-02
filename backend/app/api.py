@@ -4,6 +4,7 @@ from sqlalchemy.future import select
 from sqlalchemy import desc, or_, and_, func
 import os
 import httpx
+import datetime
 
 from .database import get_db
 from .models import User, Task, UserTask, Follower, MatchHistory
@@ -43,9 +44,18 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
                     referrer = ref_res.scalars().first()
                     if referrer:
                         referrer.referrals_count += 1
+                        referrer.rockets_balance += 10 # 10 rockets per referral
             except Exception as e:
                 pass
 
+        await db.commit()
+        await db.refresh(user)
+    
+    # Daily Login Bonus
+    today_str = datetime.date.today().isoformat()
+    if user.last_login_date != today_str:
+        user.last_login_date = today_str
+        user.rockets_balance += 10 # 10 rockets daily login
         await db.commit()
         await db.refresh(user)
         
@@ -239,6 +249,45 @@ async def claim_task(task_id: int, user_id: int = Depends(get_current_user_id), 
     
     await db.commit()
     return {"message": "Claimed successfully", "new_balance": user.rockets_balance}
+
+@router.post("/shop/buy")
+async def buy_rockets(
+    payload: dict,
+    user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db)
+):
+    amount = payload.get("amount")
+    if amount not in [10, 50, 100, 300, 500, 1000, 3000]:
+        raise HTTPException(status_code=400, detail="Invalid package")
+        
+    bot_token = os.getenv("BOT_TOKEN")
+    if not bot_token:
+        # Mock payment for now if no token is configured
+        result = await db.execute(select(User).filter(User.id == user_id))
+        user = result.scalars().first()
+        user.rockets_balance += amount
+        await db.commit()
+        return {"invoice_url": None, "mock": True, "message": "Mock payment successful (no bot token)"}
+        
+    url = f"https://api.telegram.org/bot{bot_token}/createInvoiceLink"
+    
+    invoice_data = {
+        "title": f"{amount} Rockets",
+        "description": f"Buy {amount} rockets for Rocket Battle",
+        "payload": f"buy_{user_id}_{amount}",
+        "provider_token": "", # Empty for Telegram Stars
+        "currency": "XTR",
+        "prices": [{"label": f"{amount} Rockets", "amount": amount}]
+    }
+    
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(url, json=invoice_data)
+        data = resp.json()
+        
+    if not data.get("ok"):
+        raise HTTPException(status_code=400, detail=f"Failed to create invoice: {data.get('description')}")
+        
+    return {"invoice_url": data["result"], "mock": False}
 
 # =================== ADMIN ENDPOINTS ===================
 

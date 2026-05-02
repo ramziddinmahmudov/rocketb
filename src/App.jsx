@@ -341,7 +341,8 @@ function App() {
       case 'home': 
         return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
       case 'tasks': return <TasksScreen token={token} onClaimed={fetchUser} />;
-      case 'shop': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
+      case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} />;
+      case 'top': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
       case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} />;
       case 'admin': return <AdminScreen token={token} />;
       default: return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
@@ -388,7 +389,11 @@ function App() {
             <span>Tasks</span>
           </div>
           <div className={`nav-item ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>
-            <Trophy size={24} strokeWidth={activeTab === 'shop' ? 2.5 : 2} />
+            <ShoppingCart size={24} strokeWidth={activeTab === 'shop' ? 2.5 : 2} />
+            <span>Shop</span>
+          </div>
+          <div className={`nav-item ${activeTab === 'top' ? 'active' : ''}`} onClick={() => setActiveTab('top')}>
+            <Trophy size={24} strokeWidth={activeTab === 'top' ? 2.5 : 2} />
             <span>Top</span>
           </div>
         </div>
@@ -586,7 +591,8 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   const [rocketAmount, setRocketAmount] = useState(1);
 
   const handleTap = (e, isLeft) => {
-    if (phase !== 'playing' || localRockets <= 0 || rocketAmount > localRockets) return;
+    if (phase !== 'playing') return;
+    // Removed balance limit per request: "xozrcha raketa bosishda limit qoyme turamz"
     
     setLocalRockets(r => r - rocketAmount);
     if (onSpendRockets) {
@@ -764,10 +770,9 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
              <input 
                type="range" 
                min="1" 
-               max={localRockets > 0 ? localRockets : 1} 
-               value={localRockets === 0 ? 0 : rocketAmount} 
+               max={localRockets > 0 ? localRockets : 100} 
+               value={rocketAmount} 
                onChange={(e) => setRocketAmount(Number(e.target.value))}
-               disabled={localRockets <= 0}
                style={{ width: '100%', accentColor: 'var(--accent-blue)' }}
              />
            </div>
@@ -937,6 +942,67 @@ const PublicProfileScreen = ({ userId, token, onBack, onChallenge }) => {
            </div>
          ))}
        </div>
+    </div>
+  );
+};
+
+// --- Shop Screen ---
+const ShopScreen = ({ token, user, onBuySuccess }) => {
+  const packages = [10, 50, 100, 300, 500, 1000, 3000];
+  const [loadingPkg, setLoadingPkg] = useState(null);
+
+  const handleBuy = async (amount) => {
+    setLoadingPkg(amount);
+    try {
+      const res = await fetch(`${API_BASE}/shop/buy`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount })
+      });
+      const data = await res.json();
+      
+      if (data.mock) {
+        alert(data.message);
+        onBuySuccess();
+      } else if (data.invoice_url) {
+        if (window.Telegram?.WebApp) {
+          window.Telegram.WebApp.openInvoice(data.invoice_url, (status) => {
+            if (status === 'paid') onBuySuccess();
+          });
+        } else {
+          window.open(data.invoice_url, '_blank');
+        }
+      } else {
+        alert("Failed to buy: " + (data.detail || "Unknown error"));
+      }
+    } catch (e) {
+      alert("Error buying package");
+    } finally {
+      setLoadingPkg(null);
+    }
+  };
+
+  return (
+    <div className="screen-container" style={{ paddingBottom: '100px' }}>
+      <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <ShoppingCart size={24} color="var(--accent-blue)" /> Rocket Shop
+      </h2>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+        {packages.map(pkg => (
+          <div key={pkg} className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px 10px' }}>
+            <Rocket size={32} color="var(--accent-blue)" />
+            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{pkg} Rockets</span>
+            <button 
+              className="primary-btn" 
+              style={{ padding: '10px', fontSize: '14px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
+              onClick={() => handleBuy(pkg)}
+              disabled={loadingPkg === pkg}
+            >
+              {loadingPkg === pkg ? '...' : <>{pkg} <span style={{ fontSize: '16px' }}>⭐️</span></>}
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
