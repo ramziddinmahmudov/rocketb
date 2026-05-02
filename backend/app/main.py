@@ -35,6 +35,7 @@ async def ensure_columns(conn):
     # List of (table, column, type) to ensure exist
     columns_to_add = [
         ("users", "referred_by", "BIGINT"),
+        ("users", "rockets_used", "INTEGER DEFAULT 0"),
     ]
     for table, column, col_type in columns_to_add:
         try:

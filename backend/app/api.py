@@ -185,16 +185,29 @@ async def get_tasks(user_id: int = Depends(get_current_user_id), db: AsyncSessio
     user_tasks_result = await db.execute(select(UserTask).filter(UserTask.user_id == user_id))
     user_tasks = {ut.task_id: ut for ut in user_tasks_result.scalars().all()}
     
+    # Get user for real-time progress tracking
+    user_res = await db.execute(select(User).filter(User.id == user_id))
+    user = user_res.scalars().first()
+    
     response = []
     for task in tasks:
         ut = user_tasks.get(task.id)
+        
+        # Calculate real progress for use_rockets tasks
+        if task.task_type == "use_rockets":
+            progress = min(user.rockets_used or 0, task.target_count or 300)
+        elif task.task_type == "invite_friends":
+            progress = min(user.referrals_count or 0, task.target_count or 1)
+        else:
+            progress = ut.progress if ut else 0
+        
         response.append({
             "id": task.id,
             "title": task.title,
             "reward": task.reward,
             "task_type": task.task_type,
             "target_count": task.target_count,
-            "progress": ut.progress if ut else 0,
+            "progress": progress,
             "is_completed": ut.is_completed if ut else False
         })
     return response
@@ -219,6 +232,11 @@ async def claim_task(task_id: int, user_id: int = Depends(get_current_user_id), 
         raise HTTPException(status_code=400, detail="Already claimed")
         
     # Validation logic
+    if task.task_type == "use_rockets":
+        used = user.rockets_used or 0
+        if used < (task.target_count or 300):
+            raise HTTPException(status_code=400, detail=f"You need to use {task.target_count} rockets. You have used {used}.")
+
     if task.task_type == "invite_friends":
         if user.referrals_count < (task.target_count or 1):
             raise HTTPException(status_code=400, detail=f"You need to invite at least {task.target_count} friends. You have invited {user.referrals_count}.")

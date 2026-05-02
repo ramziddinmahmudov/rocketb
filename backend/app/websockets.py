@@ -313,6 +313,7 @@ async def battle_websocket(websocket: WebSocket, token: str):
                                 u = res.scalars().first()
                                 if u:
                                     u.rockets_balance = max(0, u.rockets_balance - amount)
+                                    u.rockets_used = (u.rockets_used or 0) + amount
                                     await db.commit()
                         except Exception as e:
                             print("Error deducting rockets:", e)
