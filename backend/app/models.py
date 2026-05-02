@@ -14,6 +14,9 @@ class User(Base):
     referrals_count = Column(Integer, default=0)
     is_admin = Column(Boolean, default=False)
     last_login_date = Column(String, nullable=True)
+    level = Column(Integer, default=1)
+    xp = Column(Integer, default=0)
+    coins = Column(Integer, default=0)
 
 class Task(Base):
     __tablename__ = "tasks"

@@ -9,6 +9,9 @@ class UserResponse(BaseModel):
     total_played: int
     wins: int
     is_admin: bool = False
+    level: int
+    xp: int
+    coins: int
 
     class Config:
         from_attributes = True

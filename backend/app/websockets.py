@@ -14,6 +14,7 @@ router = APIRouter()
 # --- IN-MEMORY STATE ---
 # connections[user_id] = {"ws": WebSocket, "info": {"id": int, "name": str}}
 connections: Dict[int, Dict[str, Any]] = {}
+bot_counter = -1
 waiting_queue: List[int] = []
 # active_matches[match_id] = {"players": [id1, id2], "scores": {id1: 0, id2: 0}, "names": {id1: "A", id2: "B"}, "start_time": float}
 active_matches: Dict[str, Dict[str, Any]] = {}
@@ -45,8 +46,8 @@ async def broadcast_state():
 async def start_match(user1_id: int, user2_id: int):
     match_id = f"match_{user1_id}_{user2_id}_{int(time.time())}"
     
-    name1 = connections.get(user1_id, {}).get("info", {}).get("name", f"User {user1_id}")
-    name2 = connections.get(user2_id, {}).get("info", {}).get("name", f"User {user2_id}")
+    name1 = connections.get(user1_id, {}).get("info", {}).get("name", f"User {user1_id}") if user1_id > 0 else "Bot"
+    name2 = connections.get(user2_id, {}).get("info", {}).get("name", f"User {user2_id}") if user2_id > 0 else "Bot"
 
     active_matches[match_id] = {
         "players": [user1_id, user2_id],
@@ -70,6 +71,54 @@ async def start_match(user1_id: int, user2_id: int):
             
     await broadcast_state()
     asyncio.create_task(end_match_after_timeout(match_id, 180))
+    
+    # If a bot is involved, start bot worker
+    import random
+    if user1_id < 0:
+        asyncio.create_task(bot_worker(match_id, user1_id, user2_id))
+    if user2_id < 0:
+        asyncio.create_task(bot_worker(match_id, user2_id, user1_id))
+
+async def bot_worker(match_id: str, bot_id: int, target_player: int):
+    import random
+    while match_id in active_matches:
+        await asyncio.sleep(random.uniform(0.6, 1.2))
+        if match_id not in active_matches:
+            break
+            
+        match = active_matches[match_id]
+        amount = random.randint(1, 3)
+        match["scores"][bot_id] += amount
+        
+        # Broadcast score update
+        score_msg = {
+            "type": "score_update",
+            "scores": match["scores"]
+        }
+        for uid in connections:
+            try:
+                await connections[uid]["ws"].send_json(score_msg)
+            except:
+                pass
+                
+        # Broadcast attack log
+        attack_log_msg = {
+            "type": "attack_log",
+            "match_id": match_id,
+            "attacker_id": bot_id,
+            "attacker_name": "Bot",
+            "target_id": target_player,
+            "target_name": match["names"].get(target_player, f"User {target_player}"),
+            "amount": amount,
+            "is_spectator": False,
+            "timestamp": time.time()
+        }
+        for uid in connections:
+            try:
+                await connections[uid]["ws"].send_json(attack_log_msg)
+            except:
+                pass
+
 
 async def end_match(match_id: str):
     """End a match: save stats to DB, notify players, clean up."""
@@ -90,21 +139,33 @@ async def end_match(match_id: str):
                     
             # Update match stats for players (rockets already deducted in real-time during taps)
             for uid in (p1, p2):
+                if uid < 0: continue # Skip db update for bot
                 res = await db.execute(select(User).filter(User.id == uid))
                 u = res.scalars().first()
                 if u:
                     u.total_played += 1
                     if uid == winner_id:
                         u.wins += 1
+                        u.xp += 50
+                        u.coins += 10
+                    else:
+                        u.xp += 10
+                        u.coins += 2
+                        
+                    # Handle level up
+                    while u.xp >= (u.level * 100):
+                        u.xp -= (u.level * 100)
+                        u.level += 1
 
-            history = MatchHistory(
-                player1_id=p1,
-                player2_id=p2,
-                player1_score=s1,
-                player2_score=s2,
-                winner_id=winner_id
-            )
-            db.add(history)
+            if p1 > 0 and p2 > 0:
+                history = MatchHistory(
+                    player1_id=p1,
+                    player2_id=p2,
+                    player1_score=s1,
+                    player2_score=s2,
+                    winner_id=winner_id
+                )
+                db.add(history)
             await db.commit()
     except Exception as e:
         print("Error saving match history:", e)
@@ -128,6 +189,28 @@ async def end_match_after_timeout(match_id: str, timeout: int):
     await asyncio.sleep(timeout)
     await end_match(match_id)
 
+async def handle_matchmaking(uid: int):
+    if uid not in waiting_queue:
+        waiting_queue.append(uid)
+    
+    if len(waiting_queue) >= 2:
+        p1 = waiting_queue.pop(0)
+        p2 = waiting_queue.pop(0)
+        await start_match(p1, p2)
+    else:
+        # Wait 3 seconds for a real opponent
+        await asyncio.sleep(3)
+        if uid in waiting_queue:
+            # If still alone, match with a bot
+            if len(waiting_queue) >= 2:
+                pass
+            else:
+                waiting_queue.remove(uid)
+                global bot_counter
+                bot_id = bot_counter
+                bot_counter -= 1
+                await start_match(uid, bot_id)
+
 @router.websocket("/ws/battle")
 async def battle_websocket(websocket: WebSocket, token: str):
     user_id = get_user_from_token(token)
@@ -150,12 +233,7 @@ async def battle_websocket(websocket: WebSocket, token: str):
                 await broadcast_state()
 
             elif action == "find_match":
-                if user_id not in waiting_queue:
-                    waiting_queue.append(user_id)
-                if len(waiting_queue) >= 2:
-                    p1 = waiting_queue.pop(0)
-                    p2 = waiting_queue.pop(0)
-                    await start_match(p1, p2)
+                asyncio.create_task(handle_matchmaking(user_id))
             
             elif action == "challenge_user":
                 target_id = int(data.get("target_id"))

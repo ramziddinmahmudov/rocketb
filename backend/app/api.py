@@ -167,7 +167,7 @@ async def get_user_matches(target_id: int, db: AsyncSession = Depends(get_db), c
 
 @router.get("/leaderboard", response_model=list[UserResponse])
 async def get_leaderboard(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).order_by(desc(User.wins), desc(User.rockets_balance)).limit(50))
+    result = await db.execute(select(User).order_by(desc(User.level), desc(User.xp), desc(User.wins)).limit(50))
     return result.scalars().all()
 
 @router.get("/tasks")

@@ -639,11 +639,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
               
               {/* Player 1 */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, zIndex: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, zIndex: 2 }}>
                 <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: '#000', border: '2px solid var(--border-color)' }}>
                   <User size={40} color="#fff" />
                 </div>
                 <span style={{ fontWeight: '700', fontSize: '15px', textAlign: 'center' }}>{user.first_name}</span>
+                <span className="pill-badge" style={{ fontSize: '12px', padding: '2px 8px', backgroundColor: 'var(--accent-blue)', color: '#fff' }}>Lvl {user?.level || 1}</span>
               </div>
 
               {/* VS Center */}
@@ -655,11 +656,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
               </div>
 
               {/* Searching / Waiting */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1, zIndex: 2 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, zIndex: 2 }}>
                 <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '1px solid var(--border-color)', animation: 'pulse 1.5s infinite' }}>
                   <User size={40} color="var(--text-muted)" />
                 </div>
                 <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--accent-blue)', textAlign: 'center' }}>{opponentName}</span>
+                <span className="pill-badge" style={{ fontSize: '12px', padding: '2px 8px', backgroundColor: 'var(--bg-card)', opacity: opponentName === 'Searching...' ? 0 : 1 }}>Lvl ?</span>
               </div>
               
             </div>
@@ -1101,9 +1103,9 @@ const LeaderboardScreen = ({ token, user, onUserClick }) => {
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px' }}>{l.wins} 🏆</div>
-                <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px', color: 'var(--accent-blue)' }}>
-                  <Rocket size={12} style={{marginRight: '4px'}}/> {formatNum(l.rockets_balance)}
+                <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px', backgroundColor: 'var(--accent-blue)', color: '#fff' }}>Lvl {l.level || 1}</div>
+                <div className="pill-badge" style={{ padding: '4px 10px', fontSize: '12px', color: 'var(--text-main)' }}>
+                   {l.wins} 🏆
                 </div>
               </div>
             </div>
@@ -1350,12 +1352,19 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{profile?.following || 0}</div>
          </div>
          <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Total Played</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user.total_played}</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Level</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user?.level || 1}</div>
          </div>
          <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Wins</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user.wins}</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Coins</div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user?.coins || 0}</div>
+         </div>
+         <div className="card" style={{ textAlign: 'center', padding: '15px', gridColumn: 'span 2' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>XP to Next Level</div>
+            <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-main)', borderRadius: '4px', overflow: 'hidden', marginTop: '5px' }}>
+              <div style={{ width: `${Math.min(100, ((user?.xp || 0) / ((user?.level || 1) * 100)) * 100)}%`, height: '100%', backgroundColor: 'var(--accent-blue)' }}></div>
+            </div>
+            <div style={{ fontSize: '12px', marginTop: '5px' }}>{user?.xp || 0} / {(user?.level || 1) * 100} XP</div>
          </div>
        </div>
 

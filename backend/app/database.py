@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import declarative_base, sessionmaker
+import os
 
-DATABASE_URL = "sqlite+aiosqlite:///./rocket_battle.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://rocketuser:rocketpassword@db:5432/rocket_battle_db")
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 AsyncSessionLocal = sessionmaker(
