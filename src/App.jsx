@@ -740,32 +740,21 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             ))}
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
-              
               {/* Player 1 */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, zIndex: 2 }}>
-                <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: '#000', border: '2px solid var(--border-color)' }}>
-                  <User size={40} color="#fff" />
+                <div style={{ position: 'relative' }}>
+                  <div className="avatar-circle" style={{ width: '65px', height: '65px', backgroundColor: 'var(--accent-blue)', border: '2px solid var(--border-color)' }}>
+                    <User size={30} color="#fff" />
+                  </div>
+                  <div style={{ position: 'absolute', bottom: '-6px', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#ff9f0a', color: '#000', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '10px', whiteSpace: 'nowrap' }}>
+                    Lv.{user?.level || 1}
+                  </div>
                 </div>
-                <span style={{ fontWeight: '700', fontSize: '15px', textAlign: 'center' }}>{user.first_name}</span>
-                <span className="pill-badge" style={{ fontSize: '12px', padding: '2px 8px', backgroundColor: 'var(--accent-blue)', color: '#fff' }}>Lvl {user?.level || 1}</span>
+                <span style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', color: 'var(--accent-blue)' }}>{user.first_name}</span>
               </div>
-
-              {/* VS Center */}
+              
+              {/* VS */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 0.8, marginTop: '10px', zIndex: 2 }}>
-                <div className="vs-text" style={{ marginBottom: '12px' }}>VS</div>
-                <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px', whiteSpace: 'nowrap' }}>
-                  ? : ?
-                </div>
-              </div>
-
-              {/* Searching / Waiting — with radar animation */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, zIndex: 2 }}>
-                <div className="avatar-circle search-radar" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '1px solid var(--border-color)' }}>
-                  <div className="radar-ring"></div>
-                  <div className="radar-ring"></div>
-                  <div className="radar-ring"></div>
-                  <User size={40} color="var(--text-muted)" />
-                </div>
                 <span className="search-text" style={{ fontWeight: '700', fontSize: '15px', textAlign: 'center' }}>{opponentName}</span>
                 <span className="pill-badge" style={{ fontSize: '12px', padding: '2px 8px', backgroundColor: 'var(--bg-card)', opacity: opponentName === 'Searching...' ? 0 : 1 }}>Lvl ?</span>
               </div>
