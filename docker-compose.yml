@@ -21,12 +21,23 @@ services:
     restart: always
     environment:
       DATABASE_URL: postgresql+asyncpg://rocketuser:rocketpassword@db:5432/rocket_battle_db
+      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend/.env:/app/.env
     expose:
       - "8000"
     depends_on:
       - db
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: rocket_battle_redis
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
 
   frontend:
     build:
@@ -53,5 +64,6 @@ services:
 
 volumes:
   postgres_data:
+  redis_data:
   caddy_data:
   caddy_config:

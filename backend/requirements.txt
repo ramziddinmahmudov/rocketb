@@ -22,3 +22,5 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.46.0
 websockets==16.0
+redis==5.0.3
+alembic==1.13.1
