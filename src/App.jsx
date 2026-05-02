@@ -155,11 +155,25 @@ function App() {
             targetName: data.target_name,
             amount: data.amount,
             isSpectator: data.is_spectator,
-            timestamp: data.timestamp
+            timestamp: data.timestamp,
+            isChat: false
           };
           setAttackLogs(prev => [logEntry, ...prev].slice(0, 50));
         }
       } 
+      else if (data.type === "chat_message") {
+        const currentMatchId = battleStateRef.current?.matchId;
+        if (currentMatchId && data.match_id === currentMatchId) {
+          const logEntry = {
+            id: Date.now() + Math.random(),
+            senderName: data.sender_name,
+            text: data.text,
+            isChat: true,
+            timestamp: data.timestamp
+          };
+          setAttackLogs(prev => [logEntry, ...prev].slice(0, 50));
+        }
+      }
       else if (data.type === "challenge_received") {
         setChallengeRequest(data);
         addToast(`⚔️ ${data.challenger_name} sent you a challenge!`, 'warning');
@@ -602,6 +616,41 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
   const [rocketAmount, setRocketAmount] = useState(1);
   const [selectedTarget, setSelectedTarget] = useState(null); // 'left' | 'right' | null
+  const [chatInput, setChatInput] = useState("");
+  const [floatingTexts, setFloatingTexts] = useState([]);
+  const prevLogsLengthRef = useRef(attackLogs.length);
+
+  useEffect(() => {
+    if (attackLogs.length > prevLogsLengthRef.current) {
+      const newLogs = attackLogs.slice(0, attackLogs.length - prevLogsLengthRef.current);
+      newLogs.forEach(log => {
+        if (!log.isChat) {
+          // Add floating text
+          const isLeftAttacker = log.attackerName === (isSpectating ? battleState.myName : user.first_name);
+          const newFloat = {
+            id: Date.now() + Math.random(),
+            amount: log.amount,
+            side: isLeftAttacker ? 'left' : 'right',
+            color: log.isSpectator ? '#ff9f0a' : isLeftAttacker ? 'var(--accent-blue)' : '#ff3b30'
+          };
+          setFloatingTexts(prev => [...prev, newFloat]);
+          setTimeout(() => {
+            setFloatingTexts(prev => prev.filter(f => f.id !== newFloat.id));
+          }, 1000);
+        }
+      });
+    }
+    prevLogsLengthRef.current = attackLogs.length;
+  }, [attackLogs, isSpectating, battleState.myName, user.first_name]);
+
+  const handleSendChat = (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || phase !== 'playing') return;
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "chat", match_id: matchId, text: chatInput.trim() }));
+      setChatInput("");
+    }
+  };
 
   const handleTap = (e, isLeft) => {
     if (phase !== 'playing') return;
@@ -837,7 +886,6 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
               <span style={{ fontWeight: '700', fontSize: '13px', textAlign: 'center', color: '#ff3b30', marginTop: '4px' }}>{opponentName}</span>
             </div>
             </div>
-          </div>
 
           {/* Tug-of-War Progress Bar */}
           <div style={{ width: '100%', height: '28px', backgroundColor: '#ff3b30', borderRadius: '14px', overflow: 'hidden', display: 'flex', position: 'relative', marginTop: '5px', zIndex: 2, border: '2px solid rgba(255,255,255,0.1)' }}>
@@ -900,7 +948,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                <div style={{ display: 'flex', gap: '15px', flex: 1 }}>
                  {/* Left Action Area */}
                  {(!isSpectating || !targetSupportId || targetSupportId === myPlayerId) && (
-                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px' }}>
+                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', position: 'relative' }}>
+                      {floatingTexts.filter(f => f.side === 'left').map(f => (
+                        <div key={f.id} style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontWeight: '800', fontSize: '18px', color: f.color, animation: 'float-up 1s ease-out forwards', pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap' }}>
+                          +{f.amount} 🚀
+                        </div>
+                      ))}
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                        <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
@@ -913,7 +966,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
                  {/* Right Action Area */}
                  {(!isSpectating || !targetSupportId || targetSupportId === opponentId) && (
-                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5 }}>
+                   <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '20px', opacity: isSpectating ? 1 : 0.5, position: 'relative' }}>
+                      {floatingTexts.filter(f => f.side === 'right').map(f => (
+                        <div key={f.id} style={{ position: 'absolute', top: '-20px', left: '50%', transform: 'translateX(-50%)', fontWeight: '800', fontSize: '18px', color: f.color, animation: 'float-up 1s ease-out forwards', pointerEvents: 'none', zIndex: 10, whiteSpace: 'nowrap' }}>
+                          +{f.amount} 🚀
+                        </div>
+                      ))}
                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                        <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
@@ -936,44 +994,64 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         </div>
 
         {/* Battle Chat Feed */}
-        {attackLogs.length > 0 && (
-          <div className="card" style={{ maxHeight: '180px', display: 'flex', flexDirection: 'column', padding: '10px 14px', gap: '0' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <h4 style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Zap size={13} color="#ff9f0a" /> Battle Chat
-              </h4>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} attacks</span>
-            </div>
-            <div ref={logContainerRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              {attackLogs.slice(0, 30).map((log) => {
-                const isMyAttack = log.attackerName === (isSpectating ? battleState.myName : user.first_name);
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '10px 14px', gap: '0', flexShrink: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+            <h4 style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Zap size={13} color="#ff9f0a" /> Battle Chat
+            </h4>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} updates</span>
+          </div>
+          
+          <div ref={logContainerRef} style={{ height: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '8px' }}>
+            {attackLogs.slice(0, 30).map((log) => {
+              const isMyAttack = log.isChat ? log.senderName === (isSpectating ? battleState.myName : user.first_name) : log.attackerName === (isSpectating ? battleState.myName : user.first_name);
+              
+              if (log.isChat) {
                 return (
                   <div key={log.id} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '4px 8px',
-                    borderRadius: '8px',
-                    backgroundColor: isMyAttack ? 'rgba(119,168,255,0.1)' : 'rgba(255,59,48,0.08)',
-                    fontSize: '11px',
-                    borderLeft: `3px solid ${log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'}`,
-                    animation: 'toast-slide 0.2s ease-out'
+                    display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '8px',
+                    backgroundColor: 'rgba(255,255,255,0.05)', fontSize: '12px', animation: 'toast-slide 0.2s ease-out'
                   }}>
-                    <Rocket size={9} color={log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'} style={{ flexShrink: 0 }} />
-                    <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px' }}>
-                      {log.attackerName}
-                    </span>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>→</span>
-                    <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px', fontSize: '11px' }}>
-                      {log.targetName}
-                    </span>
-                    <span style={{ marginLeft: 'auto', fontWeight: '800', color: '#30d158', whiteSpace: 'nowrap', fontSize: '12px' }}>+{log.amount} 🚀</span>
+                    <span style={{ fontWeight: '700', color: isMyAttack ? 'var(--accent-blue)' : '#fff' }}>{log.senderName}:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{log.text}</span>
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div key={log.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '8px',
+                  backgroundColor: isMyAttack ? 'rgba(119,168,255,0.1)' : 'rgba(255,59,48,0.08)',
+                  fontSize: '11px', borderLeft: `3px solid ${log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'}`,
+                  animation: 'toast-slide 0.2s ease-out'
+                }}>
+                  <Rocket size={9} color={log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'} style={{ flexShrink: 0 }} />
+                  <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px' }}>
+                    {log.attackerName}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>→</span>
+                  <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px', fontSize: '11px' }}>
+                    {log.targetName}
+                  </span>
+                  <span style={{ marginLeft: 'auto', fontWeight: '800', color: '#30d158', whiteSpace: 'nowrap', fontSize: '12px' }}>+{log.amount} 🚀</span>
+                </div>
+              );
+            })}
           </div>
-        )}
+
+          <form onSubmit={handleSendChat} style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              placeholder="Send a message..." 
+              style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
+            />
+            <button type="submit" style={{ backgroundColor: 'var(--accent-blue)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontWeight: 'bold' }}>
+              Send
+            </button>
+          </form>
+        </div>
         
         {!isSpectating && (
           <button className="secondary-btn" onClick={() => {

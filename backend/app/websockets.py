@@ -364,6 +364,25 @@ async def battle_websocket(websocket: WebSocket, token: str):
                                 pass
                         
                         await broadcast_state()
+
+            elif action == "chat":
+                match_id = data.get("match_id")
+                text = data.get("text", "")[:150]  # Limit message length
+                if match_id and match_id in active_matches and text.strip():
+                    sender_name = connections.get(user_id, {}).get("info", {}).get("name", "User")
+                    chat_msg = {
+                        "type": "chat_message",
+                        "match_id": match_id,
+                        "sender_id": user_id,
+                        "sender_name": sender_name,
+                        "text": text.strip(),
+                        "timestamp": time.time()
+                    }
+                    for uid in connections:
+                        try:
+                            await connections[uid]["ws"].send_json(chat_msg)
+                        except:
+                            pass
             
     except WebSocketDisconnect:
         if user_id in connections:
