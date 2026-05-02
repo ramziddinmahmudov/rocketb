@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, BigInteger
 from sqlalchemy.sql import func
 from .database import Base
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True) # Telegram User ID
+    id = Column(BigInteger, primary_key=True, index=True) # Telegram User ID
     username = Column(String, nullable=True)
     first_name = Column(String)
     rockets_balance = Column(Integer, default=20)
@@ -33,7 +33,7 @@ class UserTask(Base):
     __tablename__ = "user_tasks"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(BigInteger, ForeignKey("users.id"))
     task_id = Column(Integer, ForeignKey("tasks.id"))
     progress = Column(Integer, default=0)
     is_completed = Column(Boolean, default=False)
@@ -42,17 +42,17 @@ class Follower(Base):
     __tablename__ = "followers"
     
     id = Column(Integer, primary_key=True, index=True)
-    follower_id = Column(Integer, ForeignKey("users.id"), index=True)
-    following_id = Column(Integer, ForeignKey("users.id"), index=True)
+    follower_id = Column(BigInteger, ForeignKey("users.id"), index=True)
+    following_id = Column(BigInteger, ForeignKey("users.id"), index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class MatchHistory(Base):
     __tablename__ = "match_history"
     
     id = Column(Integer, primary_key=True, index=True)
-    player1_id = Column(Integer, ForeignKey("users.id"), index=True)
-    player2_id = Column(Integer, ForeignKey("users.id"), index=True)
+    player1_id = Column(BigInteger, ForeignKey("users.id"), index=True)
+    player2_id = Column(BigInteger, ForeignKey("users.id"), index=True)
     player1_score = Column(Integer, default=0)
     player2_score = Column(Integer, default=0)
-    winner_id = Column(Integer, ForeignKey("users.id"), nullable=True) # None if draw
+    winner_id = Column(BigInteger, ForeignKey("users.id"), nullable=True) # None if draw
     created_at = Column(DateTime(timezone=True), server_default=func.now())
