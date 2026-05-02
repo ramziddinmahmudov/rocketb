@@ -56,6 +56,9 @@ function App() {
     opponentId: null,
     isWin: null
   });
+  const [attackLogs, setAttackLogs] = useState([]);
+  const battleStateRef = useRef(battleState);
+  useEffect(() => { battleStateRef.current = battleState; }, [battleState]);
 
   useEffect(() => {
     if (tg) tg.expand();
@@ -133,12 +136,28 @@ function App() {
         setOnlineUsers(data.online_users.filter(u => u.id !== user.id));
         setActiveMatches(data.active_matches);
         
+        // Deep link support: auto-spectate if we have support data
         if (supportDataRef.current) {
           const m = data.active_matches.find(x => x.id === supportDataRef.current.matchId);
           if (m) {
             handleSpectate(m, supportDataRef.current.supportId);
             setSupportData(null);
           }
+        }
+      }
+      else if (data.type === "attack_log") {
+        // Only add logs for the current match
+        const currentMatchId = battleStateRef.current?.matchId;
+        if (currentMatchId && data.match_id === currentMatchId) {
+          const logEntry = {
+            id: Date.now() + Math.random(),
+            attackerName: data.attacker_name,
+            targetName: data.target_name,
+            amount: data.amount,
+            isSpectator: data.is_spectator,
+            timestamp: data.timestamp
+          };
+          setAttackLogs(prev => [logEntry, ...prev].slice(0, 50));
         }
       } 
       else if (data.type === "challenge_received") {
@@ -298,6 +317,7 @@ function App() {
         ws={ws.current}
         battleState={battleState}
         isSpectating={isSpectating}
+        attackLogs={attackLogs}
         onSpendRockets={(amount) => {
           if (!isSpectating) {
             setUser(prev => ({ ...prev, rockets_balance: Math.max(0, prev.rockets_balance - amount) }));
@@ -306,6 +326,7 @@ function App() {
         onEnd={() => { 
           setInBattle(false); 
           setIsSpectating(false);
+          setAttackLogs([]);
           fetchUser(); 
         }} 
       />
@@ -529,11 +550,12 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
 };
 
 // 2. Battle Screen
-const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRockets }) => {
+const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], onEnd, onSpendRockets }) => {
   const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId, targetSupportId } = battleState;
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
   const [timeLeft, setTimeLeft] = useState("03:00");
+  const logContainerRef = useRef(null);
   
   const handleLeave = () => {
     // Just exit the battle screen — match continues on server
@@ -786,6 +808,42 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, onEnd, onSpendRocke
              ))}
            </div>
         </div>
+
+        {/* Live Attack Feed */}
+        {attackLogs.length > 0 && (
+          <div className="card" style={{ maxHeight: '150px', overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: '0px', padding: '12px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h4 style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Zap size={14} color="#ff9f0a" /> Live Feed
+              </h4>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} attacks</span>
+            </div>
+            <div ref={logContainerRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {attackLogs.slice(0, 20).map((log) => (
+                <div key={log.id} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 8px',
+                  borderRadius: '8px',
+                  backgroundColor: 'var(--bg-card-secondary)',
+                  fontSize: '12px',
+                  animation: 'toast-slide 0.3s ease-out'
+                }}>
+                  <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)'} style={{ flexShrink: 0 }} />
+                  <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
+                    {log.attackerName}
+                  </span>
+                  <span style={{ color: 'var(--text-muted)' }}>→</span>
+                  <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '80px' }}>
+                    {log.targetName}
+                  </span>
+                  <span style={{ marginLeft: 'auto', fontWeight: '700', color: '#30d158', whiteSpace: 'nowrap' }}>+{log.amount}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         
         {!isSpectating && (
           <button className="secondary-btn" onClick={() => {

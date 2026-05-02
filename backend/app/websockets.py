@@ -217,6 +217,27 @@ async def battle_websocket(websocket: WebSocket, token: str):
                                 await connections[uid]["ws"].send_json(score_msg)
                             except:
                                 pass
+                        
+                        # Broadcast attack log to ALL connected users
+                        attacker_name = connections.get(user_id, {}).get("info", {}).get("name", f"User {user_id}")
+                        target_name = match["names"].get(target_player, f"User {target_player}")
+                        attack_log_msg = {
+                            "type": "attack_log",
+                            "match_id": match_id,
+                            "attacker_id": user_id,
+                            "attacker_name": attacker_name,
+                            "target_id": target_player,
+                            "target_name": target_name,
+                            "amount": amount,
+                            "is_spectator": action == "spectator_tap",
+                            "timestamp": time.time()
+                        }
+                        for uid in connections:
+                            try:
+                                await connections[uid]["ws"].send_json(attack_log_msg)
+                            except:
+                                pass
+                        
                         await broadcast_state()
             
     except WebSocketDisconnect:
