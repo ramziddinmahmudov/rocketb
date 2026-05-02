@@ -984,24 +984,94 @@ const ShopScreen = ({ token, user, onBuySuccess }) => {
 
   return (
     <div className="screen-container" style={{ paddingBottom: '100px' }}>
-      <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <ShoppingCart size={24} color="var(--accent-blue)" /> Rocket Shop
-      </h2>
+      
+      <div style={{
+        background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.2) 0%, rgba(94, 92, 230, 0.2) 100%)',
+        borderRadius: '20px',
+        padding: '30px 20px',
+        textAlign: 'center',
+        marginBottom: '25px',
+        border: '1px solid rgba(10, 132, 255, 0.3)',
+        boxShadow: '0 8px 32px rgba(10, 132, 255, 0.15)'
+      }}>
+        <ShoppingCart size={48} color="var(--accent-blue)" style={{ marginBottom: '15px' }} />
+        <h2 style={{ fontSize: '26px', marginBottom: '10px', fontWeight: '800' }}>Rocket Store</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.5' }}>
+          Top up your balance with Telegram Stars to gain the ultimate advantage in battle!
+        </p>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-        {packages.map(pkg => (
-          <div key={pkg} className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '20px 10px' }}>
-            <Rocket size={32} color="var(--accent-blue)" />
-            <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{pkg} Rockets</span>
-            <button 
-              className="primary-btn" 
-              style={{ padding: '10px', fontSize: '14px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
-              onClick={() => handleBuy(pkg)}
-              disabled={loadingPkg === pkg}
+        {packages.map((pkg, idx) => {
+          const isPopular = pkg === 500;
+          return (
+            <div key={pkg} className="card" style={{ 
+              position: 'relative',
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '12px', 
+              padding: '25px 15px',
+              border: isPopular ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)',
+              background: isPopular ? 'linear-gradient(180deg, var(--bg-card) 0%, rgba(10, 132, 255, 0.05) 100%)' : 'var(--bg-card)',
+              overflow: 'hidden',
+              transform: 'translateY(0)',
+              transition: 'transform 0.2s ease',
+              cursor: 'pointer'
+            }}
+            onClick={() => !loadingPkg && handleBuy(pkg)}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
             >
-              {loadingPkg === pkg ? '...' : <>{pkg} <span style={{ fontSize: '16px' }}>⭐️</span></>}
-            </button>
-          </div>
-        ))}
+              {isPopular && (
+                <div style={{
+                  position: 'absolute', top: '0', right: '0', background: 'var(--accent-blue)', color: '#fff', fontSize: '10px', fontWeight: 'bold', padding: '4px 12px', borderBottomLeftRadius: '10px'
+                }}>
+                  POPULAR
+                </div>
+              )}
+              
+              <div style={{
+                background: 'rgba(10, 132, 255, 0.1)',
+                borderRadius: '50%',
+                width: '60px', height: '60px',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                boxShadow: isPopular ? '0 0 20px rgba(10, 132, 255, 0.3)' : 'none'
+              }}>
+                <Rocket size={32} color={isPopular ? "#fff" : "var(--accent-blue)"} fill={isPopular ? "var(--accent-blue)" : "none"} />
+              </div>
+              
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontSize: '22px', fontWeight: '900', display: 'block' }}>{formatNum(pkg)}</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Rockets</span>
+              </div>
+              
+              <button 
+                className={isPopular ? "primary-btn" : "secondary-btn"} 
+                style={{ 
+                  marginTop: '5px',
+                  padding: '10px', 
+                  fontSize: '15px', 
+                  width: '100%', 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  fontWeight: 'bold',
+                  border: isPopular ? 'none' : '1px solid rgba(255,255,255,0.1)'
+                }}
+                disabled={loadingPkg === pkg}
+                onClick={(e) => { e.stopPropagation(); handleBuy(pkg); }}
+              >
+                {loadingPkg === pkg ? 'Processing...' : (
+                  <>
+                    <span style={{ color: '#ffd700', textShadow: '0 0 5px rgba(255, 215, 0, 0.5)' }}>⭐️</span> {pkg}
+                  </>
+                )}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
