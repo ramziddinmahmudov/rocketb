@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Clock, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check } from 'lucide-react';
+import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Clock, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check, ShoppingCart } from 'lucide-react';
 
 // Format large numbers: 1000 → 1K, 1200 → 1.2K, 15300 → 15.3K
 const formatNum = (n) => {
