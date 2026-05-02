@@ -958,7 +958,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         
         {!isSpectating && (
           <button className="secondary-btn" onClick={() => {
-            const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebot';
+            const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot';
             const url = `https://t.me/${botUsername}/app?startapp=support_${user.id}_${matchId}`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Do'stim, menga yordam ber! Rocket Battle'da yutishim kerak!")}`;
             if (window.Telegram?.WebApp) {
@@ -1280,7 +1280,7 @@ const TasksScreen = ({ token, onClaimed }) => {
             ) : t.task_type === 'invite_friends' ? (
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="secondary-btn" style={{ flex: 1 }} onClick={() => {
-                  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebot';
+                  const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot';
                   const tgApp = window.Telegram?.WebApp;
                   const uid = tgApp?.initDataUnsafe?.user?.id || '0';
                   const url = `https://t.me/${botUsername}/app?startapp=ref_${uid}`;
