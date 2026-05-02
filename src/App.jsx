@@ -624,7 +624,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
   if (phase === 'searching') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px' }}>
+      <div className="screen-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingBottom: '20px' }}>
         <div className="top-bar">
           <h1>ROCKET BATTLE</h1>
           <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
@@ -635,7 +635,18 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         
         <div className="screen-container" style={{ paddingBottom: '20px', gap: '20px', justifyContent: 'center' }}>
           {/* Main VS Card in Searching State */}
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '30px 20px', gap: '20px', position: 'relative' }}>
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '30px 20px', gap: '20px', position: 'relative', overflow: 'hidden' }}>
+            
+            {/* Floating particles */}
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="particle" style={{ 
+                left: `${15 + i * 14}%`, 
+                bottom: '10px',
+                animationDelay: `${i * 0.5}s`,
+                animationDuration: `${2.5 + i * 0.3}s`
+              }} />
+            ))}
+            
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
               
               {/* Player 1 */}
@@ -655,18 +666,31 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                 </div>
               </div>
 
-              {/* Searching / Waiting */}
+              {/* Searching / Waiting — with radar animation */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', flex: 1, zIndex: 2 }}>
-                <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '1px solid var(--border-color)', animation: 'pulse 1.5s infinite' }}>
+                <div className="avatar-circle search-radar" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '1px solid var(--border-color)' }}>
+                  <div className="radar-ring"></div>
+                  <div className="radar-ring"></div>
+                  <div className="radar-ring"></div>
                   <User size={40} color="var(--text-muted)" />
                 </div>
-                <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--accent-blue)', textAlign: 'center' }}>{opponentName}</span>
+                <span className="search-text" style={{ fontWeight: '700', fontSize: '15px', textAlign: 'center' }}>{opponentName}</span>
                 <span className="pill-badge" style={{ fontSize: '12px', padding: '2px 8px', backgroundColor: 'var(--bg-card)', opacity: opponentName === 'Searching...' ? 0 : 1 }}>Lvl ?</span>
               </div>
               
             </div>
 
             <div style={{ position: 'absolute', top: '120px', bottom: '30px', left: '50%', width: '1px', backgroundColor: 'var(--border-color)', transform: 'translateX(-50%)', zIndex: 1 }}></div>
+          </div>
+          
+          {/* Animated searching status */}
+          <div style={{ textAlign: 'center', padding: '10px' }}>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-muted)' }}>
+              Raqib qidirilmoqda
+              <span className="search-dot"> .</span>
+              <span className="search-dot"> .</span>
+              <span className="search-dot"> .</span>
+            </span>
           </div>
           
           <button className="secondary-btn" onClick={onEnd}>Cancel Search</button>
@@ -676,26 +700,56 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   }
 
   if (phase === 'result') {
+    const confettiColors = ['#77a8ff', '#ff6b6b', '#ffd93d', '#6bcb77', '#a855f7', '#f97316'];
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <div className="screen-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        {/* Confetti for victories */}
+        {isWin && [...Array(20)].map((_, i) => (
+          <div key={i} className="confetti-piece" style={{
+            left: `${Math.random() * 100}%`,
+            top: '-10px',
+            backgroundColor: confettiColors[i % confettiColors.length],
+            animationDelay: `${Math.random() * 1.5}s`,
+            animationDuration: `${2 + Math.random() * 2}s`,
+            width: `${6 + Math.random() * 6}px`,
+            height: `${6 + Math.random() * 6}px`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+          }} />
+        ))}
+        
         <div className="screen-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '48px', color: isWin ? 'var(--accent-blue)' : 'var(--text-main)', marginBottom: '30px' }}>
-            {isWin === null ? 'FINISHED' : (isWin ? 'VICTORY' : 'DEFEAT')}
+          <h1 className={`result-title ${isWin ? 'victory-text' : ''}`} style={{ fontSize: '48px', color: isWin ? 'var(--accent-blue)' : (isWin === false ? '#ff453a' : 'var(--text-main)'), marginBottom: '10px' }}>
+            {isWin === null ? 'DRAW' : (isWin ? '🏆 VICTORY' : 'DEFEAT')}
           </h1>
-          <div className="card" style={{ width: '100%', textAlign: 'center', marginBottom: '30px' }}>
+          
+          {isWin && (
+            <div className="trophy-animate" style={{ fontSize: '40px', marginBottom: '15px' }}>🎉</div>
+          )}
+          
+          {/* Rewards display */}
+          <div className="reward-badge" style={{ display: 'flex', gap: '15px', marginBottom: '25px' }}>
+            <div className="pill-badge" style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: 'rgba(119, 168, 255, 0.15)', border: '1px solid rgba(119, 168, 255, 0.3)' }}>
+              ⚡ +{isWin ? 50 : 10} XP
+            </div>
+            <div className="pill-badge" style={{ padding: '8px 16px', fontSize: '14px', backgroundColor: 'rgba(255, 217, 61, 0.15)', border: '1px solid rgba(255, 217, 61, 0.3)' }}>
+              🪙 +{isWin ? 10 : 2} Coins
+            </div>
+          </div>
+          
+          <div className="card result-card" style={{ width: '100%', textAlign: 'center', marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px' }}>
                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                  <div className="avatar-circle"><User size={30} /></div>
-                 <span style={{ fontSize: '24px', fontWeight: 'bold' }}>{myScore}</span>
+                 <span style={{ fontSize: '28px', fontWeight: 'bold', color: myScore > opponentScore ? 'var(--accent-blue)' : 'var(--text-main)' }}>{myScore}</span>
                </div>
                <div className="vs-text">VS</div>
                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                  <div className="avatar-circle"><User size={30} color="var(--text-muted)" /></div>
-                 <span style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-muted)' }}>{opponentScore}</span>
+                 <span style={{ fontSize: '28px', fontWeight: 'bold', color: opponentScore > myScore ? '#ff453a' : 'var(--text-muted)' }}>{opponentScore}</span>
                </div>
             </div>
           </div>
-          <button className="primary-btn" onClick={handleLeave}>BACK TO HOME</button>
+          <button className="primary-btn result-btn" onClick={handleLeave}>BACK TO HOME</button>
         </div>
       </div>
     );
@@ -757,7 +811,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
              <h3 style={{ fontSize: '18px' }}>{isSpectating ? 'Assist a Player' : 'Attack'}</h3>
              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Time Left</span>
-               <span style={{ fontSize: '16px', fontWeight: '700' }}>{timeLeft}</span>
+               <span className={parseInt(timeLeft) <= 30 ? 'timer-warning' : ''} style={{ fontSize: '16px', fontWeight: '700' }}>{timeLeft}</span>
              </div>
            </div>
            
