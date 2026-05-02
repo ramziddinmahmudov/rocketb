@@ -179,6 +179,27 @@ async def end_match(match_id: str):
                 )
                 db.add(history)
             await db.commit()
+            
+            # Send Telegram Messages
+            bot_token = os.getenv("BOT_TOKEN")
+            if bot_token:
+                for uid in (p1, p2):
+                    if uid > 0:
+                        is_win = None if winner_id is None else (uid == winner_id)
+                        if is_win is True:
+                            msg = "🏆 Tabriklaymiz! Siz jangda g'alaba qozondingiz!\n\nSovrin: +50 XP, +10 Coins"
+                        elif is_win is False:
+                            msg = "💀 Jangda mag'lub bo'ldingiz. Keyingi safar omad!\n\nSovrin: +10 XP, +2 Coins"
+                        else:
+                            msg = "🤝 Jang durang bilan yakunlandi."
+                        try:
+                            import httpx
+                            url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                            async with httpx.AsyncClient() as client:
+                                await client.post(url, json={"chat_id": uid, "text": msg})
+                        except:
+                            pass
+
     except Exception as e:
         print("Error saving match history:", e)
     

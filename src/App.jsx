@@ -248,6 +248,18 @@ function App() {
     };
   }, [token, user?.id, isSpectating]);
 
+  useEffect(() => {
+    // If we are spectating and the match is no longer active (e.g. timeout ended), auto-leave
+    if (inBattle && isSpectating && battleState.matchId && battleState.phase === 'playing') {
+       const stillActive = activeMatches.find(m => m.id === battleState.matchId);
+       if (!stillActive) {
+          addToast("The battle you were spectating has ended.", "info");
+          setInBattle(false);
+          setIsSpectating(false);
+       }
+    }
+  }, [activeMatches, inBattle, isSpectating, battleState.matchId, battleState.phase]);
+
   const handleStartRandomMatch = () => {
     setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: 'Waiting...', isWin: null });
     setInBattle(true);
@@ -337,6 +349,12 @@ function App() {
             setUser(prev => ({ ...prev, rockets_balance: Math.max(0, prev.rockets_balance - amount) }));
           }
         }}
+        onGoToShop={() => {
+          setInBattle(false);
+          setIsSpectating(false);
+          setAttackLogs([]);
+          setActiveTab('shop');
+        }}
         onEnd={() => { 
           setInBattle(false); 
           setIsSpectating(false);
@@ -357,7 +375,7 @@ function App() {
       case 'tasks': return <TasksScreen token={token} onClaimed={fetchUser} />;
       case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} />;
       case 'top': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
-      case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} />;
+      case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} onUserClick={setViewingUserId} />;
       case 'admin': return <AdminScreen token={token} />;
       default: return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
     }
@@ -368,9 +386,10 @@ function App() {
       {/* Global Top Bar */}
       <div className="top-bar">
         <h1>Rocket Battle</h1>
-        <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
+        <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px', cursor: 'pointer' }} onClick={() => setActiveTab('shop')}>
           <Rocket size={18} color="#fff" />
           <span style={{ fontSize: '16px' }}>{formatNum(user.rockets_balance)}</span>
+          <div style={{ backgroundColor: '#30d158', color: '#000', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginLeft: '5px' }}>+</div>
         </div>
       </div>
 
@@ -401,10 +420,6 @@ function App() {
           <div className={`nav-item ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
             <ClipboardList size={24} strokeWidth={activeTab === 'tasks' ? 2.5 : 2} />
             <span>Tasks</span>
-          </div>
-          <div className={`nav-item ${activeTab === 'shop' ? 'active' : ''}`} onClick={() => setActiveTab('shop')}>
-            <ShoppingCart size={24} strokeWidth={activeTab === 'shop' ? 2.5 : 2} />
-            <span>Shop</span>
           </div>
           <div className={`nav-item ${activeTab === 'top' ? 'active' : ''}`} onClick={() => setActiveTab('top')}>
             <Trophy size={24} strokeWidth={activeTab === 'top' ? 2.5 : 2} />
@@ -569,7 +584,7 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
 };
 
 // 2. Battle Screen
-const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], onEnd, onSpendRockets }) => {
+const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], onEnd, onSpendRockets, onGoToShop }) => {
   const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId, targetSupportId } = battleState;
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
@@ -656,6 +671,15 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
     if (phase !== 'playing') return;
     if (localRockets < rocketAmount) {
       // Not enough rockets
+      if (!isSpectating) {
+        if (onGoToShop) {
+          setToastMessage("Not enough rockets! Going to Shop...");
+          setTimeout(() => onGoToShop(), 1000);
+        } else {
+          setToastMessage("Not enough rockets!");
+          setTimeout(() => setToastMessage(null), 2000);
+        }
+      }
       return;
     }
     
