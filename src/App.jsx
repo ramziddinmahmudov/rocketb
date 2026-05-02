@@ -649,7 +649,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
               {/* VS Center */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 0.8, marginTop: '10px', zIndex: 2 }}>
                 <div className="vs-text" style={{ marginBottom: '12px' }}>VS</div>
-                <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px' }}>
+                <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px', whiteSpace: 'nowrap' }}>
                   ? : ?
                 </div>
               </div>
@@ -730,7 +730,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             {/* VS Center */}
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 0.8, marginTop: '10px', zIndex: 2 }}>
               <div className="vs-text" style={{ marginBottom: '12px' }}>VS</div>
-              <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px' }}>
+              <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card-secondary)', fontSize: '18px', padding: '8px 20px', whiteSpace: 'nowrap' }}>
                 {myScore} : {opponentScore}
               </div>
             </div>
