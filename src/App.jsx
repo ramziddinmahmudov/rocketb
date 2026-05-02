@@ -605,8 +605,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
   const handleTap = (e, isLeft) => {
     if (phase !== 'playing') return;
+    if (localRockets < rocketAmount) {
+      // Not enough rockets
+      return;
+    }
     
-    setLocalRockets(r => r - rocketAmount);
+    setLocalRockets(r => Math.max(0, r - rocketAmount));
     if (onSpendRockets) {
       onSpendRockets(rocketAmount);
     }
@@ -959,7 +963,8 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         {!isSpectating && (
           <button className="secondary-btn" onClick={() => {
             const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot';
-            const url = `https://t.me/${botUsername}/app?startapp=support_${user.id}_${matchId}`;
+            const matchId = battleState.matchId;
+            const url = `https://t.me/${botUsername}?start=support_${matchId}_${user.id}`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Do'stim, menga yordam ber! Rocket Battle'da yutishim kerak!")}`;
             if (window.Telegram?.WebApp) {
               window.Telegram.WebApp.openTelegramLink(shareUrl);
