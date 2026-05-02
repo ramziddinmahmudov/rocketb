@@ -1475,7 +1475,7 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
          </div>
          
          <button className="primary-btn" style={{ gridColumn: 'span 2', display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }} onClick={() => {
-             const botUsername = "YOUR_BOT_USERNAME"; // <-- BOT USERNAME SHU YERGA YOZILADI
+             const botUsername = "rocketbattlebbot";
              const inviteUrl = `https://t.me/${botUsername}?start=ref_${user.id}`;
              const text = `🚀 Join Rocket Battle and let's play together!`;
              const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteUrl)}&text=${encodeURIComponent(text)}`;
