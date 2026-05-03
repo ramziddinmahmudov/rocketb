@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Clock, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check, ShoppingCart } from 'lucide-react';
+import { Home, ClipboardList, User, Rocket, Swords, Trophy, Zap, Shield, Trash2, Save, ChevronDown, Users, PlayCircle, X, Check, ShoppingCart } from 'lucide-react';
 
 // Format large numbers: 1000 → 1K, 1200 → 1.2K, 15300 → 15.3K
 const formatNum = (n) => {
@@ -59,14 +59,24 @@ function App() {
   const [attackLogs, setAttackLogs] = useState([]);
   const battleStateRef = useRef(battleState);
   useEffect(() => { battleStateRef.current = battleState; }, [battleState]);
+  const isSpectatingRef = useRef(isSpectating);
+  useEffect(() => { isSpectatingRef.current = isSpectating; }, [isSpectating]);
 
   useEffect(() => {
     if (tg) tg.expand();
   }, []);
 
   // Deep Link Support Parsing
+  // Source priority: Telegram start_param (Mini App / direct link) → URL ?startapp= (web_app
+  // button fallback when MINI_APP_SHORT_NAME isn't configured in the bot).
   const [supportData, setSupportData] = useState(() => {
-    const sp = tg?.initDataUnsafe?.start_param;
+    let sp = tg?.initDataUnsafe?.start_param;
+    if (!sp) {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        sp = params.get('startapp') || params.get('start_param');
+      } catch (_) { /* noop */ }
+    }
     // format expected: support_{uid}_{match_id} e.g. support_1234_match_5678_9101_12345
     if (sp && sp.startsWith('support_')) {
       const parts = sp.split('_');
@@ -82,8 +92,11 @@ function App() {
   const supportDataRef = useRef(supportData);
   useEffect(() => { supportDataRef.current = supportData; }, [supportData]);
 
+  const [authError, setAuthError] = useState(null);
+
   // Auth
   useEffect(() => {
+    let cancelled = false;
     const auth = async () => {
       try {
         const res = await fetch(`${API_BASE}/auth/login`, {
@@ -91,13 +104,22 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ init_data: INIT_DATA })
         });
+        if (!res.ok) {
+          throw new Error(`Login failed (${res.status})`);
+        }
         const data = await res.json();
-        setToken(data.access_token);
+        if (!data.access_token) throw new Error('No access token returned');
+        if (!cancelled) setToken(data.access_token);
       } catch (e) {
         console.error("Login failed", e);
+        if (!cancelled) {
+          setAuthError(e.message || 'Login failed');
+          setLoading(false);
+        }
       }
     };
     auth();
+    return () => { cancelled = true; };
   }, []);
 
   const fetchUser = async () => {
@@ -106,10 +128,12 @@ function App() {
       const res = await fetch(`${API_BASE}/users/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res.ok) throw new Error(`Fetch user failed (${res.status})`);
       const data = await res.json();
       setUser(data);
     } catch (e) {
       console.error("Fetch user failed", e);
+      setAuthError(e.message || 'Fetch user failed');
     } finally {
       setLoading(false);
     }
@@ -122,20 +146,18 @@ function App() {
   // WebSocket Connection
   useEffect(() => {
     if (!token || !user) return;
-    
-    ws.current = new WebSocket(`${WS_BASE}/battle?token=${token}`);
-    
-    ws.current.onopen = () => {
-      ws.current.send(JSON.stringify({ type: "init", name: user.first_name }));
-    };
 
-    ws.current.onmessage = (event) => {
+    let cancelled = false;
+    let reconnectTimer = null;
+    let attempt = 0;
+
+    const handleMessage = (event) => {
       const data = JSON.parse(event.data);
-      
+
       if (data.type === "global_state") {
         setOnlineUsers(data.online_users.filter(u => u.id !== user.id));
         setActiveMatches(data.active_matches);
-        
+
         // Deep link support: auto-spectate if we have support data
         if (supportDataRef.current) {
           const m = data.active_matches.find(x => x.id === supportDataRef.current.matchId);
@@ -146,7 +168,6 @@ function App() {
         }
       }
       else if (data.type === "attack_log") {
-        // Only add logs for the current match
         const currentMatchId = battleStateRef.current?.matchId;
         if (currentMatchId && data.match_id === currentMatchId) {
           const logEntry = {
@@ -160,7 +181,7 @@ function App() {
           };
           setAttackLogs(prev => [logEntry, ...prev].slice(0, 50));
         }
-      } 
+      }
       else if (data.type === "chat_message") {
         const currentMatchId = battleStateRef.current?.matchId;
         if (currentMatchId && data.match_id === currentMatchId) {
@@ -180,9 +201,7 @@ function App() {
       }
       else if (data.type === "match_found") {
         setBattleState(prev => {
-          // Ignore match_found if not in searching phase
           if (prev.phase !== 'searching') {
-            console.log("Ignoring match_found - not searching");
             return prev;
           }
           return {
@@ -193,7 +212,6 @@ function App() {
             opponentName: data.opponent_name || 'Opponent'
           };
         });
-        setInBattle(prev => prev);
         setIsSpectating(false);
       }
       else if (data.type === "challenge_declined") {
@@ -206,35 +224,62 @@ function App() {
         });
         setInBattle(false);
       }
+      else if (data.type === "balance_update") {
+        // Authoritative balance from server (after a tap deduction).
+        if (typeof data.rockets_balance === 'number') {
+          setUser(prev => prev ? { ...prev, rockets_balance: data.rockets_balance } : prev);
+        }
+      }
+      else if (data.type === "error") {
+        if (data.message) addToast(data.message, 'error');
+      }
       else if (data.type === "score_update") {
+        // Filter to current match only.
+        const currentMatchId = battleStateRef.current?.matchId;
+        if (currentMatchId && data.match_id && data.match_id !== currentMatchId) return;
         setBattleState(prev => {
-          // If we are playing
-          if (!isSpectating) {
-            const myScore = data.scores[user.id] || 0;
-            const opId = Object.keys(data.scores).find(id => Number(id) !== user.id);
-            const opScore = opId ? data.scores[opId] : 0;
+          if (!isSpectatingRef.current) {
+            // Use known opponentId from state instead of "first non-self" guesswork.
+            const myScore = data.scores[user.id] ?? data.scores[String(user.id)] ?? 0;
+            let opScore = prev.opponentScore;
+            if (prev.opponentId != null) {
+              opScore = data.scores[prev.opponentId] ?? data.scores[String(prev.opponentId)] ?? 0;
+            } else {
+              const opId = Object.keys(data.scores).find(id => Number(id) !== user.id);
+              opScore = opId ? data.scores[opId] : 0;
+            }
             return { ...prev, myScore, opponentScore: opScore };
-          } 
-          // If spectating, we map scores to player1 and player2 logic
-          else {
-            // For spectator, "myScore" = player 1, "opponentScore" = player 2 
-            // We need to parse who is who based on activeMatches or initial spectator join
+          } else {
             const p1Id = prev.myPlayerId;
             const p2Id = prev.opponentId;
             return {
               ...prev,
-              myScore: data.scores[p1Id] || 0,
-              opponentScore: data.scores[p2Id] || 0
+              myScore: (p1Id != null ? (data.scores[p1Id] ?? data.scores[String(p1Id)]) : 0) || 0,
+              opponentScore: (p2Id != null ? (data.scores[p2Id] ?? data.scores[String(p2Id)]) : 0) || 0,
             };
           }
         });
       }
       else if (data.type === "match_end") {
+        const currentMatchId = battleStateRef.current?.matchId;
+        if (currentMatchId && data.match_id && data.match_id !== currentMatchId) return;
+        // Spectators just get notified and dropped back to the home screen.
+        if (data.is_spectator) {
+          addToast("The battle you were spectating has ended.", "info");
+          setInBattle(false);
+          setIsSpectating(false);
+          setAttackLogs([]);
+          setBattleState({
+            phase: 'idle', matchId: null, myScore: 0, opponentScore: 0,
+            opponentName: 'Waiting...', opponentId: null, isWin: null
+          });
+          return;
+        }
         setBattleState(prev => ({
           ...prev,
           phase: 'result',
-          myScore: data.my_score || prev.myScore,
-          opponentScore: data.opponent_score || prev.opponentScore,
+          myScore: data.my_score ?? prev.myScore,
+          opponentScore: data.opponent_score ?? prev.opponentScore,
           isWin: data.is_win
         }));
         if (data.is_win === true) addToast('🏆 You won the battle!', 'success');
@@ -243,10 +288,43 @@ function App() {
       }
     };
 
-    return () => {
-      if (ws.current) ws.current.close();
+    const connect = () => {
+      if (cancelled) return;
+      const socket = new WebSocket(`${WS_BASE}/battle?token=${token}`);
+      ws.current = socket;
+
+      socket.onopen = () => {
+        attempt = 0;
+        socket.send(JSON.stringify({ type: "init", name: user.first_name }));
+      };
+
+      socket.onmessage = handleMessage;
+
+      socket.onerror = () => {
+        // onclose fires next; reconnect happens there.
+      };
+
+      socket.onclose = () => {
+        if (cancelled) return;
+        if (ws.current === socket) ws.current = null;
+        // Exponential backoff capped at 10s.
+        const delay = Math.min(10000, 500 * Math.pow(2, attempt));
+        attempt += 1;
+        reconnectTimer = setTimeout(connect, delay);
+      };
     };
-  }, [token, user?.id, isSpectating]);
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws.current) {
+        try { ws.current.close(); } catch (_) {}
+        ws.current = null;
+      }
+    };
+  }, [token, user?.id]);
 
   useEffect(() => {
     // If we are spectating and the match is no longer active (e.g. timeout ended), auto-leave
@@ -308,10 +386,14 @@ function App() {
       opponentName: match.p2,
       isWin: null,
       targetSupportId: targetSupportId,
-      timeRemaining: match.time_remaining || 180
+      timeRemaining: match.time_remaining ?? 180
     });
     setInBattle(true);
     setIsSpectating(true);
+    // Register as spectator on the server so we receive scoped match events.
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ type: "spectate", match_id: match.id }));
+    }
   };
 
   const handleRejoin = (match) => {
@@ -326,14 +408,27 @@ function App() {
       myName: isP1 ? match.p1 : match.p2,
       opponentName: isP1 ? match.p2 : match.p1,
       isWin: null,
-      timeRemaining: match.time_remaining || 180
+      // Use ?? so a server-reported 0/low value isn't replaced with 180.
+      timeRemaining: match.time_remaining ?? 180
     });
     setInBattle(true);
     setIsSpectating(false);
   };
 
-  if (loading || !user) {
+  if (loading) {
     return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><div className="pill-badge">Loading...</div></div>;
+  }
+
+  if (!user) {
+    return (
+      <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px', textAlign: 'center', gap: '12px'}}>
+        <div className="pill-badge" style={{ backgroundColor: '#ff453a', color: '#fff' }}>Connection error</div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
+          {authError || 'Could not connect to the server. Please try again.'}
+        </p>
+        <button className="primary-btn" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
   }
 
   if (inBattle) {
@@ -345,9 +440,8 @@ function App() {
         isSpectating={isSpectating}
         attackLogs={attackLogs}
         onSpendRockets={(amount) => {
-          if (!isSpectating) {
-            setUser(prev => ({ ...prev, rockets_balance: Math.max(0, prev.rockets_balance - amount) }));
-          }
+          // Optimistic local update for both players and spectators; server balance_update reconciles.
+          setUser(prev => prev ? { ...prev, rockets_balance: Math.max(0, prev.rockets_balance - amount) } : prev);
         }}
         onGoToShop={() => {
           setInBattle(false);
@@ -355,12 +449,26 @@ function App() {
           setAttackLogs([]);
           setActiveTab('shop');
         }}
-        onEnd={() => { 
-          setInBattle(false); 
+        onEnd={() => {
+          // Tell the server we're leaving search/spectate so it can clean up state.
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            try {
+              if (battleState.phase === 'searching') {
+                ws.current.send(JSON.stringify({ type: "cancel_find" }));
+              } else if (isSpectating && battleState.matchId) {
+                ws.current.send(JSON.stringify({ type: "leave_spectate" }));
+              }
+            } catch (_) {}
+          }
+          setInBattle(false);
           setIsSpectating(false);
           setAttackLogs([]);
-          fetchUser(); 
-        }} 
+          setBattleState({
+            phase: 'idle', matchId: null, myScore: 0, opponentScore: 0,
+            opponentName: 'Waiting...', opponentId: null, isWin: null
+          });
+          fetchUser();
+        }}
       />
     );
   }
@@ -373,7 +481,7 @@ function App() {
       case 'home': 
         return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
       case 'tasks': return <TasksScreen token={token} onClaimed={fetchUser} />;
-      case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} />;
+      case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} onBack={() => setActiveTab('home')} />;
       case 'top': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
       case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} onUserClick={setViewingUserId} />;
       case 'admin': return <AdminScreen token={token} />;
@@ -588,7 +696,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   const { phase, matchId, myScore, opponentScore, opponentName, isWin, myPlayerId, opponentId, targetSupportId } = battleState;
   const [rocketsAnim, setRocketsAnim] = useState([]);
   const [localRockets, setLocalRockets] = useState(user.rockets_balance);
+  // Keep local view in sync with authoritative balance (e.g. balance_update from server).
+  useEffect(() => {
+    setLocalRockets(user.rockets_balance);
+  }, [user.rockets_balance]);
   const [timeLeft, setTimeLeft] = useState("03:00");
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(180);
   const [toastMessage, setToastMessage] = useState(null);
   const logContainerRef = useRef(null);
   
@@ -610,24 +723,32 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
   const timerRef = useRef(null);
 
+  const fmtTime = (sec) => {
+    const s = Math.max(0, sec | 0);
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return `${m.toString().padStart(2, '0')}:${r.toString().padStart(2, '0')}`;
+  };
+
   useEffect(() => {
     if (phase === 'playing') {
-      let seconds = battleState.timeRemaining || 180;
-      const m0 = Math.floor(seconds / 60);
-      const s0 = seconds % 60;
-      setTimeLeft(`0${m0}:${s0.toString().padStart(2, '0')}`);
+      let seconds = battleState.timeRemaining ?? 180;
+      setTimeLeftSeconds(seconds);
+      setTimeLeft(fmtTime(seconds));
       timerRef.current = setInterval(() => {
         seconds--;
-        if (seconds <= 0) clearInterval(timerRef.current);
-        const m = Math.floor(seconds / 60);
-        const s = seconds % 60;
-        setTimeLeft(`0${m}:${s.toString().padStart(2, '0')}`);
+        if (seconds <= 0) {
+          seconds = 0;
+          clearInterval(timerRef.current);
+        }
+        setTimeLeftSeconds(seconds);
+        setTimeLeft(fmtTime(seconds));
       }, 1000);
     } else {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [phase]);
+  }, [phase, battleState.timeRemaining]);
 
   const [rocketAmount, setRocketAmount] = useState(1);
   const [selectedTarget, setSelectedTarget] = useState(null); // 'left' | 'right' | null
@@ -670,19 +791,17 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
   const handleTap = (e, isLeft) => {
     if (phase !== 'playing') return;
     if (localRockets < rocketAmount) {
-      // Not enough rockets
-      if (!isSpectating) {
-        if (onGoToShop) {
-          setToastMessage("Not enough rockets! Going to Shop...");
-          setTimeout(() => onGoToShop(), 1000);
-        } else {
-          setToastMessage("Not enough rockets!");
-          setTimeout(() => setToastMessage(null), 2000);
-        }
+      if (onGoToShop) {
+        setToastMessage("Not enough rockets! Going to Shop...");
+        setTimeout(() => onGoToShop(), 1000);
+      } else {
+        setToastMessage("Not enough rockets!");
+        setTimeout(() => setToastMessage(null), 2000);
       }
       return;
     }
-    
+
+    // Optimistic local deduction for both players and spectators (server balance_update will reconcile).
     setLocalRockets(r => Math.max(0, r - rocketAmount));
     if (onSpendRockets) {
       onSpendRockets(rocketAmount);
@@ -918,7 +1037,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
              <h3 style={{ fontSize: '18px' }}>{isSpectating ? 'Assist a Player' : 'Attack'}</h3>
              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Time Left</span>
-               <span className={parseInt(timeLeft) <= 30 ? 'timer-warning' : ''} style={{ fontSize: '16px', fontWeight: '700' }}>{timeLeft}</span>
+               <span className={timeLeftSeconds <= 30 ? 'timer-warning' : ''} style={{ fontSize: '16px', fontWeight: '700' }}>{timeLeft}</span>
              </div>
            </div>
            
@@ -1070,7 +1189,8 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
           <button className="secondary-btn" onClick={() => {
             const botUsername = import.meta.env.VITE_BOT_USERNAME || 'rocketbattlebbot';
             const matchId = battleState.matchId;
-            const url = `https://t.me/${botUsername}?start=support_${matchId}_${user.id}`;
+            // Format must match the parser at the top of App: support_{uid}_{match_id}
+            const url = `https://t.me/${botUsername}?start=support_${user.id}_${matchId}`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent("Do'stim, menga yordam ber! Rocket Battle'da yutishim kerak!")}`;
             if (window.Telegram?.WebApp) {
               window.Telegram.WebApp.openTelegramLink(shareUrl);
@@ -1164,7 +1284,7 @@ const PublicProfileScreen = ({ userId, token, onBack, onChallenge }) => {
 };
 
 // --- Shop Screen ---
-const ShopScreen = ({ token, user, onBuySuccess }) => {
+const ShopScreen = ({ token, user, onBuySuccess, onBack }) => {
   const packages = [10, 50, 100, 300, 500, 1000, 3000];
   const [loadingPkg, setLoadingPkg] = useState(null);
 
@@ -1201,7 +1321,11 @@ const ShopScreen = ({ token, user, onBuySuccess }) => {
 
   return (
     <div className="screen-container" style={{ paddingBottom: '100px' }}>
-      
+
+      {onBack && (
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px', alignSelf: 'flex-start' }} onClick={onBack}>← Back</button>
+      )}
+
       <div style={{
         background: 'linear-gradient(135deg, rgba(10, 132, 255, 0.2) 0%, rgba(94, 92, 230, 0.2) 100%)',
         borderRadius: '20px',
@@ -1415,7 +1539,7 @@ const TasksScreen = ({ token, onClaimed }) => {
 };
 
 // 5. Profile & Settings
-const ProfileScreen = ({ user, token, onAdminClick }) => {
+const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
   const [showSettings, setShowSettings] = useState(false);
   const [profile, setProfile] = useState(null);
   const [matches, setMatches] = useState([]);
@@ -1520,7 +1644,12 @@ const ProfileScreen = ({ user, token, onAdminClick }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No users yet</span>}
           {followList.map(u => (
-            <div key={u.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
+            <div
+              key={u.id}
+              className="card"
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', cursor: onUserClick ? 'pointer' : 'default' }}
+              onClick={() => { if (onUserClick && u.id !== user.id) onUserClick(u.id); }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div className="avatar-circle" style={{ width: '40px', height: '40px' }}><User size={18} /></div>
                 <div>
