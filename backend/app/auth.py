@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import os
 import json
 from datetime import datetime, timedelta
@@ -8,20 +9,48 @@ import jwt
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-SECRET_KEY = os.getenv("JWT_SECRET", "super-secret-key-change-me-in-prod")
-BOT_TOKEN = os.getenv("BOT_TOKEN", "mock-bot-token")
+logger = logging.getLogger(__name__)
+
+_DEFAULT_SECRET = "super-secret-key-change-me-in-prod"
+SECRET_KEY = os.getenv("JWT_SECRET", _DEFAULT_SECRET)
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+ALLOW_MOCK_AUTH = os.getenv("ALLOW_MOCK_AUTH", "false").lower() in ("1", "true", "yes")
+
+if SECRET_KEY == _DEFAULT_SECRET:
+    logger.warning(
+        "JWT_SECRET is not set — using insecure default. Set JWT_SECRET in env for production."
+    )
+if not BOT_TOKEN:
+    logger.warning("BOT_TOKEN is not set — Telegram auth and notifications are disabled.")
 
 security = HTTPBearer()
 
 def validate_telegram_data(init_data: str) -> dict:
-    # For local development without a real bot token
+    # Mock login is only enabled when explicitly allowed (dev/CI).
     if init_data.startswith("mock_user_"):
-        user_id = int(init_data.split("_")[2])
+        if not ALLOW_MOCK_AUTH:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Mock auth is disabled",
+            )
+        try:
+            user_id = int(init_data.split("_")[2])
+        except (IndexError, ValueError):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid mock user id",
+            )
         return {
             "id": user_id,
             "first_name": f"Player {user_id}",
             "username": f"player_{user_id}"
         }
+
+    if not BOT_TOKEN:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Telegram auth is not configured",
+        )
 
     try:
         parsed_data = dict(parse_qsl(init_data))

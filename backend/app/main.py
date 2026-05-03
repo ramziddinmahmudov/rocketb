@@ -48,6 +48,21 @@ async def ensure_columns(conn):
         except Exception as e:
             logger.warning(f"Column check {table}.{column}: {e}")
 
+    # Allow bot games (negative ids) in match_history by dropping FK constraints.
+    # Postgres-only; ignored on other DBs.
+    fk_drops = [
+        ("match_history", "match_history_player1_id_fkey"),
+        ("match_history", "match_history_player2_id_fkey"),
+        ("match_history", "match_history_winner_id_fkey"),
+    ]
+    for table, constraint in fk_drops:
+        try:
+            await conn.execute(
+                sqlalchemy.text(f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {constraint};")
+            )
+        except Exception as e:
+            logger.warning(f"FK drop {table}.{constraint}: {e}")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Create any new tables
@@ -90,10 +105,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Rocket Battle API", lifespan=lifespan)
 
+# CORS: comma-separated list in CORS_ORIGINS, e.g. "https://example.com,https://app.example.com".
+# Defaults to "*" only when no value is provided AND credentials aren't needed; we disable
+# credentials in that case because allow_origins=["*"] + allow_credentials=True is rejected
+# by browsers and is a known footgun.
+_cors_env = os.getenv("CORS_ORIGINS", "").strip()
+if _cors_env:
+    cors_origins = [o.strip() for o in _cors_env.split(",") if o.strip()]
+    cors_credentials = True
+else:
+    cors_origins = ["*"]
+    cors_credentials = False
+    logger.warning("CORS_ORIGINS not set — allowing all origins without credentials.")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials=cors_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

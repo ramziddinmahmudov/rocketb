@@ -153,12 +153,15 @@ async def get_user_matches(target_id: int, db: AsyncSession = Depends(get_db), c
         opponent_id = m.player2_id if m.player1_id == target_id else m.player1_id
         my_score = m.player1_score if m.player1_id == target_id else m.player2_score
         op_score = m.player2_score if m.player1_id == target_id else m.player1_score
-        
-        res2 = await db.execute(select(User.first_name).filter(User.id == opponent_id))
-        op_name = res2.scalar() or "Unknown"
-        
+
+        if opponent_id is None or opponent_id < 0:
+            op_name = "🤖 Bot"
+        else:
+            res2 = await db.execute(select(User.first_name).filter(User.id == opponent_id))
+            op_name = res2.scalar() or "Unknown"
+
         is_win = (m.winner_id == target_id)
-        is_draw = (m.winner_id == None)
+        is_draw = (m.winner_id is None)
         
         response.append({
             "id": m.id,
@@ -188,7 +191,9 @@ async def get_tasks(user_id: int = Depends(get_current_user_id), db: AsyncSessio
     # Get user for real-time progress tracking
     user_res = await db.execute(select(User).filter(User.id == user_id))
     user = user_res.scalars().first()
-    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     response = []
     for task in tasks:
         ut = user_tasks.get(task.id)
@@ -217,7 +222,9 @@ async def claim_task(task_id: int, user_id: int = Depends(get_current_user_id), 
     # Get user
     user_res = await db.execute(select(User).filter(User.id == user_id))
     user = user_res.scalars().first()
-    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
     # Get task
     task_res = await db.execute(select(Task).filter(Task.id == task_id))
     task = task_res.scalars().first()
@@ -387,12 +394,11 @@ async def admin_delete_task(
     db: AsyncSession = Depends(get_db)
 ):
     await require_admin(user_id, db)
-    
+
     # Delete related user_tasks first
-    await db.execute(select(UserTask).filter(UserTask.task_id == task_id))
     from sqlalchemy import delete as sql_delete
     await db.execute(sql_delete(UserTask).where(UserTask.task_id == task_id))
-    
+
     result = await db.execute(select(Task).filter(Task.id == task_id))
     task = result.scalars().first()
     if not task:
