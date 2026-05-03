@@ -13,7 +13,6 @@ httpx==0.28.1
 idna==3.13
 pydantic==2.9.2
 pydantic-settings==2.14.0
-pydantic_core==2.23.2
 PyJWT==2.12.1
 python-dotenv==1.2.2
 SQLAlchemy==2.0.49
