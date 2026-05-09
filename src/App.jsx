@@ -1107,7 +1107,16 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        <div className="avatar-circle" style={{ width: '32px', height: '32px', backgroundColor: '#000' }}><User size={16} /></div>
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
                      </div>
-                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px' }} onClick={() => setSelectedTarget('left')}>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '60px', overflow: 'hidden', justifyContent: 'flex-end', marginTop: '10px' }}>
+                       {attackLogs.filter(log => !log.isChat && log.targetName === (isSpectating ? battleState.myName : user.first_name)).slice(0, 3).reverse().map(log => (
+                          <div key={log.id} style={{ fontSize: '11px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', animation: 'fade-in 0.3s ease', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px' }}>
+                            <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)'}/> 
+                            <span style={{ fontWeight: '600', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.attackerName}</span>
+                            <span style={{ fontWeight: '800', color: '#30d158' }}>+{log.amount}</span>
+                          </div>
+                       ))}
+                     </div>
+                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', marginTop: 'auto' }} onClick={() => setSelectedTarget('left')}>
                        {isSpectating ? 'Support Player' : 'Attack'}
                      </button>
                    </div>
@@ -1125,7 +1134,16 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        <div className="avatar-circle" style={{ width: '32px', height: '32px' }}><User size={16} /></div>
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
                      </div>
-                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)' }} onClick={() => setSelectedTarget('right')} disabled={!isSpectating}>
+                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '60px', overflow: 'hidden', justifyContent: 'flex-end', marginTop: '10px' }}>
+                       {attackLogs.filter(log => !log.isChat && log.targetName === opponentName).slice(0, 3).reverse().map(log => (
+                          <div key={log.id} style={{ fontSize: '11px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', animation: 'fade-in 0.3s ease', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px' }}>
+                            <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : '#ff3b30'}/> 
+                            <span style={{ fontWeight: '600', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.attackerName}</span>
+                            <span style={{ fontWeight: '800', color: '#30d158' }}>+{log.amount}</span>
+                          </div>
+                       ))}
+                     </div>
+                     <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)', marginTop: 'auto' }} onClick={() => setSelectedTarget('right')} disabled={!isSpectating}>
                        {isSpectating ? 'Support Player' : 'Attack'}
                      </button>
                    </div>
@@ -1167,24 +1185,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                 );
               }
 
-              return (
-                <div key={log.id} style={{
-                  display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 8px', borderRadius: '8px',
-                  backgroundColor: isMyAttack ? 'rgba(119,168,255,0.1)' : 'rgba(255,59,48,0.08)',
-                  fontSize: '11px', borderLeft: `3px solid ${log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'}`,
-                  animation: 'toast-slide 0.2s ease-out'
-                }}>
-                  <Rocket size={9} color={log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30'} style={{ flexShrink: 0 }} />
-                  <span style={{ fontWeight: '700', color: log.isSpectator ? '#ff9f0a' : isMyAttack ? 'var(--accent-blue)' : '#ff3b30', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px' }}>
-                    {log.attackerName}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>→</span>
-                  <span style={{ fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70px', fontSize: '11px' }}>
-                    {log.targetName}
-                  </span>
-                  <span style={{ marginLeft: 'auto', fontWeight: '800', color: '#30d158', whiteSpace: 'nowrap', fontSize: '12px' }}>+{log.amount} 🚀</span>
-                </div>
-              );
+              return null;
             })}
           </div>
 

@@ -196,6 +196,14 @@ async def bot_worker(match_id: str, bot_id: int, target_player: int):
         if not match or match.get("ended"):
             break
 
+        current_score = match["scores"].get(bot_id, 0)
+        if current_score >= 10:
+            await asyncio.sleep(5)
+            continue
+
+        if current_score + amount > 10:
+            amount = 10 - current_score
+
         match["scores"][bot_id] += amount
 
         await _broadcast_to_match(match, {"type": "score_update", "match_id": match_id, "scores": match["scores"]})
