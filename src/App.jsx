@@ -156,7 +156,8 @@ function App() {
 
       if (data.type === "global_state") {
         setOnlineUsers(data.online_users.filter(u => u.id !== user.id));
-        setActiveMatches(data.active_matches);
+        const now = Date.now();
+        setActiveMatches(data.active_matches.map(m => ({ ...m, local_received_at: now })));
 
         // Deep link support: auto-spectate if we have support data
         if (supportDataRef.current) {
@@ -209,7 +210,9 @@ function App() {
             phase: 'playing',
             matchId: data.match_id,
             opponentId: data.opponent_id,
-            opponentName: data.opponent_name || 'Opponent'
+            opponentName: data.opponent_name || 'Opponent',
+            timeRemaining: 180,
+            local_received_at: Date.now()
           };
         });
         setIsSpectating(false);
@@ -375,6 +378,9 @@ function App() {
   };
 
   const handleSpectate = (match, targetSupportId = null) => {
+    const elapsedSinceState = match.local_received_at ? Math.floor((Date.now() - match.local_received_at) / 1000) : 0;
+    const actualTimeRemaining = Math.max(0, (match.time_remaining ?? 180) - elapsedSinceState);
+
     setBattleState({
       phase: 'playing',
       matchId: match.id,
@@ -386,7 +392,8 @@ function App() {
       opponentName: match.p2,
       isWin: null,
       targetSupportId: targetSupportId,
-      timeRemaining: match.time_remaining ?? 180
+      timeRemaining: actualTimeRemaining,
+      local_received_at: Date.now()
     });
     setInBattle(true);
     setIsSpectating(true);
@@ -398,6 +405,9 @@ function App() {
 
   const handleRejoin = (match) => {
     const isP1 = match.p1_id === user.id;
+    const elapsedSinceState = match.local_received_at ? Math.floor((Date.now() - match.local_received_at) / 1000) : 0;
+    const actualTimeRemaining = Math.max(0, (match.time_remaining ?? 180) - elapsedSinceState);
+
     setBattleState({
       phase: 'playing',
       matchId: match.id,
@@ -409,7 +419,8 @@ function App() {
       opponentName: isP1 ? match.p2 : match.p1,
       isWin: null,
       // Use ?? so a server-reported 0/low value isn't replaced with 180.
-      timeRemaining: match.time_remaining ?? 180
+      timeRemaining: actualTimeRemaining,
+      local_received_at: Date.now()
     });
     setInBattle(true);
     setIsSpectating(false);
@@ -445,8 +456,7 @@ function App() {
         }}
         onGoToShop={() => {
           setInBattle(false);
-          setIsSpectating(false);
-          setAttackLogs([]);
+          // Preserve isSpectating and attackLogs so they restore correctly when returning
           setActiveTab('shop');
         }}
         onEnd={() => {
@@ -481,7 +491,13 @@ function App() {
       case 'home': 
         return <HomeScreen user={user} onStartBattle={handleStartRandomMatch} onlineUsers={onlineUsers} activeMatches={activeMatches} onChallenge={handleChallengeUser} onSpectate={handleSpectate} onRejoin={handleRejoin} onUserClick={setViewingUserId} />;
       case 'tasks': return <TasksScreen token={token} onClaimed={fetchUser} />;
-      case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} onBack={() => setActiveTab('home')} />;
+      case 'shop': return <ShopScreen token={token} user={user} onBuySuccess={fetchUser} onBack={() => {
+        if (battleState.matchId && (battleState.phase === 'playing' || battleState.phase === 'result')) {
+          setInBattle(true);
+        } else {
+          setActiveTab('home');
+        }
+      }} />;
       case 'top': return <LeaderboardScreen token={token} user={user} onUserClick={setViewingUserId} />;
       case 'profile': return <ProfileScreen user={user} token={token} onAdminClick={() => setActiveTab('admin')} onUserClick={setViewingUserId} />;
       case 'admin': return <AdminScreen token={token} />;
@@ -732,7 +748,8 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
 
   useEffect(() => {
     if (phase === 'playing') {
-      let seconds = battleState.timeRemaining ?? 180;
+      const elapsed = battleState.local_received_at ? Math.floor((Date.now() - battleState.local_received_at) / 1000) : 0;
+      let seconds = Math.max(0, (battleState.timeRemaining ?? 180) - elapsed);
       setTimeLeftSeconds(seconds);
       setTimeLeft(fmtTime(seconds));
       timerRef.current = setInterval(() => {
@@ -748,7 +765,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [phase, battleState.timeRemaining]);
+  }, [phase, battleState.timeRemaining, battleState.local_received_at]);
 
   const [rocketAmount, setRocketAmount] = useState(1);
   const [selectedTarget, setSelectedTarget] = useState(null); // 'left' | 'right' | null
