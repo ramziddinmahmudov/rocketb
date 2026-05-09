@@ -6,7 +6,7 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 BOT_USERNAME = os.getenv("BOT_USERNAME", "").strip().lstrip("@")
-WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip()
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://rocketbattle.duckdns.org").strip()
 # Optional: Mini App short name registered in BotFather (e.g. "rocket"). When set,
 # deep-link buttons use t.me/<bot>/<short_name>?startapp=… so start_param propagates
 # natively into the Mini App.
