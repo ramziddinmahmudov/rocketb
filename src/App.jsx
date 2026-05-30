@@ -52,7 +52,7 @@ function App() {
     matchId: null,
     myScore: 0,
     opponentScore: 0,
-    opponentName: 'Waiting...',
+    opponentName: 'Kutilmoqda...',
     opponentId: null,
     isWin: null
   });
@@ -198,7 +198,7 @@ function App() {
       }
       else if (data.type === "challenge_received") {
         setChallengeRequest(data);
-        addToast(`⚔️ ${data.challenger_name} sent you a challenge!`, 'warning');
+        addToast(`⚔️ ${data.challenger_name} sizni jangga chorladi!`, 'warning');
       }
       else if (data.type === "match_found") {
         setBattleState(prev => {
@@ -210,7 +210,7 @@ function App() {
             phase: 'playing',
             matchId: data.match_id,
             opponentId: data.opponent_id,
-            opponentName: data.opponent_name || 'Opponent',
+            opponentName: data.opponent_name || 'Raqib',
             timeRemaining: 180,
             local_received_at: Date.now()
           };
@@ -218,10 +218,10 @@ function App() {
         setIsSpectating(false);
       }
       else if (data.type === "challenge_declined") {
-        addToast(`❌ ${data.target_name} declined your challenge.`, 'error');
+        addToast(`❌ ${data.target_name} jangga chorlovingizni rad etdi.`, 'error');
         setBattleState(prev => {
           if (prev.phase === 'searching') {
-            return { ...prev, phase: 'idle', opponentName: 'Waiting...' };
+            return { ...prev, phase: 'idle', opponentName: 'Kutilmoqda...' };
           }
           return prev;
         });
@@ -268,13 +268,13 @@ function App() {
         if (currentMatchId && data.match_id && data.match_id !== currentMatchId) return;
         // Spectators just get notified and dropped back to the home screen.
         if (data.is_spectator) {
-          addToast("The battle you were spectating has ended.", "info");
+          addToast("Siz tomosha qilayotgan jang yakunlandi.", "info");
           setInBattle(false);
           setIsSpectating(false);
           setAttackLogs([]);
           setBattleState({
             phase: 'idle', matchId: null, myScore: 0, opponentScore: 0,
-            opponentName: 'Waiting...', opponentId: null, isWin: null
+            opponentName: 'Kutilmoqda...', opponentId: null, isWin: null
           });
           return;
         }
@@ -285,9 +285,9 @@ function App() {
           opponentScore: data.opponent_score ?? prev.opponentScore,
           isWin: data.is_win
         }));
-        if (data.is_win === true) addToast('🏆 You won the battle!', 'success');
-        else if (data.is_win === false) addToast('💀 You lost the battle.', 'error');
-        else addToast('🤝 It\'s a draw!', 'info');
+        if (data.is_win === true) addToast('🏆 Siz jangda g'alaba qozondingiz!', 'success');
+        else if (data.is_win === false) addToast('💀 Siz jangda mag'lub bo'ldingiz.', 'error');
+        else addToast('🤝 Durang bilan yakunlandi!', 'info');
       }
     };
 
@@ -334,7 +334,7 @@ function App() {
     if (inBattle && isSpectating && battleState.matchId && battleState.phase === 'playing') {
        const stillActive = activeMatches.find(m => m.id === battleState.matchId);
        if (!stillActive) {
-          addToast("The battle you were spectating has ended.", "info");
+          addToast("Siz tomosha qilayotgan jang yakunlandi.", "info");
           setInBattle(false);
           setIsSpectating(false);
        }
@@ -342,7 +342,7 @@ function App() {
   }, [activeMatches, inBattle, isSpectating, battleState.matchId, battleState.phase]);
 
   const handleStartRandomMatch = () => {
-    setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: 'Waiting...', isWin: null });
+    setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: 'Kutilmoqda...', isWin: null });
     setInBattle(true);
     setIsSpectating(false);
     if (ws.current?.readyState === WebSocket.OPEN) {
@@ -354,7 +354,7 @@ function App() {
     if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ type: "challenge_user", target_id: targetId }));
       // Optimistically wait for match
-      setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: 'Waiting for response...', isWin: null });
+      setBattleState({ phase: 'searching', matchId: null, myScore: 0, opponentScore: 0, opponentName: 'Javob kutilmoqda...', isWin: null });
       setInBattle(true);
       setIsSpectating(false);
     }
@@ -427,17 +427,17 @@ function App() {
   };
 
   if (loading) {
-    return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><div className="pill-badge">Loading...</div></div>;
+    return <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}><div className="pill-badge">Yuklanmoqda...</div></div>;
   }
 
   if (!user) {
     return (
       <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px', textAlign: 'center', gap: '12px'}}>
-        <div className="pill-badge" style={{ backgroundColor: '#ff453a', color: '#fff' }}>Connection error</div>
+        <div className="pill-badge" style={{ backgroundColor: '#ff453a', color: '#fff' }}>Ulanishda xatolik</div>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-          {authError || 'Could not connect to the server. Please try again.'}
+          {authError || 'Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.'}
         </p>
-        <button className="primary-btn" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => window.location.reload()}>Retry</button>
+        <button className="primary-btn" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => window.location.reload()}>Qayta urinish</button>
       </div>
     );
   }
@@ -475,7 +475,7 @@ function App() {
           setAttackLogs([]);
           setBattleState({
             phase: 'idle', matchId: null, myScore: 0, opponentScore: 0,
-            opponentName: 'Waiting...', opponentId: null, isWin: null
+            opponentName: 'Kutilmoqda...', opponentId: null, isWin: null
           });
           fetchUser();
         }}
@@ -523,10 +523,10 @@ function App() {
           <div className="card" style={{ width: '80%', display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', border: '2px solid var(--accent-blue)' }}>
             <div className="avatar-circle" style={{ width: '80px', height: '80px', animation: 'pulse 1.5s infinite' }}><Swords size={40} color="var(--accent-blue)" /></div>
             <h2>Match Challenge!</h2>
-            <p><strong>{challengeRequest.challenger_name}</strong> has challenged you to a battle.</p>
+            <p><strong>{challengeRequest.challenger_name}</strong> sizni jangga chorladi.</p>
             <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-              <button className="secondary-btn" style={{ flex: 1 }} onClick={declineChallenge}><X size={18} /> Decline</button>
-              <button className="primary-btn" style={{ flex: 1 }} onClick={acceptChallenge}><Check size={18} /> Accept</button>
+              <button className="secondary-btn" style={{ flex: 1 }} onClick={declineChallenge}><X size={18} /> Rad etish</button>
+              <button className="primary-btn" style={{ flex: 1 }} onClick={acceptChallenge}><Check size={18} /> Qabul qilish</button>
             </div>
           </div>
         </div>
@@ -539,15 +539,15 @@ function App() {
         <div className="bottom-nav">
           <div className={`nav-item ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
             <Home size={24} strokeWidth={activeTab === 'home' ? 2.5 : 2} />
-            <span>Home</span>
+            <span>Asosiy</span>
           </div>
           <div className={`nav-item ${activeTab === 'tasks' ? 'active' : ''}`} onClick={() => setActiveTab('tasks')}>
             <ClipboardList size={24} strokeWidth={activeTab === 'tasks' ? 2.5 : 2} />
-            <span>Tasks</span>
+            <span>Vazifalar</span>
           </div>
           <div className={`nav-item ${activeTab === 'top' ? 'active' : ''}`} onClick={() => setActiveTab('top')}>
             <Trophy size={24} strokeWidth={activeTab === 'top' ? 2.5 : 2} />
-            <span>Top</span>
+            <span>Reyting</span>
           </div>
         </div>
         <div className="profile-circle-btn" onClick={() => setActiveTab('profile')}>
@@ -582,18 +582,18 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
   if (subScreen === 'players') {
     return (
       <div className="screen-container" style={{ paddingBottom: '140px' }}>
-        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => setSubScreen(null)}>← Back</button>
-        <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}><Users size={20} color="var(--accent-blue)" /> Online Players ({onlineUsers.length})</h2>
-        <input className="custom-input" placeholder="Search players..." value={searchPlayer} onChange={e => setSearchPlayer(e.target.value)} style={{ marginBottom: '15px' }} />
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => setSubScreen(null)}>← Orqaga</button>
+        <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}><Users size={20} color="var(--accent-blue)" /> Onlayn o'yinchilar ({onlineUsers.length})</h2>
+        <input className="custom-input" placeholder="O'yinchilarni izlash..." value={searchPlayer} onChange={e => setSearchPlayer(e.target.value)} style={{ marginBottom: '15px' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {onlineUsers.filter(u => (u.name || '').toLowerCase().includes(searchPlayer.toLowerCase())).length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No players found</span>}
+          {onlineUsers.filter(u => (u.name || '').toLowerCase().includes(searchPlayer.toLowerCase())).length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>O'yinchilar topilmadi</span>}
           {onlineUsers.filter(u => (u.name || '').toLowerCase().includes(searchPlayer.toLowerCase())).map(u => (
             <div key={u.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => onUserClick(u.id)}>
                 <div className="avatar-circle" style={{ width: '36px', height: '36px' }}><User size={16} /></div>
                 <span style={{ fontSize: '14px', fontWeight: '600' }}>{u.name}</span>
               </div>
-              <button className="primary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onChallenge(u.id)}>Challenge</button>
+              <button className="primary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onChallenge(u.id)}>Jangga chorlash</button>
             </div>
           ))}
         </div>
@@ -604,23 +604,23 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
   if (subScreen === 'matches') {
     return (
       <div className="screen-container" style={{ paddingBottom: '140px' }}>
-        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => setSubScreen(null)}>← Back</button>
-        <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}><PlayCircle size={20} color="#ff453a" /> Live Matches ({activeMatches.length})</h2>
-        <input className="custom-input" placeholder="Search matches..." value={searchMatch} onChange={e => setSearchMatch(e.target.value)} style={{ marginBottom: '15px' }} />
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => setSubScreen(null)}>← Orqaga</button>
+        <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}><PlayCircle size={20} color="#ff453a" /> Jonli janglar ({activeMatches.length})</h2>
+        <input className="custom-input" placeholder="Janglarni izlash..." value={searchMatch} onChange={e => setSearchMatch(e.target.value)} style={{ marginBottom: '15px' }} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No matches found</span>}
+          {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Janglar topilmadi</span>}
           {activeMatches.filter(m => (m.p1||'').toLowerCase().includes(searchMatch.toLowerCase()) || (m.p2||'').toLowerCase().includes(searchMatch.toLowerCase())).map(m => {
             const isMyMatch = m.p1_id === user.id || m.p2_id === user.id;
             return (
               <div key={m.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <span style={{ fontSize: '13px', fontWeight: '600' }}>{m.p1} <span style={{ color: 'var(--accent-blue)' }}>vs</span> {m.p2}</span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Score: {m.s1} - {m.s2}</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Hisob: {m.s1} - {m.s2}</span>
                 </div>
                 {isMyMatch ? (
-                  <button className="primary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onRejoin(m)}>Rejoin</button>
+                  <button className="primary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onRejoin(m)}>Qayta qo'shilish</button>
                 ) : (
-                  <button className="secondary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onSpectate(m)}>Spectate</button>
+                  <button className="secondary-btn" style={{ padding: '8px 16px', fontSize: '12px', width: 'auto' }} onClick={() => onSpectate(m)}>Tomosha qilish</button>
                 )}
               </div>
             );
@@ -650,7 +650,7 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
             <div className="avatar-circle" style={{ width: '85px', height: '85px', backgroundColor: 'var(--bg-card-secondary)', border: '1px solid var(--border-color)' }}>
               <User size={40} color="var(--text-muted)" />
             </div>
-            <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-muted)' }}>Waiting...</span>
+            <span style={{ fontWeight: '700', fontSize: '15px', color: 'var(--text-muted)' }}>Kutilmoqda...</span>
           </div>
         </div>
         <div style={{ position: 'absolute', top: '120px', bottom: '30px', left: '50%', width: '1px', backgroundColor: 'var(--border-color)', transform: 'translateX(-50%)', zIndex: 1 }}></div>
@@ -659,27 +659,27 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
       {/* Action Card */}
       <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '18px' }}>Start Battle</h2>
-          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Ranked Match</span>
+          <h2 style={{ fontSize: '18px' }}>Jangni boshlash</h2>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Reytingli jang</span>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
            <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Swords size={20} color="var(--text-muted)" />
-                <span style={{ fontSize: '14px', fontWeight: '600' }}>Matches</span>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>Janglar</span>
              </div>
              <span style={{ fontSize: '24px', fontWeight: '700' }}>{user.total_played}</span>
            </div>
            <div style={{ flex: 1, backgroundColor: 'var(--bg-card-secondary)', borderRadius: '20px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Trophy size={20} color="var(--text-muted)" />
-                <span style={{ fontSize: '14px', fontWeight: '600' }}>Wins</span>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>G'alabalar</span>
              </div>
              <span style={{ fontSize: '24px', fontWeight: '700' }}>{user.wins}</span>
            </div>
         </div>
         <button className="primary-btn" style={{ padding: '20px', fontSize: '18px' }} onClick={onStartBattle}>
-          <Rocket size={20} /> Find Random Match
+          <Rocket size={20} /> Tasodifiy raqib izlash
         </button>
       </div>
 
@@ -688,18 +688,18 @@ const HomeScreen = ({ user, onStartBattle, onlineUsers, activeMatches, onChallen
         <div className="card" style={{ flex: 1, cursor: 'pointer', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }} onClick={() => setSubScreen('players')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Users size={22} color="var(--accent-blue)" />
-            <span style={{ fontSize: '15px', fontWeight: '600' }}>Online</span>
+            <span style={{ fontSize: '15px', fontWeight: '600' }}>Onlayn</span>
           </div>
           <span style={{ fontSize: '32px', fontWeight: '800', color: 'var(--accent-blue)' }}>{onlineUsers.length}</span>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Tap to view →</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ko'rish uchun bosing →</span>
         </div>
         <div className="card" style={{ flex: 1, cursor: 'pointer', padding: '24px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }} onClick={() => setSubScreen('matches')}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <PlayCircle size={22} color="#ff453a" />
-            <span style={{ fontSize: '15px', fontWeight: '600' }}>Live</span>
+            <span style={{ fontSize: '15px', fontWeight: '600' }}>Jonli</span>
           </div>
           <span style={{ fontSize: '32px', fontWeight: '800', color: '#ff453a' }}>{activeMatches.length}</span>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Tap to view →</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Ko'rish uchun bosing →</span>
         </div>
       </div>
 
@@ -809,10 +809,10 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
     if (phase !== 'playing') return;
     if (localRockets < rocketAmount) {
       if (onGoToShop) {
-        setToastMessage("Not enough rockets! Going to Shop...");
+        setToastMessage("Raketalar yetarli emas! Do'konga o'tilmoqda...");
         setTimeout(() => onGoToShop(), 1000);
       } else {
-        setToastMessage("Not enough rockets!");
+        setToastMessage("Raketalar yetarli emas!");
         setTimeout(() => setToastMessage(null), 2000);
       }
       return;
@@ -910,7 +910,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             </span>
           </div>
           
-          <button className="secondary-btn" onClick={onEnd}>Cancel Search</button>
+          <button className="secondary-btn" onClick={onEnd}>Qidiruvni bekor qilish</button>
         </div>
       </div>
     );
@@ -936,7 +936,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         
         <div className="screen-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
           <h1 className={`result-title ${isWin ? 'victory-text' : ''}`} style={{ fontSize: '48px', color: isWin ? 'var(--accent-blue)' : (isWin === false ? '#ff453a' : 'var(--text-main)'), marginBottom: '10px' }}>
-            {isWin === null ? 'DRAW' : (isWin ? '🏆 VICTORY' : 'DEFEAT')}
+            {isWin === null ? 'DURANG' : (isWin ? '🏆 G\'ALABA' : 'MAG\'LUBIYAT')}
           </h1>
           
           {isWin && (
@@ -966,7 +966,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                </div>
             </div>
           </div>
-          <button className="primary-btn result-btn" onClick={handleLeave}>BACK TO HOME</button>
+          <button className="primary-btn result-btn" onClick={handleLeave}>ASOSIY SAHIFAGA QAYTISH</button>
         </div>
       </div>
     );
@@ -991,7 +991,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
           <button onClick={handleLeave} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-card-secondary)', border: 'none', cursor: 'pointer', color: 'var(--text-main)' }}>
             <X size={20} />
           </button>
-          <h1 style={{ fontSize: '18px' }}>{isSpectating ? 'SPECTATING' : 'BATTLE'}</h1>
+          <h1 style={{ fontSize: '18px' }}>{isSpectating ? 'TOMOSHA' : 'JANG'}</h1>
         </div>
         <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', gap: '8px', padding: '10px 18px' }}>
           <Rocket size={18} color="#fff" />
@@ -1051,9 +1051,9 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
         {/* Action Panel (Voting Style) */}
         <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-             <h3 style={{ fontSize: '18px' }}>{isSpectating ? 'Assist a Player' : 'Attack'}</h3>
+             <h3 style={{ fontSize: '18px' }}>{isSpectating ? 'Yordam berish' : 'Hujum qilish'}</h3>
              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-               <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Time Left</span>
+               <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>Qolgan vaqt</span>
                <span className={timeLeftSeconds <= 30 ? 'timer-warning' : ''} style={{ fontSize: '16px', fontWeight: '700' }}>{timeLeft}</span>
              </div>
            </div>
@@ -1069,12 +1069,12 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        {selectedTarget === 'left' ? (isSpectating ? battleState.myName : user.first_name) : opponentName}
                      </span>
                    </div>
-                   <button className="secondary-btn btn-small" onClick={() => setSelectedTarget(null)}>Cancel</button>
+                   <button className="secondary-btn btn-small" onClick={() => setSelectedTarget(null)}>Bekor qilish</button>
                  </div>
                  
                  <div style={{ backgroundColor: 'rgba(0,0,0,0.2)', borderRadius: '15px', padding: '15px' }}>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                     <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Amount to send:</span>
+                     <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Yuborish miqdori:</span>
                      <div className="pill-badge" style={{ backgroundColor: 'var(--bg-card)', padding: '6px 12px', fontSize: '16px', fontWeight: 'bold' }}>
                        <Rocket size={14} style={{marginRight: '6px'}}/> {rocketAmount}
                      </div>
@@ -1090,7 +1090,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                  </div>
                  
                  <button className="primary-btn" style={{ padding: '16px', fontSize: '16px', fontWeight: 'bold' }} onClick={(e) => handleTap(e, selectedTarget === 'left')}>
-                   Confirm & Send <Rocket size={16} style={{ marginLeft: '8px' }} />
+                   Tasdiqlash va yuborish <Rocket size={16} style={{ marginLeft: '8px' }} />
                  </button>
                </div>
              ) : (
@@ -1117,7 +1117,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        ))}
                      </div>
                      <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', marginTop: 'auto' }} onClick={() => setSelectedTarget('left')}>
-                       {isSpectating ? 'Support Player' : 'Attack'}
+                       {isSpectating ? 'Yordam berish' : 'Hujum qilish'}
                      </button>
                    </div>
                  )}
@@ -1144,7 +1144,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        ))}
                      </div>
                      <button className="primary-btn" style={{ padding: '14px', fontSize: '14px', backgroundColor: isSpectating ? 'var(--accent-blue)' : 'var(--border-color)', color: isSpectating ? '#fff' : 'var(--text-muted)', marginTop: 'auto' }} onClick={() => setSelectedTarget('right')} disabled={!isSpectating}>
-                       {isSpectating ? 'Support Player' : 'Attack'}
+                       {isSpectating ? 'Yordam berish' : 'Hujum qilish'}
                      </button>
                    </div>
                  )}
@@ -1160,13 +1160,13 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
            </div>
         </div>
 
-        {/* Battle Chat Feed */}
+        {/* Jang chati Feed */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', padding: '10px 14px', gap: '0', flexShrink: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
             <h4 style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Zap size={13} color="#ff9f0a" /> Battle Chat
+              <Zap size={13} color="#ff9f0a" /> Jang chati
             </h4>
-            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} updates</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{attackLogs.length} xabar</span>
           </div>
           
           <div ref={logContainerRef} style={{ height: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '8px' }}>
@@ -1194,7 +1194,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
               type="text" 
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Send a message..." 
+              placeholder="Xabar yozing..." 
               style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '13px' }}
             />
             <button type="submit" style={{ backgroundColor: 'var(--accent-blue)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontWeight: 'bold' }}>
@@ -1217,7 +1217,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
             }
           }} style={{ marginTop: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              <Users size={18} /> Share Battle for Support
+              <Users size={18} /> Yordam uchun jangni ulashish
             </div>
           </button>
         )}
@@ -1248,11 +1248,11 @@ const PublicProfileScreen = ({ userId, token, onBack, onChallenge }) => {
      fetchProfile();
   };
 
-  if (!profile) return <div className="screen-container">Loading...</div>;
+  if (!profile) return <div className="screen-container">Yuklanmoqda...</div>;
 
   return (
     <div className="screen-container" style={{ paddingBottom: '100px' }}>
-       <button className="secondary-btn btn-small" style={{ marginBottom: '20px' }} onClick={onBack}>← Back</button>
+       <button className="secondary-btn btn-small" style={{ marginBottom: '20px' }} onClick={onBack}>← Orqaga</button>
        
        <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px', padding: '30px 20px', textAlign: 'center' }}>
          <div className="avatar-circle" style={{ width: '80px', height: '80px' }}><User size={40} /></div>
@@ -1264,11 +1264,11 @@ const PublicProfileScreen = ({ userId, token, onBack, onChallenge }) => {
          <div style={{ display: 'flex', gap: '20px', margin: '10px 0' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{profile.followers}</span>
-               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Followers</span>
+               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Obunachilar</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                <span style={{ fontSize: '20px', fontWeight: 'bold' }}>{profile.following}</span>
-               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Following</span>
+               <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Obunalar</span>
             </div>
          </div>
          
@@ -1282,9 +1282,9 @@ const PublicProfileScreen = ({ userId, token, onBack, onChallenge }) => {
          </div>
        </div>
 
-       <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>Match History</h3>
+       <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>Janglar tarixi</h3>
        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-         {(!matches || !Array.isArray(matches) || matches.length === 0) ? <div style={{ color: 'var(--text-muted)' }}>No matches played yet.</div> : null}
+         {(!matches || !Array.isArray(matches) || matches.length === 0) ? <div style={{ color: 'var(--text-muted)' }}>Hali janglar o'tkazilmagan.</div> : null}
          {Array.isArray(matches) && matches.map(m => (
            <div key={m.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderLeft: `4px solid ${m.result === 'win' ? 'var(--accent-blue)' : (m.result === 'loss' ? '#ff453a' : 'gray')}` }}>
              <div>
@@ -1328,10 +1328,10 @@ const ShopScreen = ({ token, user, onBuySuccess, onBack }) => {
           window.open(data.invoice_url, '_blank');
         }
       } else {
-        alert("Failed to buy: " + (data.detail || "Unknown error"));
+        alert("Xarid qilib bo'lmadi: " + (data.detail || "Unknown error"));
       }
     } catch (e) {
-      alert("Error buying package");
+      alert("Paket xarid qilishda xatolik");
     } finally {
       setLoadingPkg(null);
     }
@@ -1341,7 +1341,7 @@ const ShopScreen = ({ token, user, onBuySuccess, onBack }) => {
     <div className="screen-container" style={{ paddingBottom: '100px' }}>
 
       {onBack && (
-        <button className="secondary-btn btn-small" style={{ marginBottom: '15px', alignSelf: 'flex-start' }} onClick={onBack}>← Back</button>
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px', alignSelf: 'flex-start' }} onClick={onBack}>← Orqaga</button>
       )}
 
       <div style={{
@@ -1354,9 +1354,9 @@ const ShopScreen = ({ token, user, onBuySuccess, onBack }) => {
         boxShadow: '0 8px 32px rgba(10, 132, 255, 0.15)'
       }}>
         <ShoppingCart size={48} color="var(--accent-blue)" style={{ marginBottom: '15px' }} />
-        <h2 style={{ fontSize: '26px', marginBottom: '10px', fontWeight: '800' }}>Rocket Store</h2>
+        <h2 style={{ fontSize: '26px', marginBottom: '10px', fontWeight: '800' }}>Raketa do'koni</h2>
         <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.5' }}>
-          Top up your balance with Telegram Stars to gain the ultimate advantage in battle!
+          Jangda ustunlikka erishish uchun balansingizni Telegram Yulduzlari bilan to'ldiring!
         </p>
       </div>
 
@@ -1402,7 +1402,7 @@ const ShopScreen = ({ token, user, onBuySuccess, onBack }) => {
               
               <div style={{ textAlign: 'center' }}>
                 <span style={{ fontSize: '22px', fontWeight: '900', display: 'block' }}>{formatNum(pkg)}</span>
-                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Rockets</span>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Raketalar</span>
               </div>
               
               <button 
@@ -1448,7 +1448,7 @@ const LeaderboardScreen = ({ token, user, onUserClick }) => {
   return (
     <div className="screen-container">
       <div className="card">
-        <h3 style={{ marginBottom: '20px' }}>Top Players</h3>
+        <h3 style={{ marginBottom: '20px' }}>Eng yaxshi o'yinchilar</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
           {leaders.map((l, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1456,7 +1456,7 @@ const LeaderboardScreen = ({ token, user, onUserClick }) => {
                 <span style={{ width: '20px', fontWeight: 'bold', color: i < 3 ? 'var(--text-main)' : 'var(--text-muted)' }}>{i+1}</span>
                 <div className="avatar-circle" style={{ width: '40px', height: '40px' }}><User size={20} /></div>
                 <span style={{ fontWeight: l.id === user.id ? 'bold' : 'normal', cursor: 'pointer', textDecoration: l.id !== user.id ? 'underline' : 'none' }} onClick={() => l.id !== user.id && onUserClick(l.id)}>
-                  {l.id === user.id ? "You" : l.first_name}
+                  {l.id === user.id ? "Siz" : l.first_name}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -1508,7 +1508,7 @@ const TasksScreen = ({ token, onClaimed }) => {
             {t.target_count > 1 && t.task_type !== 'join_channel' ? (
               <div style={{ marginBottom: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)' }}>
-                   <span>Progress</span>
+                   <span>Jarayon</span>
                    <span>{t.progress} / {t.target_count}</span>
                 </div>
                 <div className="progress-bg">
@@ -1518,7 +1518,7 @@ const TasksScreen = ({ token, onClaimed }) => {
             ) : null}
             
             {t.is_completed ? (
-              <button className="secondary-btn" disabled style={{ opacity: 0.5 }}>Completed</button>
+              <button className="secondary-btn" disabled style={{ opacity: 0.5 }}>Bajarilgan</button>
             ) : t.task_type === 'join_channel' ? (
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button className="secondary-btn" style={{ flex: 1 }} onClick={() => {
@@ -1527,8 +1527,8 @@ const TasksScreen = ({ token, onClaimed }) => {
                   } else {
                     window.open(t.channel_url, '_blank');
                   }
-                }}>Join</button>
-                <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Check</button>
+                }}>Qo'shilish</button>
+                <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Tekshirish</button>
               </div>
             ) : t.task_type === 'invite_friends' ? (
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -1543,11 +1543,11 @@ const TasksScreen = ({ token, onClaimed }) => {
                   } else {
                     window.open(shareUrl, '_blank');
                   }
-                }}>Invite</button>
-                <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Check</button>
+                }}>Taklif qilish</button>
+                <button className="primary-btn" style={{ flex: 1 }} onClick={() => handleClaim(t.id)}>Tekshirish</button>
               </div>
             ) : (
-              <button className="primary-btn" onClick={() => handleClaim(t.id)}>Claim Reward</button>
+              <button className="primary-btn" onClick={() => handleClaim(t.id)}>Mukofotni olish</button>
             )}
           </div>
         ))}
@@ -1596,13 +1596,13 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
   if (showSettings) {
     return (
       <div className="screen-container">
-         <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>Settings</h2>
+         <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>Sozlamalar</h2>
          
          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div>
-                 <div style={{ fontWeight: '600', fontSize: '16px' }}>Sound Effects</div>
-                 <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>In-game sounds</div>
+                 <div style={{ fontWeight: '600', fontSize: '16px' }}>Ovoz effektlari</div>
+                 <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>O'yindagi ovozlar</div>
                </div>
                <div 
                  onClick={toggleSound}
@@ -1624,8 +1624,8 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                <div>
-                 <div style={{ fontWeight: '600', fontSize: '16px' }}>Haptic Feedback</div>
-                 <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Vibration on tap</div>
+                 <div style={{ fontWeight: '600', fontSize: '16px' }}>Vibratsiya (Haptic)</div>
+                 <div style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Bosganda vibratsiya qilish</div>
                </div>
                <div 
                  onClick={toggleHaptic}
@@ -1645,7 +1645,7 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
          </div>
 
          <button className="secondary-btn" style={{ marginTop: '20px' }} onClick={() => setShowSettings(false)}>
-           Back to Profile
+           Profilga qaytish
          </button>
       </div>
     );
@@ -1654,13 +1654,13 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
   if (followListType) {
     return (
       <div className="screen-container" style={{ paddingBottom: '140px' }}>
-        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => { setFollowListType(null); setFollowList([]); }}>← Back</button>
+        <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => { setFollowListType(null); setFollowList([]); }}>← Orqaga</button>
         <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
           <Users size={20} color="var(--accent-blue)" />
-          {followListType === 'followers' ? 'Followers' : (followListType === 'following' ? 'Following' : 'Referred Friends')} ({followList.length})
+          {followListType === 'followers' ? 'Followers' : (followListType === 'following' ? 'Following' : 'Taklif qilingan do'stlar')} ({followList.length})
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>No users yet</span>}
+          {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Hali foydalanuvchilar yo'q</span>}
           {followList.map(u => (
             <div
               key={u.id}
@@ -1702,7 +1702,7 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
            fetch(`${API_BASE}/users/${user.id}/followers`, { headers: { 'Authorization': `Bearer ${token}` }})
              .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
          }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Followers</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Obunachilar</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{profile?.followers || 0}</div>
          </div>
          <div className="card" style={{ textAlign: 'center', padding: '15px', cursor: 'pointer' }} onClick={() => {
@@ -1710,15 +1710,15 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
            fetch(`${API_BASE}/users/${user.id}/following`, { headers: { 'Authorization': `Bearer ${token}` }})
              .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
          }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Following</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Obunalar</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{profile?.following || 0}</div>
          </div>
          <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Level</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Daraja</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user?.level || 1}</div>
          </div>
          <div className="card" style={{ textAlign: 'center', padding: '15px' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Coins</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Tangalar</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{user?.coins || 0}</div>
          </div>
          
@@ -1728,7 +1728,7 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
            fetch(`${API_BASE}/users/me/referrals`, { headers: { 'Authorization': `Bearer ${token}` }})
              .then(r => r.json()).then(setFollowList).catch(() => setFollowList([]));
          }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Referred Friends</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Taklif qilingan do'stlar</div>
             <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>{user?.referrals_count || 0}</div>
          </div>
          
@@ -1745,11 +1745,11 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
              }
          }}>
             <Users size={20} />
-            Invite Friend (+50 Rockets)
+            Do'stni taklif qilish (+50 Raketa)
          </button>
          
          <div className="card" style={{ textAlign: 'center', padding: '15px', gridColumn: 'span 2' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>XP to Next Level</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '13px', marginBottom: '8px' }}>Keyingi darajagacha XP</div>
             <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-main)', borderRadius: '4px', overflow: 'hidden', marginTop: '5px' }}>
               <div style={{ width: `${Math.min(100, ((user?.xp || 0) / ((user?.level || 1) * 100)) * 100)}%`, height: '100%', backgroundColor: 'var(--accent-blue)' }}></div>
             </div>
@@ -1757,9 +1757,9 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
          </div>
        </div>
 
-       <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>Match History</h3>
+       <h3 style={{ marginTop: '20px', marginBottom: '15px' }}>Janglar tarixi</h3>
        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-         {(!matches || !Array.isArray(matches) || matches.length === 0) ? <div style={{ color: 'var(--text-muted)' }}>No matches played yet.</div> : null}
+         {(!matches || !Array.isArray(matches) || matches.length === 0) ? <div style={{ color: 'var(--text-muted)' }}>Hali janglar o'tkazilmagan.</div> : null}
          {Array.isArray(matches) && matches.map(m => (
            <div key={m.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', borderLeft: `4px solid ${m.result === 'win' ? 'var(--accent-blue)' : (m.result === 'loss' ? '#ff453a' : 'gray')}` }}>
              <div>
@@ -1860,7 +1860,7 @@ const AdminScreen = ({ token }) => {
         await fetch(`${API_BASE}/admin/clear-stuck`, { method: 'POST', headers });
         showMsg('Queue & matches cleared!');
       }}>
-        🧹 Clear Stuck Players
+        🧹 Qotib qolgan o'yinchilarni tozalash
       </button>
 
       {/* ---- USERS TAB ---- */}
@@ -1869,7 +1869,7 @@ const AdminScreen = ({ token }) => {
           {/* Search Input */}
           <input 
             className="custom-input" 
-            placeholder="Search by ID or Name..." 
+            placeholder="ID yoki Ism bo'yicha qidirish..." 
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -1880,23 +1880,23 @@ const AdminScreen = ({ token }) => {
                 <h3 style={{ marginBottom: '20px', fontSize: '20px' }}>Edit: {editingUser.first_name}</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   <div>
-                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Rockets Balance</label>
+                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Raketalar balansi</label>
                     <input className="custom-input" type="number" value={editForm.rockets_balance ?? ''}
                       onChange={e => setEditForm({...editForm, rockets_balance: e.target.value})} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Wins</label>
+                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>G'alabalar</label>
                     <input className="custom-input" type="number" value={editForm.wins ?? ''}
                       onChange={e => setEditForm({...editForm, wins: e.target.value})} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Total Played</label>
+                    <label style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Jami o'ynalgan</label>
                     <input className="custom-input" type="number" value={editForm.total_played ?? ''}
                       onChange={e => setEditForm({...editForm, total_played: e.target.value})} />
                   </div>
                   <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
                     <button className="primary-btn" onClick={saveUser}><Save size={18}/> Save</button>
-                    <button className="secondary-btn" onClick={() => setEditingUser(null)}>Cancel</button>
+                    <button className="secondary-btn" onClick={() => setEditingUser(null)}>Bekor qilish</button>
                   </div>
                 </div>
               </div>
@@ -1933,22 +1933,22 @@ const AdminScreen = ({ token }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* Create new task form */}
           <div className="card" style={{ border: '1px solid var(--accent-blue)' }}>
-            <h3 style={{ marginBottom: '15px' }}>New Task</h3>
+            <h3 style={{ marginBottom: '15px' }}>Yangi vazifa</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div>
-                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Title</label>
-                <input className="custom-input" placeholder="e.g. Use 500 Rockets" value={newTask.title}
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Sarlavha</label>
+                <input className="custom-input" placeholder="masalan, 500 ta raketa ishlating" value={newTask.title}
                   onChange={e => setNewTask({...newTask, title: e.target.value})} />
               </div>
               
               <div style={{ position: 'relative' }}>
-                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Task Type</label>
+                <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Vazifa turi</label>
                 <div 
                   className="custom-input" 
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span>{newTask.task_type === 'join_channel' ? 'Join Channel' : 'Custom (Standard)'}</span>
+                  <span>{newTask.task_type === 'join_channel' ? 'Kanalga qo'shilish' : 'Oddiy vazifa'}</span>
                   <ChevronDown size={16} color="var(--text-muted)" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
                 </div>
                 
@@ -1982,12 +1982,12 @@ const AdminScreen = ({ token }) => {
               {newTask.task_type === 'join_channel' && (
                 <>
                   <div>
-                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Channel ID (e.g. @mychannel or -100...)</label>
+                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Kanal ID (@mychannel yoki -100...)</label>
                     <input className="custom-input" placeholder="@mychannel" value={newTask.channel_id || ''}
                       onChange={e => setNewTask({...newTask, channel_id: e.target.value})} />
                   </div>
                   <div>
-                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Channel URL (e.g. https://t.me/mychannel)</label>
+                    <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Kanal havolasi (masalan, https://t.me/...)</label>
                     <input className="custom-input" placeholder="https://t.me/mychannel" value={newTask.channel_url || ''}
                       onChange={e => setNewTask({...newTask, channel_url: e.target.value})} />
                   </div>
@@ -1996,17 +1996,17 @@ const AdminScreen = ({ token }) => {
 
               <div style={{ display: 'flex', gap: '10px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Reward 🚀</label>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Mukofot 🚀</label>
                   <input className="custom-input" type="number" placeholder="50" value={newTask.reward}
                     onChange={e => setNewTask({...newTask, reward: e.target.value})} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Target Count</label>
+                  <label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', display: 'block' }}>Maqsad miqdori</label>
                   <input className="custom-input" type="number" placeholder="1" value={newTask.target_count}
                     onChange={e => setNewTask({...newTask, target_count: e.target.value})} />
                 </div>
               </div>
-              <button className="primary-btn" onClick={createTask}>Create Task</button>
+              <button className="primary-btn" onClick={createTask}>Vazifa yaratish</button>
             </div>
           </div>
 
@@ -2015,7 +2015,7 @@ const AdminScreen = ({ token }) => {
             <div key={t.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <div style={{ fontWeight: '600', fontSize: '14px' }}>{t.title}</div>
-                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>+{t.reward}🚀 · Target: {t.target_count}</div>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>+{t.reward}🚀 · Maqsad: {t.target_count}</div>
               </div>
               <button className="secondary-btn" style={{ width: 'auto', padding: '8px 14px', fontSize: '12px', color: '#ff453a' }}
                 onClick={() => deleteTask(t.id)}>
