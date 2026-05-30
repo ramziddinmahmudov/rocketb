@@ -435,7 +435,7 @@ function App() {
       <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', padding: '20px', textAlign: 'center', gap: '12px'}}>
         <div className="pill-badge" style={{ backgroundColor: '#ff453a', color: '#fff' }}>Ulanishda xatolik</div>
         <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-          {authError || 'Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring.'}
+          {authError || "Serverga ulanib bo'lmadi. Iltimos, qayta urinib ko'ring."}
         </p>
         <button className="primary-btn" style={{ width: 'auto', padding: '10px 20px' }} onClick={() => window.location.reload()}>Qayta urinish</button>
       </div>
@@ -1657,7 +1657,7 @@ const ProfileScreen = ({ user, token, onAdminClick, onUserClick }) => {
         <button className="secondary-btn btn-small" style={{ marginBottom: '15px' }} onClick={() => { setFollowListType(null); setFollowList([]); }}>← Orqaga</button>
         <h2 style={{ fontSize: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '15px' }}>
           <Users size={20} color="var(--accent-blue)" />
-          {followListType === 'followers' ? 'Followers' : (followListType === 'following' ? 'Following' : 'Taklif qilingan do'stlar')} ({followList.length})
+          {followListType === 'followers' ? 'Followers' : (followListType === 'following' ? 'Following' : "Taklif qilingan do'stlar")} ({followList.length})
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {followList.length === 0 && <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Hali foydalanuvchilar yo'q</span>}
@@ -1948,7 +1948,7 @@ const AdminScreen = ({ token }) => {
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                  <span>{newTask.task_type === 'join_channel' ? 'Kanalga qo'shilish' : 'Oddiy vazifa'}</span>
+                  <span>{newTask.task_type === 'join_channel' ? "Kanalga qo'shilish" : "Oddiy vazifa"}</span>
                   <ChevronDown size={16} color="var(--text-muted)" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }} />
                 </div>
                 
