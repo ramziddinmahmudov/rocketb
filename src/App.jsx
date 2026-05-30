@@ -1108,7 +1108,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isSpectating ? battleState.myName : user.first_name}</span>
                      </div>
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '60px', overflow: 'hidden', justifyContent: 'flex-end', marginTop: '10px' }}>
-                       {attackLogs.filter(log => !log.isChat && log.targetName === (isSpectating ? battleState.myName : user.first_name)).slice(0, 3).reverse().map(log => (
+                       {attackLogs.filter(log => !log.isChat && log.attackerName === (isSpectating ? battleState.myName : user.first_name)).slice(0, 3).reverse().map(log => (
                           <div key={log.id} style={{ fontSize: '11px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', animation: 'fade-in 0.3s ease', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px' }}>
                             <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : 'var(--accent-blue)'}/> 
                             <span style={{ fontWeight: '600', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.attackerName}</span>
@@ -1135,7 +1135,7 @@ const BattleScreen = ({ user, ws, battleState, isSpectating, attackLogs = [], on
                        <span style={{ fontSize: '13px', fontWeight: '600', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{opponentName}</span>
                      </div>
                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minHeight: '60px', overflow: 'hidden', justifyContent: 'flex-end', marginTop: '10px' }}>
-                       {attackLogs.filter(log => !log.isChat && log.targetName === opponentName).slice(0, 3).reverse().map(log => (
+                       {attackLogs.filter(log => !log.isChat && log.attackerName === opponentName).slice(0, 3).reverse().map(log => (
                           <div key={log.id} style={{ fontSize: '11px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '6px', animation: 'fade-in 0.3s ease', backgroundColor: 'rgba(255,255,255,0.05)', padding: '4px 8px', borderRadius: '8px' }}>
                             <Rocket size={10} color={log.isSpectator ? '#ff9f0a' : '#ff3b30'}/> 
                             <span style={{ fontWeight: '600', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.attackerName}</span>
