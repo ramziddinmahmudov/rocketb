@@ -285,8 +285,8 @@ function App() {
           opponentScore: data.opponent_score ?? prev.opponentScore,
           isWin: data.is_win
         }));
-        if (data.is_win === true) addToast('🏆 Siz jangda g'alaba qozondingiz!', 'success');
-        else if (data.is_win === false) addToast('💀 Siz jangda mag'lub bo'ldingiz.', 'error');
+        if (data.is_win === true) addToast('🏆 Siz jangda g\\'alaba qozondingiz!', 'success');
+        else if (data.is_win === false) addToast('💀 Siz jangda mag\\'lub bo\\'ldingiz.', 'error');
         else addToast('🤝 Durang bilan yakunlandi!', 'info');
       }
     };
